@@ -2,7 +2,7 @@
 
 An Obsidian plugin for organizing installed plugins into user-defined groups.
 
-Open **Plugin groups** from the ribbon icon or command palette. The dedicated tab lists installed community plugins, their enabled state, and your groups. Add, rename, or delete groups; drag plugins between groups or use each plugin's group selector. Use a plugin's switch to enable or disable it, or a group switch to enable or disable all installed plugins in that group. A mixed group switches on to enable its disabled plugins. Plugin Groups Admin stays enabled when its own group is switched off. Deleting a group moves its plugins to **Ungrouped**. Assignments are saved in the plugin's `data.json` and survive a plugin being uninstalled and later reinstalled.
+Open **Plugin groups** from the ribbon icon or command palette. The dedicated tab lists installed community plugins, their enabled state, and your groups. Add, rename, or delete groups; drag plugins between groups or use each plugin's group selector. Use a plugin's switch to enable or disable it, or a group switch to enable or disable all installed plugins in that group. The group switch stays on while any plugin in the group is enabled; switching it off disables the remaining enabled plugins. Plugin Groups Admin stays enabled when its own group is switched off. Deleting a group moves its plugins to **Ungrouped**. Assignments are saved in the plugin's `data.json` and survive a plugin being uninstalled and later reinstalled.
 
 ## Build and install
 

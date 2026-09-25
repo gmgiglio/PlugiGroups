@@ -143,14 +143,6 @@
   transform: translateX(12px);
 }
 
-.plugin-groups-admin-toggle input:indeterminate + .plugin-groups-admin-switch {
-  background: var(--interactive-normal);
-}
-
-.plugin-groups-admin-toggle input:indeterminate + .plugin-groups-admin-switch::after {
-  transform: translateX(6px);
-}
-
 .plugin-groups-admin-toggle input:focus-visible + .plugin-groups-admin-switch {
   outline: 2px solid var(--interactive-accent);
   outline-offset: 2px;

@@ -103,7 +103,6 @@ function renderGroupToggle(context: ViewContext, container: HTMLElement, actions
   const label = actions.createEl("label", { cls: "plugin-groups-admin-toggle plugin-groups-admin-group-toggle" });
   const toggle = label.createEl("input", { attr: { type: "checkbox", "aria-label": `Enable plugins in ${group.name}` } });
   toggle.checked = state === "enabled";
-  toggle.indeterminate = state === "mixed";
   toggle.disabled = manageable.length === 0 || busy;
   if (plugins.some(plugin => plugin.id === context.selfId)) label.setAttribute("title", "Plugin Groups Admin stays enabled.");
   label.createEl("span", { cls: "plugin-groups-admin-switch", attr: { "aria-hidden": "true" } });
@@ -114,7 +113,6 @@ function renderGroupToggle(context: ViewContext, container: HTMLElement, actions
 function groupToggleText(plugins: InstalledPlugin[], manageable: InstalledPlugin[], state: GroupEnabledState, busy: boolean): string {
   if (busy) return "Updating…";
   if (manageable.length === 0) return plugins.length === 0 ? "Empty" : "No others";
-  if (state === "mixed") return "Mixed";
   return state === "enabled" ? "Enabled" : "Disabled";
 }
 
