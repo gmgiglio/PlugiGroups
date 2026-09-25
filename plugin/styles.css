@@ -1,0 +1,182 @@
+.plugin-groups-admin {
+  box-sizing: border-box;
+  height: 100%;
+  overflow: auto;
+  padding: 24px;
+}
+
+.plugin-groups-admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.plugin-groups-admin-header h1 {
+  margin: 0;
+  font-size: var(--h2-size);
+}
+
+.plugin-groups-admin-add,
+.plugin-groups-admin-section-header,
+.plugin-groups-admin-actions,
+.plugin-groups-admin-plugin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plugin-groups-admin-add input {
+  min-width: 180px;
+}
+
+.plugin-groups-admin-section {
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+}
+
+.plugin-groups-admin-section.is-drag-over {
+  border-color: var(--interactive-accent);
+  background: var(--background-modifier-hover);
+}
+
+.plugin-groups-admin-section-header {
+  margin-bottom: 10px;
+}
+
+.plugin-groups-admin-section-header h2 {
+  margin: 0;
+  font-size: var(--h3-size);
+}
+
+.plugin-groups-admin-section-header input {
+  min-width: 0;
+}
+
+.plugin-groups-admin-count {
+  color: var(--text-muted);
+}
+
+.plugin-groups-admin-actions {
+  margin-left: auto;
+}
+
+.plugin-groups-admin-actions button {
+  font-size: var(--font-smaller);
+}
+
+.plugin-groups-admin-list {
+  min-height: 36px;
+}
+
+.plugin-groups-admin-plugin {
+  flex-wrap: wrap;
+  min-height: 42px;
+  padding: 6px 8px;
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  margin-top: 6px;
+  cursor: grab;
+}
+
+.plugin-groups-admin-plugin:active {
+  cursor: grabbing;
+}
+
+.plugin-groups-admin-plugin-name {
+  font-weight: var(--font-medium);
+}
+
+.plugin-groups-admin-version,
+.plugin-groups-admin-empty {
+  color: var(--text-muted);
+  font-size: var(--font-smaller);
+}
+
+.plugin-groups-admin-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  color: var(--text-muted);
+  font-size: var(--font-smaller);
+  cursor: pointer;
+}
+
+.plugin-groups-admin-toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.plugin-groups-admin-switch {
+  position: relative;
+  width: 30px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--background-modifier-border);
+}
+
+.plugin-groups-admin-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-on-accent, white);
+  transition: transform 120ms ease;
+}
+
+.plugin-groups-admin-toggle input:checked + .plugin-groups-admin-switch {
+  background: var(--interactive-accent);
+}
+
+.plugin-groups-admin-toggle input:checked + .plugin-groups-admin-switch::after {
+  transform: translateX(12px);
+}
+
+.plugin-groups-admin-toggle input:indeterminate + .plugin-groups-admin-switch {
+  background: var(--interactive-normal);
+}
+
+.plugin-groups-admin-toggle input:indeterminate + .plugin-groups-admin-switch::after {
+  transform: translateX(6px);
+}
+
+.plugin-groups-admin-toggle input:focus-visible + .plugin-groups-admin-switch {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.plugin-groups-admin-toggle input:disabled + .plugin-groups-admin-switch {
+  opacity: 0.5;
+}
+
+.plugin-groups-admin-toggle:has(input:checked) {
+  color: var(--text-success);
+}
+
+.plugin-groups-admin-toggle:has(input:disabled) {
+  cursor: default;
+}
+
+.plugin-groups-admin-group-toggle {
+  margin-right: 8px;
+}
+
+.plugin-groups-admin-plugin select {
+  margin-left: auto;
+  max-width: 180px;
+}
+
+.plugin-groups-admin-empty {
+  padding: 8px;
+}
