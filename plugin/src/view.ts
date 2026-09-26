@@ -50,10 +50,31 @@ function renderView(context: ViewContext, container: HTMLElement): void {
 function renderHeader(context: ViewContext, container: HTMLElement, plugins: InstalledPlugin[]): void {
   const header = container.createDiv({ cls: "plugin-groups-admin-header" });
   renderHeading(header, context.data.groups.length, plugins);
+  const addButton = header.createEl("button", { cls: "mod-cta plugin-groups-admin-add-button", text: "+ Add group", attr: { type: "button" } });
   const form = header.createEl("form", { cls: "plugin-groups-admin-add" });
+  form.hidden = true;
   const input = form.createEl("input", { attr: { type: "text", placeholder: "New group name", "aria-label": "New group name" } });
-  form.createEl("button", { cls: "mod-cta", text: "+ Add group", attr: { type: "submit" } });
+  form.createEl("button", { cls: "mod-cta", text: "Create group", attr: { type: "submit" } });
+  const cancel = form.createEl("button", { text: "Cancel", attr: { type: "button" } });
+  addButton.addEventListener("click", () => {
+    addButton.hidden = true;
+    form.hidden = false;
+    input.focus();
+  });
+  cancel.addEventListener("click", () => hideAddGroupForm(form, addButton, input));
+  form.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+    event.preventDefault();
+    hideAddGroupForm(form, addButton, input);
+  });
   form.addEventListener("submit", event => addGroupFromForm(event, context, container, input));
+}
+
+function hideAddGroupForm(form: HTMLFormElement, addButton: HTMLButtonElement, input: HTMLInputElement): void {
+  input.value = "";
+  form.hidden = true;
+  addButton.hidden = false;
+  addButton.focus();
 }
 
 function renderHeading(header: HTMLElement, groupCount: number, plugins: InstalledPlugin[]): void {
@@ -70,6 +91,7 @@ function addGroupFromForm(event: SubmitEvent, context: ViewContext, container: H
   event.preventDefault();
   if (!addGroup(context.data, input.value, crypto.randomUUID())) {
     new Notice("Enter a unique group name.");
+    input.focus();
     return;
   }
   changed(context, container);

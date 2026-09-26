@@ -21,6 +21,8 @@
   margin-bottom: 28px;
 }
 
+.plugin-groups-admin-heading { flex: 1; min-width: 0; }
+
 .plugin-groups-admin-header h1 {
   margin: 0;
   font-size: 28px;
@@ -58,7 +60,9 @@
   gap: 8px;
 }
 
-.plugin-groups-admin-add { padding-top: 4px; }
+.plugin-groups-admin-add { margin-left: auto; padding-top: 4px; }
+.plugin-groups-admin-add[hidden], .plugin-groups-admin-add-button[hidden] { display: none; }
+.plugin-groups-admin-add-button { margin-top: 4px; white-space: nowrap; }
 .plugin-groups-admin-add input { width: 180px; min-width: 0; }
 .plugin-groups-admin-add button { white-space: nowrap; }
 
