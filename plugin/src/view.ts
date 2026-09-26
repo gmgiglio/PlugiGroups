@@ -398,7 +398,7 @@ function renderPlugins(context: ViewContext, container: HTMLElement, section: HT
 }
 
 function renderPlugin(context: ViewContext, container: HTMLElement, list: HTMLElement, plugin: InstalledPlugin, groupId: string | null): void {
-  const row = list.createDiv({ cls: `plugin-groups-admin-plugin${plugin.enabled ? "" : " is-disabled"}` });
+  const row = list.createDiv({ cls: `plugin-groups-admin-plugin${plugin.enabled ? "" : " is-disabled"}${groupId === null ? "" : " is-grouped"}` });
   setIcon(row.createSpan({ cls: "plugin-groups-admin-grip", attr: { "aria-hidden": "true" } }), "grip-vertical");
   row.draggable = true;
   row.addEventListener("dragstart", event => startDrag(event, plugin.id, groupId));
@@ -409,6 +409,15 @@ function renderPlugin(context: ViewContext, container: HTMLElement, list: HTMLEl
   if (plugin.description) details.createDiv({ cls: "plugin-groups-admin-plugin-description", text: plugin.description });
   row.createEl("span", { cls: "plugin-groups-admin-version", text: `v${plugin.version}` });
   renderEnabledToggle(context, container, row, plugin);
+  if (groupId !== null) renderRemovePluginButton(context, container, row, plugin, groupId);
+}
+
+function renderRemovePluginButton(context: ViewContext, container: HTMLElement, row: HTMLElement, plugin: InstalledPlugin, groupId: string): void {
+  const button = row.createEl("button", { cls: "plugin-groups-admin-remove-plugin", attr: { type: "button", "aria-label": `Remove ${plugin.name} from this group`, title: `Remove ${plugin.name} from this group` } });
+  setIcon(button, "x");
+  button.addEventListener("click", () => {
+    if (removePluginFromGroup(context.data, plugin.id, groupId)) changed(context, container);
+  });
 }
 
 function openPluginFromRow(event: MouseEvent, context: ViewContext, plugin: InstalledPlugin): void {
