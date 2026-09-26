@@ -67,6 +67,7 @@
 .plugin-groups-admin-add button { white-space: nowrap; }
 
 .plugin-groups-admin-section {
+  position: relative;
   margin-bottom: 20px;
   border: 1px solid var(--background-modifier-border);
   border-radius: 12px;
@@ -79,6 +80,21 @@
   background: var(--background-modifier-hover);
   box-shadow: 0 0 0 2px var(--interactive-accent);
 }
+
+.plugin-groups-admin-section:is(.is-group-drop-before, .is-group-drop-after)::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 12px;
+  right: 12px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--interactive-accent);
+  pointer-events: none;
+}
+
+.plugin-groups-admin-section.is-group-drop-before::after { top: -12px; }
+.plugin-groups-admin-section.is-group-drop-after::after { bottom: -12px; }
 
 .plugin-groups-admin-section-header {
   flex-wrap: wrap;
@@ -99,6 +115,16 @@
   font-size: var(--font-ui-medium);
   font-weight: 600;
 }
+
+.plugin-groups-admin-group-grip {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--text-faint);
+  cursor: grab;
+}
+.plugin-groups-admin-group-grip:hover { color: var(--text-normal); }
+.plugin-groups-admin-group-grip:active { cursor: grabbing; }
+.plugin-groups-admin-group-grip svg { width: 16px; height: 16px; }
 
 .plugin-groups-admin .plugin-groups-admin-collapse {
   display: flex;

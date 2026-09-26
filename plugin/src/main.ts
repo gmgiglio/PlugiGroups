@@ -6,7 +6,7 @@ import { closeSettings, openPluginSettings } from "./settings";
 import { GroupsView, VIEW_TYPE } from "./view";
 
 export default class PluginGroupsAdmin extends Plugin {
-  data: GroupData = { groups: [], allowMultipleGroups: false };
+  data: GroupData = { groups: [], allowMultipleGroups: false, ungroupedIndex: 0 };
   lastInventory = "";
   saveQueue: Promise<void> = Promise.resolve();
 

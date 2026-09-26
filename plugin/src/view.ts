@@ -1,5 +1,5 @@
 import { App, ItemView, Notice, SearchComponent, setIcon, SuggestModal, WorkspaceLeaf } from "obsidian";
-import { addGroup, addPluginToGroup, groupForPlugin, movePlugin, removeGroup, removePluginFromGroup, renameGroup } from "./groups";
+import { addGroup, addPluginToGroup, groupForPlugin, movePlugin, removeGroup, removePluginFromGroup, renameGroup, reorderSection, sectionIds } from "./groups";
 import type { Group, GroupData } from "./groups";
 import { groupEnabledState, setGroupEnabled, toggleablePlugins } from "./groupToggle";
 import type { InstalledPlugin } from "./inventory";
@@ -8,6 +8,8 @@ import type { SettingsDestination } from "./settings";
 export const VIEW_TYPE = "plugin-groups-admin-view";
 const DRAG_TYPE = "application/x-plugin-groups-admin-id";
 const DRAG_SOURCE_TYPE = "application/x-plugin-groups-admin-source";
+const GROUP_DRAG_TYPE = "application/x-plugin-groups-admin-group";
+const UNGROUPED_DRAG_TYPE = "application/x-plugin-groups-admin-ungrouped";
 
 export interface ViewContext {
   app: App;
@@ -32,6 +34,8 @@ export class GroupsView extends ItemView {
   getIcon(): string { return "layout-grid"; }
 
   async onOpen(): Promise<void> {
+    this.registerDomEvent(this.contentEl, "dragover", event => allowGroupDrop(event, this.contentEl));
+    this.registerDomEvent(this.contentEl, "drop", event => dropGroup(event, this.context, this.contentEl));
     this.refresh();
   }
 
@@ -69,8 +73,10 @@ function renderView(context: ViewContext, container: HTMLElement): void {
   container.addClass("plugin-groups-admin");
   const plugins = context.plugins();
   renderHeader(context, container, plugins);
-  for (const group of context.data.groups) renderGroup(context, container, group, plugins);
-  renderUngrouped(context, container, plugins);
+  for (const id of sectionIds(context.data)) {
+    if (id === null) renderUngrouped(context, container, plugins);
+    else renderGroup(context, container, context.data.groups.find(group => group.id === id)!, plugins);
+  }
 }
 
 function renderHeader(context: ViewContext, container: HTMLElement, plugins: InstalledPlugin[]): void {
@@ -134,14 +140,91 @@ function addGroupFromForm(event: SubmitEvent, context: ViewContext, container: H
 function renderGroup(context: ViewContext, container: HTMLElement, group: Group, plugins: InstalledPlugin[]): void {
   const groupPlugins = plugins.filter(plugin => group.pluginIds.includes(plugin.id));
   const { section, body } = createSection(context, container, group.name, groupPlugins.length, group.id);
+  section.dataset.groupId = group.id;
+  renderGroupReordering(container, section, group.name, group.id);
   renderGroupActions(context, container, section, group, groupPlugins);
   renderDropTarget(context, container, section, group.id, plugins);
   renderPlugins(context, container, body, groupPlugins, group.id);
 }
 
+function renderGroupReordering(container: HTMLElement, section: HTMLElement, name: string, groupId: string | null): void {
+  const heading = section.querySelector<HTMLElement>(".plugin-groups-admin-section-header")!;
+  const handle = heading.createEl("span", { cls: "plugin-groups-admin-group-grip", attr: { draggable: "true", role: "img", "aria-label": `Drag to reorder ${name}`, title: `Drag to reorder ${name}` } });
+  heading.prepend(handle);
+  setIcon(handle, "grip-vertical");
+  handle.addEventListener("dragstart", event => startGroupDrag(event, container, section, groupId));
+  handle.addEventListener("dragend", () => clearGroupDropHighlights(container));
+}
+
+function startGroupDrag(event: DragEvent, container: HTMLElement, section: HTMLElement, groupId: string | null): void {
+  if (!event.dataTransfer) return;
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData(groupId === null ? UNGROUPED_DRAG_TYPE : GROUP_DRAG_TYPE, groupId ?? "ungrouped");
+  showGroupDropTarget(container, { section, groupId, position: "before", y: section.getBoundingClientRect().top });
+}
+
+interface GroupDropTarget {
+  section: HTMLElement;
+  groupId: string | null;
+  position: "before" | "after";
+  y: number;
+}
+
+function groupDropTargets(container: HTMLElement): GroupDropTarget[] {
+  const sections = Array.from(container.querySelectorAll<HTMLElement>(".plugin-groups-admin-section[data-group-id]"));
+  const targets = sections.map((section, index): GroupDropTarget => ({
+    section, groupId: section.dataset.groupId || null, position: "before",
+    y: index === 0 ? section.getBoundingClientRect().top : (sections[index - 1].getBoundingClientRect().bottom + section.getBoundingClientRect().top) / 2,
+  }));
+  const last = sections[sections.length - 1];
+  if (last) targets.push({ section: last, groupId: last.dataset.groupId || null, position: "after", y: last.getBoundingClientRect().bottom + 10 });
+  return targets;
+}
+
+function nearestGroupDropTarget(container: HTMLElement, y: number): GroupDropTarget | null {
+  const targets = groupDropTargets(container);
+  return targets.reduce<GroupDropTarget | null>((nearest, target) =>
+    nearest === null || Math.abs(target.y - y) < Math.abs(nearest.y - y) ? target : nearest, null);
+}
+
+function showGroupDropTarget(container: HTMLElement, target: GroupDropTarget): void {
+  const className = target.position === "before" ? "is-group-drop-before" : "is-group-drop-after";
+  if (target.section.hasClass(className)) return;
+  clearGroupDropHighlights(container);
+  target.section.addClass(className);
+}
+
+function allowGroupDrop(event: DragEvent, container: HTMLElement): void {
+  if (!isSectionDrag(event.dataTransfer)) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+  const target = nearestGroupDropTarget(container, event.clientY);
+  if (target) showGroupDropTarget(container, target);
+}
+
+function dropGroup(event: DragEvent, context: ViewContext, container: HTMLElement): void {
+  const transfer = event.dataTransfer;
+  if (!isSectionDrag(transfer)) return;
+  const groupId = transfer.types.includes(UNGROUPED_DRAG_TYPE) ? null : transfer.getData(GROUP_DRAG_TYPE);
+  event.preventDefault();
+  const target = nearestGroupDropTarget(container, event.clientY);
+  clearGroupDropHighlights(container);
+  if (target && reorderSection(context.data, groupId, target.groupId, target.position)) changed(context, container);
+}
+
+function isSectionDrag(transfer: DataTransfer | null): transfer is DataTransfer {
+  return transfer !== null && (transfer.types.includes(GROUP_DRAG_TYPE) || transfer.types.includes(UNGROUPED_DRAG_TYPE));
+}
+
+function clearGroupDropHighlights(container: HTMLElement): void {
+  for (const section of Array.from(container.querySelectorAll(".plugin-groups-admin-section"))) section.classList.remove("is-group-drop-before", "is-group-drop-after");
+}
+
 function renderUngrouped(context: ViewContext, container: HTMLElement, plugins: InstalledPlugin[]): void {
   const ungrouped = plugins.filter(plugin => groupForPlugin(context.data, plugin.id) === null);
   const { section, body } = createSection(context, container, "Ungrouped", ungrouped.length, null);
+  section.dataset.groupId = "";
+  renderGroupReordering(container, section, "Ungrouped", null);
   const list = body.createDiv({ cls: "plugin-groups-admin-list" });
   renderUngroupedSearch(context, container, section, list, ungrouped);
   renderDropTarget(context, container, section, null, plugins);

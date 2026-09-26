@@ -7,6 +7,7 @@ export interface Group {
 export interface GroupData {
   groups: Group[];
   allowMultipleGroups: boolean;
+  ungroupedIndex: number;
 }
 
 export function dataFromSaved(value: unknown): GroupData {
@@ -19,7 +20,13 @@ export function dataFromSaved(value: unknown): GroupData {
     const group = groupFromSaved(entry, groupIds, pluginIds, allowMultipleGroups);
     if (group !== null) groups.push(group);
   }
-  return { groups, allowMultipleGroups };
+  return { groups, allowMultipleGroups, ungroupedIndex: ungroupedIndexFromSaved(value, groups.length) };
+}
+
+function ungroupedIndexFromSaved(value: unknown, groupCount: number): number {
+  const index = isRecord(value) ? value.ungroupedIndex : null;
+  return typeof index === "number" && Number.isInteger(index)
+    ? Math.max(0, Math.min(index, groupCount)) : groupCount;
 }
 
 function groupFromSaved(value: unknown, groupIds: Set<string>, pluginIds: Set<string>, allowMultipleGroups: boolean): Group | null {
@@ -43,6 +50,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export function addGroup(data: GroupData, name: string, id: string): boolean {
   const trimmed = name.trim();
   if (!trimmed || data.groups.some(group => group.id === id || group.name.toLowerCase() === trimmed.toLowerCase())) return false;
+  if (data.ungroupedIndex === data.groups.length) data.ungroupedIndex++;
   data.groups.push({ id, name: trimmed, pluginIds: [] });
   return true;
 }
@@ -59,8 +67,34 @@ export function renameGroup(data: GroupData, id: string, name: string): boolean 
 export function removeGroup(data: GroupData, id: string): boolean {
   const index = data.groups.findIndex(group => group.id === id);
   if (index < 0) return false;
+  if (index < data.ungroupedIndex) data.ungroupedIndex--;
   data.groups.splice(index, 1);
   return true;
+}
+
+export function sectionIds(data: GroupData): (string | null)[] {
+  const ids: (string | null)[] = data.groups.map(group => group.id);
+  ids.splice(data.ungroupedIndex, 0, null);
+  return ids;
+}
+
+export function reorderSection(data: GroupData, id: string | null, targetId: string | null, position: "before" | "after"): boolean {
+  const order = sectionIds(data);
+  const from = order.indexOf(id);
+  const target = order.indexOf(targetId);
+  if (from < 0 || target < 0 || from === target) return false;
+  const destination = target + (position === "after" ? 1 : 0) - (from < target ? 1 : 0);
+  if (from === destination) return false;
+  const [sectionId] = order.splice(from, 1);
+  order.splice(destination, 0, sectionId);
+  setSectionOrder(data, order);
+  return true;
+}
+
+function setSectionOrder(data: GroupData, order: (string | null)[]): void {
+  const groupsById = new Map(data.groups.map(group => [group.id, group]));
+  data.groups = order.filter((id): id is string => id !== null).map(id => groupsById.get(id)!);
+  data.ungroupedIndex = order.indexOf(null);
 }
 
 export function groupForPlugin(data: GroupData, pluginId: string): string | null {

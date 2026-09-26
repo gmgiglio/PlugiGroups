@@ -1,6 +1,40 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { addGroup, addPluginToGroup, dataFromSaved, groupForPlugin, movePlugin, removeGroup, removePluginFromGroup, renameGroup, setMultipleGroupsAllowed } from "../src/groups";
+import { addGroup, addPluginToGroup, dataFromSaved, groupForPlugin, movePlugin, removeGroup, removePluginFromGroup, renameGroup, reorderSection, sectionIds, setMultipleGroupsAllowed } from "../src/groups";
+
+test("reordering groups preserves memberships and persists the new order", () => {
+  const data = dataFromSaved({ groups: [
+    { id: "one", name: "First", pluginIds: ["a"] },
+    { id: "two", name: "Second", pluginIds: ["b"] },
+    { id: "three", name: "Third", pluginIds: ["c"] },
+  ] });
+  assert.equal(reorderSection(data, "one", "three", "after"), true);
+  assert.deepEqual(data.groups.map(group => group.id), ["two", "three", "one"]);
+  assert.equal(reorderSection(data, "one", "two", "before"), true);
+  assert.deepEqual(dataFromSaved(JSON.parse(JSON.stringify(data))).groups, data.groups);
+  assert.equal(reorderSection(data, "one", "two", "before"), false);
+  assert.equal(reorderSection(data, "missing", "two", "after"), false);
+  assert.equal(reorderSection(data, "one", "one", "after"), false);
+});
+
+test("Ungrouped moves between named groups and keeps its position across changes", () => {
+  const data = dataFromSaved({ groups: [
+    { id: "one", name: "First", pluginIds: ["a"] },
+    { id: "two", name: "Second", pluginIds: ["b"] },
+  ] });
+  assert.deepEqual(sectionIds(data), ["one", "two", null]);
+  assert.equal(reorderSection(data, null, "two", "before"), true);
+  assert.deepEqual(sectionIds(data), ["one", null, "two"]);
+  assert.equal(reorderSection(data, "two", null, "before"), true);
+  assert.deepEqual(sectionIds(data), ["one", "two", null]);
+  assert.equal(reorderSection(data, null, "one", "before"), true);
+  assert.deepEqual(sectionIds(dataFromSaved(JSON.parse(JSON.stringify(data)))), [null, "one", "two"]);
+  assert.equal(addGroup(data, "Third", "three"), true);
+  assert.deepEqual(sectionIds(data), [null, "one", "two", "three"]);
+  assert.equal(removeGroup(data, "one"), true);
+  assert.deepEqual(sectionIds(data), [null, "two", "three"]);
+  assert.deepEqual(data.groups.map(group => group.pluginIds), [["b"], []]);
+});
 
 test("saved data drops duplicate assignments but keeps absent plugin IDs", () => {
   const data = dataFromSaved({ groups: [
