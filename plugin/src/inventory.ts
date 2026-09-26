@@ -5,6 +5,7 @@ export interface InstalledPlugin {
   name: string;
   description: string;
   version: string;
+  author: string;
   enabled: boolean;
 }
 
@@ -28,13 +29,14 @@ export function installedPlugins(app: App): InstalledPlugin[] {
       name: manifest.name || id,
       description: manifest.description || "",
       version: manifest.version || "",
+      author: manifest.author || "",
       enabled: manager.enabledPlugins?.has(id) ?? false,
     }))
     .sort((left, right) => left.name.localeCompare(right.name));
 }
 
 export function inventorySignature(plugins: InstalledPlugin[]): string {
-  return JSON.stringify(plugins.map(({ id, name, description, version, enabled }) => [id, name, description, version, enabled]));
+  return JSON.stringify(plugins.map(({ id, name, description, version, author, enabled }) => [id, name, description, version, author, enabled]));
 }
 
 export async function setPluginEnabled(app: App, id: string, enabled: boolean): Promise<void> {

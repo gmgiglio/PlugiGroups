@@ -4,9 +4,9 @@ import { groupEnabledState, setGroupEnabled, toggleablePlugins } from "../src/gr
 import type { InstalledPlugin } from "../src/inventory";
 
 const plugins: InstalledPlugin[] = [
-  { id: "self", name: "Admin", description: "", version: "1", enabled: true },
-  { id: "alpha", name: "Alpha", description: "", version: "1", enabled: true },
-  { id: "beta", name: "Beta", description: "", version: "1", enabled: false },
+  { id: "self", name: "Admin", description: "", version: "1", author: "", enabled: true },
+  { id: "alpha", name: "Alpha", description: "", version: "1", author: "", enabled: true },
+  { id: "beta", name: "Beta", description: "", version: "1", author: "", enabled: false },
 ];
 
 test("group stays enabled while any manageable plugin is enabled", () => {

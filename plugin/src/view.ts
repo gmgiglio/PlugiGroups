@@ -406,10 +406,19 @@ function renderPlugin(context: ViewContext, container: HTMLElement, list: HTMLEl
   const details = row.createDiv({ cls: "plugin-groups-admin-plugin-details" });
   const name = details.createEl("button", { cls: "plugin-groups-admin-plugin-name", text: plugin.name, attr: { type: "button" } });
   name.addEventListener("click", () => openPlugin(context, plugin));
-  if (plugin.description) details.createDiv({ cls: "plugin-groups-admin-plugin-description", text: plugin.description });
-  row.createEl("span", { cls: "plugin-groups-admin-version", text: `v${plugin.version}` });
+  renderPluginDescription(details, plugin);
   renderEnabledToggle(context, container, row, plugin);
   if (groupId !== null) renderRemovePluginButton(context, container, row, plugin, groupId);
+}
+
+function renderPluginDescription(details: HTMLElement, plugin: InstalledPlugin): void {
+  const metadata = [plugin.version && `v${plugin.version}`, plugin.author && `by ${plugin.author}`]
+    .filter(Boolean).join(" · ");
+  if (!plugin.description && !metadata) return;
+  const description = details.createDiv({ cls: "plugin-groups-admin-plugin-description" });
+  if (plugin.description) description.appendText(plugin.description);
+  if (!metadata) return;
+  description.createEl("em", { text: `${plugin.description ? " · " : ""}${metadata}` });
 }
 
 function renderRemovePluginButton(context: ViewContext, container: HTMLElement, row: HTMLElement, plugin: InstalledPlugin, groupId: string): void {

@@ -5,13 +5,14 @@ import { installedPlugins, inventorySignature, setPluginEnabled } from "../src/i
 
 test("inventory detects installed and enabled plugin changes", () => {
   const manager = {
-    manifests: { beta: { name: "Beta", description: "Beta tools", version: "1.0" }, alpha: { name: "Alpha", version: "2.0" } },
+    manifests: { beta: { name: "Beta", description: "Beta tools", version: "1.0", author: "Beta Creator" }, alpha: { name: "Alpha", version: "2.0", author: "" } },
     enabledPlugins: new Set(["alpha"]),
   };
   const app = { plugins: manager } as unknown as App;
   const initial = installedPlugins(app);
   assert.deepEqual(initial.map(plugin => [plugin.id, plugin.enabled]), [["alpha", true], ["beta", false]]);
   assert.deepEqual(initial.map(plugin => plugin.description), ["", "Beta tools"]);
+  assert.deepEqual(initial.map(plugin => plugin.author), ["", "Beta Creator"]);
   manager.enabledPlugins.add("beta");
   const enabled = installedPlugins(app);
   assert.notEqual(inventorySignature(initial), inventorySignature(enabled));
@@ -20,6 +21,9 @@ test("inventory detects installed and enabled plugin changes", () => {
   const versioned = installedPlugins(app);
   manager.manifests.beta.description = "Updated Beta tools";
   assert.notEqual(inventorySignature(versioned), inventorySignature(installedPlugins(app)));
+  const described = installedPlugins(app);
+  manager.manifests.beta.author = "New Creator";
+  assert.notEqual(inventorySignature(described), inventorySignature(installedPlugins(app)));
 });
 
 test("enable and disable use Obsidian's saved plugin controls", async () => {
