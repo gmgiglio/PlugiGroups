@@ -4,6 +4,7 @@ export type SettingsDestination = "plugin" | "community" | "unavailable";
 
 interface SettingsManager {
   open?: () => void;
+  close?: () => void;
   openTabById?: (id: string) => unknown;
   pluginTabs?: { id: string }[];
   settingTabs?: { id: string; revealPlugin?: (id: string) => void }[];
@@ -11,6 +12,10 @@ interface SettingsManager {
 
 interface AppWithSettings extends App {
   setting?: SettingsManager;
+}
+
+export function closeSettings(app: App): void {
+  (app as AppWithSettings).setting?.close?.();
 }
 
 export function openPluginSettings(app: App, pluginId: string): SettingsDestination {

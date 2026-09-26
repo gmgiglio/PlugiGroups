@@ -1,12 +1,12 @@
-import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
-import { dataFromSaved } from "./groups";
+import { Notice, Plugin, PluginSettingTab, Setting, WorkspaceLeaf } from "obsidian";
+import { dataFromSaved, setMultipleGroupsAllowed } from "./groups";
 import type { GroupData } from "./groups";
 import { installedPlugins, inventorySignature, setPluginEnabled } from "./inventory";
-import { openPluginSettings } from "./settings";
+import { closeSettings, openPluginSettings } from "./settings";
 import { GroupsView, VIEW_TYPE } from "./view";
 
 export default class PluginGroupsAdmin extends Plugin {
-  data: GroupData = { groups: [] };
+  data: GroupData = { groups: [], allowMultipleGroups: false };
   lastInventory = "";
   saveQueue: Promise<void> = Promise.resolve();
 
@@ -14,6 +14,7 @@ export default class PluginGroupsAdmin extends Plugin {
     this.data = dataFromSaved(await this.loadData());
     this.lastInventory = inventorySignature(installedPlugins(this.app));
     this.registerView(VIEW_TYPE, leaf => new GroupsView(leaf, {
+      app: this.app,
       data: this.data,
       ungroupedSearch: "",
       collapsedGroupIds: new Set<string | null>(),
@@ -26,12 +27,42 @@ export default class PluginGroupsAdmin extends Plugin {
     }));
     this.addRibbonIcon("layout-grid", "Open plugin groups", () => { void openGroups(this); });
     this.addCommand({ id: "open-plugin-groups", name: "Open plugin groups", callback: () => { void openGroups(this); } });
+    this.addSettingTab(new GroupsSettingTab(this));
     registerInventoryRefresh(this);
   }
 
   onunload(): void {
     this.app.workspace.detachLeavesOfType(VIEW_TYPE);
   }
+}
+
+class GroupsSettingTab extends PluginSettingTab {
+  constructor(private readonly plugin: PluginGroupsAdmin) {
+    super(plugin.app, plugin);
+  }
+
+  display(): void {
+    this.containerEl.empty();
+    renderGroupsNavigation(this.plugin, this.containerEl);
+    new Setting(this.containerEl)
+      .setName("Allow plugins in multiple groups")
+      .setDesc("When turned off, each plugin stays in its first group.")
+      .addToggle(toggle => toggle.setValue(this.plugin.data.allowMultipleGroups).onChange(allowed => {
+        setMultipleGroupsAllowed(this.plugin.data, allowed);
+        queueSave(this.plugin);
+        for (const leaf of this.plugin.app.workspace.getLeavesOfType(VIEW_TYPE)) refreshLeaf(leaf);
+      }));
+  }
+}
+
+function renderGroupsNavigation(plugin: PluginGroupsAdmin, container: HTMLElement): void {
+  new Setting(container)
+    .setName("Plugin groups")
+    .setDesc("Organize your installed plugins into groups.")
+    .addButton(button => button.setButtonText("Open plugin groups").onClick(() => {
+      closeSettings(plugin.app);
+      void openGroups(plugin);
+    }));
 }
 
 function registerInventoryRefresh(plugin: PluginGroupsAdmin): void {

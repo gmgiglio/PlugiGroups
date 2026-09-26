@@ -6,28 +6,30 @@ export interface Group {
 
 export interface GroupData {
   groups: Group[];
+  allowMultipleGroups: boolean;
 }
 
 export function dataFromSaved(value: unknown): GroupData {
   const source = isRecord(value) && Array.isArray(value.groups) ? value.groups : [];
   const groups: Group[] = [];
   const groupIds = new Set<string>();
+  const allowMultipleGroups = isRecord(value) && value.allowMultipleGroups === true;
   const pluginIds = new Set<string>();
   for (const entry of source) {
-    const group = groupFromSaved(entry, groupIds, pluginIds);
+    const group = groupFromSaved(entry, groupIds, pluginIds, allowMultipleGroups);
     if (group !== null) groups.push(group);
   }
-  return { groups };
+  return { groups, allowMultipleGroups };
 }
 
-function groupFromSaved(value: unknown, groupIds: Set<string>, pluginIds: Set<string>): Group | null {
+function groupFromSaved(value: unknown, groupIds: Set<string>, pluginIds: Set<string>, allowMultipleGroups: boolean): Group | null {
   if (!isRecord(value) || typeof value.id !== "string" || typeof value.name !== "string") return null;
   if (!value.id || !value.name.trim() || groupIds.has(value.id)) return null;
   groupIds.add(value.id);
   const candidates = Array.isArray(value.pluginIds) ? value.pluginIds : [];
   const assigned: string[] = [];
   for (const id of candidates) {
-    if (typeof id !== "string" || !id || pluginIds.has(id)) continue;
+    if (typeof id !== "string" || !id || assigned.includes(id) || (!allowMultipleGroups && pluginIds.has(id))) continue;
     assigned.push(id);
     pluginIds.add(id);
   }
@@ -63,6 +65,31 @@ export function removeGroup(data: GroupData, id: string): boolean {
 
 export function groupForPlugin(data: GroupData, pluginId: string): string | null {
   return data.groups.find(group => group.pluginIds.includes(pluginId))?.id ?? null;
+}
+
+export function setMultipleGroupsAllowed(data: GroupData, allowed: boolean): void {
+  data.allowMultipleGroups = allowed;
+  if (allowed) return;
+  const assigned = new Set<string>();
+  for (const group of data.groups) {
+    group.pluginIds = group.pluginIds.filter(id => !assigned.has(id));
+    for (const id of group.pluginIds) assigned.add(id);
+  }
+}
+
+export function addPluginToGroup(data: GroupData, pluginId: string, groupId: string): boolean {
+  const group = data.groups.find(group => group.id === groupId);
+  if (!group || group.pluginIds.includes(pluginId)) return false;
+  if (!data.allowMultipleGroups) return movePlugin(data, pluginId, groupId);
+  group.pluginIds.push(pluginId);
+  return true;
+}
+
+export function removePluginFromGroup(data: GroupData, pluginId: string, groupId: string): boolean {
+  const group = data.groups.find(group => group.id === groupId);
+  if (!group?.pluginIds.includes(pluginId)) return false;
+  group.pluginIds = group.pluginIds.filter(id => id !== pluginId);
+  return true;
 }
 
 export function movePlugin(data: GroupData, pluginId: string, groupId: string | null): boolean {

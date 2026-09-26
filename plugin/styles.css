@@ -140,7 +140,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.plugin-groups-admin-actions { margin-left: auto; }
+.plugin-groups-admin-actions { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
 .plugin-groups-admin-actions button {
   padding: 4px 8px;
   background: transparent;
@@ -155,7 +155,7 @@
 
 .plugin-groups-admin-plugin {
   display: grid;
-  grid-template-columns: 16px minmax(0, 1fr) 64px 160px 34px;
+  grid-template-columns: 16px minmax(0, 1fr) 64px 34px;
   align-items: center;
   gap: 12px;
   min-height: 54px;
@@ -230,7 +230,6 @@
 .plugin-groups-admin-toggle input:focus-visible + .plugin-groups-admin-switch { outline: 2px solid var(--interactive-accent); outline-offset: 3px; }
 .plugin-groups-admin-toggle input:disabled + .plugin-groups-admin-switch { opacity: 0.5; }
 .plugin-groups-admin-toggle:has(input:disabled) { cursor: default; }
-.plugin-groups-admin-plugin select { width: 100%; min-width: 0; font-size: var(--font-ui-smaller); box-shadow: none; }
 
 .plugin-groups-admin-empty {
   margin: 8px;
@@ -252,7 +251,6 @@
   .plugin-groups-admin-ungrouped-search { width: 100%; }
   .plugin-groups-admin-plugin { grid-template-columns: 16px minmax(0, 1fr) 34px; gap: 6px 10px; }
   .plugin-groups-admin-version { grid-column: 2; grid-row: 2; }
-  .plugin-groups-admin-plugin select { grid-column: 2; grid-row: 3; margin-top: 4px; }
   .plugin-groups-admin-plugin > .plugin-groups-admin-toggle { grid-column: 3; grid-row: 1; }
 }
 

@@ -1,5 +1,5 @@
-import { ItemView, Notice, SearchComponent, setIcon, WorkspaceLeaf } from "obsidian";
-import { addGroup, groupForPlugin, movePlugin, removeGroup, renameGroup } from "./groups";
+import { App, ItemView, Notice, SearchComponent, setIcon, SuggestModal, WorkspaceLeaf } from "obsidian";
+import { addGroup, addPluginToGroup, groupForPlugin, movePlugin, removeGroup, removePluginFromGroup, renameGroup } from "./groups";
 import type { Group, GroupData } from "./groups";
 import { groupEnabledState, setGroupEnabled, toggleablePlugins } from "./groupToggle";
 import type { InstalledPlugin } from "./inventory";
@@ -7,8 +7,10 @@ import type { SettingsDestination } from "./settings";
 
 export const VIEW_TYPE = "plugin-groups-admin-view";
 const DRAG_TYPE = "application/x-plugin-groups-admin-id";
+const DRAG_SOURCE_TYPE = "application/x-plugin-groups-admin-source";
 
 export interface ViewContext {
+  app: App;
   data: GroupData;
   ungroupedSearch: string;
   collapsedGroupIds: Set<string | null>;
@@ -38,6 +40,30 @@ export class GroupsView extends ItemView {
   }
 }
 
+class AddPluginModal extends SuggestModal<InstalledPlugin> {
+  constructor(app: App, private readonly context: ViewContext, private readonly container: HTMLElement, private readonly group: Group) {
+    super(app);
+    this.setPlaceholder(`Add a plugin to ${group.name}`);
+    this.emptyStateText = "No available plugins";
+  }
+
+  getSuggestions(query: string): InstalledPlugin[] {
+    const search = query.trim().toLocaleLowerCase();
+    return this.context.plugins()
+      .filter(plugin => !this.group.pluginIds.includes(plugin.id))
+      .filter(plugin => plugin.name.toLocaleLowerCase().includes(search) || plugin.id.toLocaleLowerCase().includes(search))
+      .sort((first, second) => first.name.localeCompare(second.name));
+  }
+
+  renderSuggestion(plugin: InstalledPlugin, element: HTMLElement): void {
+    element.setText(plugin.name);
+  }
+
+  onChooseSuggestion(plugin: InstalledPlugin): void {
+    if (addPluginToGroup(this.context.data, plugin.id, this.group.id)) changed(this.context, this.container);
+  }
+}
+
 function renderView(context: ViewContext, container: HTMLElement): void {
   container.empty();
   container.addClass("plugin-groups-admin");
@@ -50,6 +76,7 @@ function renderView(context: ViewContext, container: HTMLElement): void {
 function renderHeader(context: ViewContext, container: HTMLElement, plugins: InstalledPlugin[]): void {
   const header = container.createDiv({ cls: "plugin-groups-admin-header" });
   renderHeading(header, context.data.groups.length, plugins);
+  renderSettingsButton(context, header);
   const addButton = header.createEl("button", { cls: "mod-cta plugin-groups-admin-add-button", text: "+ Add group", attr: { type: "button" } });
   const form = header.createEl("form", { cls: "plugin-groups-admin-add" });
   form.hidden = true;
@@ -68,6 +95,13 @@ function renderHeader(context: ViewContext, container: HTMLElement, plugins: Ins
     hideAddGroupForm(form, addButton, input);
   });
   form.addEventListener("submit", event => addGroupFromForm(event, context, container, input));
+}
+
+function renderSettingsButton(context: ViewContext, header: HTMLElement): void {
+  const button = header.createEl("button", { text: "Settings", attr: { type: "button", "aria-label": "Open Plugin Groups Admin settings" } });
+  button.addEventListener("click", () => {
+    if (context.openSettings(context.selfId) === "unavailable") new Notice("Could not open Obsidian settings.");
+  });
 }
 
 function hideAddGroupForm(form: HTMLFormElement, addButton: HTMLButtonElement, input: HTMLInputElement): void {
@@ -98,11 +132,11 @@ function addGroupFromForm(event: SubmitEvent, context: ViewContext, container: H
 }
 
 function renderGroup(context: ViewContext, container: HTMLElement, group: Group, plugins: InstalledPlugin[]): void {
-  const groupPlugins = plugins.filter(plugin => groupForPlugin(context.data, plugin.id) === group.id);
+  const groupPlugins = plugins.filter(plugin => group.pluginIds.includes(plugin.id));
   const { section, body } = createSection(context, container, group.name, groupPlugins.length, group.id);
   renderGroupActions(context, container, section, group, groupPlugins);
   renderDropTarget(context, container, section, group.id, plugins);
-  renderPlugins(context, container, body, groupPlugins);
+  renderPlugins(context, container, body, groupPlugins, group.id);
 }
 
 function renderUngrouped(context: ViewContext, container: HTMLElement, plugins: InstalledPlugin[]): void {
@@ -133,7 +167,7 @@ function renderUngroupedList(context: ViewContext, container: HTMLElement, list:
   list.empty();
   if (matches.length === 0 && query) list.createDiv({ cls: "plugin-groups-admin-empty", text: "No matching plugins." });
   else if (matches.length === 0) list.createDiv({ cls: "plugin-groups-admin-empty", text: "Drop plugins here" });
-  for (const plugin of matches) renderPlugin(context, container, list, plugin);
+  for (const plugin of matches) renderPlugin(context, container, list, plugin, null);
 }
 
 interface GroupSection {
@@ -178,9 +212,11 @@ function updateCollapseButton(button: HTMLButtonElement, name: string, collapsed
 function renderGroupActions(context: ViewContext, container: HTMLElement, section: HTMLElement, group: Group, plugins: InstalledPlugin[]): void {
   const heading = section.querySelector<HTMLElement>(".plugin-groups-admin-section-header")!;
   const actions = heading.createDiv({ cls: "plugin-groups-admin-actions" });
+  const add = actions.createEl("button", { text: "+ Add plugin", attr: { type: "button", "aria-label": `Add plugin to ${group.name}` } });
   const rename = actions.createEl("button", { text: "Rename", attr: { type: "button", "aria-label": `Rename ${group.name}` } });
   const remove = actions.createEl("button", { cls: "plugin-groups-admin-delete", text: "Delete", attr: { type: "button", "aria-label": `Delete ${group.name}` } });
   renderGroupToggle(context, container, actions, group, plugins);
+  add.addEventListener("click", () => new AddPluginModal(context.app, context, container, group).open());
   rename.addEventListener("click", () => showRenameInput(context, container, heading, group));
   remove.addEventListener("click", () => confirmRemoveGroup(context, container, group));
 }
@@ -234,7 +270,9 @@ function handleRenameKey(event: KeyboardEvent, context: ViewContext, container: 
 }
 
 function confirmRemoveGroup(context: ViewContext, container: HTMLElement, group: Group): void {
-  const message = `Delete “${group.name}”? Its plugins will move to Ungrouped.`;
+  const message = context.data.allowMultipleGroups
+    ? `Delete “${group.name}”? Plugins in other groups will keep those memberships.`
+    : `Delete “${group.name}”? Its plugins will move to Ungrouped.`;
   if (!window.confirm(message)) return;
   if (!removeGroup(context.data, group.id)) return;
   context.collapsedGroupIds.delete(group.id);
@@ -263,30 +301,33 @@ function handleDrop(event: DragEvent, context: ViewContext, container: HTMLEleme
   const pluginId = event.dataTransfer?.getData(DRAG_TYPE) ?? "";
   if (!plugins.some(plugin => plugin.id === pluginId)) return;
   event.preventDefault();
-  if (movePlugin(context.data, pluginId, groupId)) changed(context, container);
+  const sourceId = event.dataTransfer?.getData(DRAG_SOURCE_TYPE) || null;
+  const updated = context.data.allowMultipleGroups
+    ? groupId === null ? sourceId !== null && removePluginFromGroup(context.data, pluginId, sourceId) : addPluginToGroup(context.data, pluginId, groupId)
+    : movePlugin(context.data, pluginId, groupId);
+  if (updated) changed(context, container);
 }
 
-function renderPlugins(context: ViewContext, container: HTMLElement, section: HTMLElement, plugins: InstalledPlugin[]): void {
+function renderPlugins(context: ViewContext, container: HTMLElement, section: HTMLElement, plugins: InstalledPlugin[], groupId: string): void {
   const list = section.createDiv({ cls: "plugin-groups-admin-list" });
   if (plugins.length === 0) list.createDiv({ cls: "plugin-groups-admin-empty", text: "Drop plugins here" });
-  for (const plugin of plugins) renderPlugin(context, container, list, plugin);
+  for (const plugin of plugins) renderPlugin(context, container, list, plugin, groupId);
 }
 
-function renderPlugin(context: ViewContext, container: HTMLElement, list: HTMLElement, plugin: InstalledPlugin): void {
+function renderPlugin(context: ViewContext, container: HTMLElement, list: HTMLElement, plugin: InstalledPlugin, groupId: string | null): void {
   const row = list.createDiv({ cls: `plugin-groups-admin-plugin${plugin.enabled ? "" : " is-disabled"}` });
   setIcon(row.createSpan({ cls: "plugin-groups-admin-grip", attr: { "aria-hidden": "true" } }), "grip-vertical");
   row.draggable = true;
-  row.addEventListener("dragstart", event => startDrag(event, plugin.id));
+  row.addEventListener("dragstart", event => startDrag(event, plugin.id, groupId));
   row.addEventListener("click", event => openPluginFromRow(event, context, plugin));
   const name = row.createEl("button", { cls: "plugin-groups-admin-plugin-name", text: plugin.name, attr: { type: "button" } });
   name.addEventListener("click", () => openPlugin(context, plugin));
   row.createEl("span", { cls: "plugin-groups-admin-version", text: `v${plugin.version}` });
-  renderMoveSelect(context, container, row, plugin);
   renderEnabledToggle(context, container, row, plugin);
 }
 
 function openPluginFromRow(event: MouseEvent, context: ViewContext, plugin: InstalledPlugin): void {
-  if (event.target instanceof Element && event.target.closest("button, select, input, label")) return;
+  if (event.target instanceof Element && event.target.closest("button, input, label")) return;
   openPlugin(context, plugin);
 }
 
@@ -300,7 +341,7 @@ function renderEnabledToggle(context: ViewContext, container: HTMLElement, row: 
   const label = row.createEl("label", { cls: "plugin-groups-admin-toggle" });
   const toggle = label.createEl("input", { attr: { type: "checkbox", "aria-label": plugin.name } });
   toggle.checked = plugin.enabled;
-  toggle.disabled = plugin.id === context.selfId || context.busyGroupIds.has(groupForPlugin(context.data, plugin.id) ?? "");
+  toggle.disabled = plugin.id === context.selfId || context.data.groups.some(group => group.pluginIds.includes(plugin.id) && context.busyGroupIds.has(group.id));
   if (plugin.id === context.selfId) label.setAttribute("title", "This plugin cannot disable itself from its own tab.");
   label.createEl("span", { cls: "plugin-groups-admin-switch", attr: { "aria-hidden": "true" } });
   toggle.addEventListener("change", () => { void changeEnabled(context, container, plugin, toggle); });
@@ -317,20 +358,11 @@ async function changeEnabled(context: ViewContext, container: HTMLElement, plugi
   renderView(context, container);
 }
 
-function startDrag(event: DragEvent, pluginId: string): void {
+function startDrag(event: DragEvent, pluginId: string, groupId: string | null): void {
   if (!event.dataTransfer) return;
   event.dataTransfer.effectAllowed = "move";
   event.dataTransfer.setData(DRAG_TYPE, pluginId);
-}
-
-function renderMoveSelect(context: ViewContext, container: HTMLElement, row: HTMLElement, plugin: InstalledPlugin): void {
-  const select = row.createEl("select", { attr: { "aria-label": `Move ${plugin.name} to group` } });
-  select.createEl("option", { text: "Ungrouped", attr: { value: "" } });
-  for (const group of context.data.groups) select.createEl("option", { text: group.name, attr: { value: group.id } });
-  select.value = groupForPlugin(context.data, plugin.id) ?? "";
-  select.addEventListener("change", () => {
-    if (movePlugin(context.data, plugin.id, select.value || null)) changed(context, container);
-  });
+  event.dataTransfer.setData(DRAG_SOURCE_TYPE, groupId ?? "");
 }
 
 function changed(context: ViewContext, container: HTMLElement): void {
