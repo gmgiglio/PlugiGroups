@@ -1,6 +1,9 @@
 /AGENTS.md
 /functional_codestyle.md
-/plugin/node_modules/
-/plugin/main.js
-/plugin/data.json
+.DS_Store
+/node_modules/
+/main.js
+/data.json
+/scripts/
+# Safeguard against accidentally copying the private test vault into this repository.
 /test_vault/

@@ -6,13 +6,13 @@ Open **Plugin groups** from the ribbon icon or command palette. The dedicated ta
 
 ## Build and install
 
-The plugin source and build files are in `plugin/`. The local Obsidian testing vault is `test_vault/` and is ignored by Git.
+The plugin source, manifest, and build files are in this repository. The local Obsidian testing vault is at `../test_vault/`, beside the repository and outside Git.
 
-1. Run `cd plugin` and `npm install` once.
-2. Run `npm run deploy:test` to build and copy `main.js`, `manifest.json`, and `styles.css` into `test_vault/.obsidian/plugins/plugin-groups-admin/`.
-3. Open `test_vault/` in Obsidian and enable **Plugin Groups Admin** under **Community plugins**. Reload the plugin after subsequent deployments.
+1. Run `npm install` from the repository root once.
+2. Run `npm run deploy:test` to build and copy `main.js`, `manifest.json`, and `styles.css` into `../test_vault/.obsidian/plugins/plugin-groups-admin/`.
+3. Open `../test_vault/` in Obsidian and enable **Plugin Groups Admin** under **Community plugins**. Reload the plugin after subsequent deployments.
 
-For development, run `npm run deploy:test` after changes. Run `npm run typecheck` and `npm test` to verify the code.
+For development, run `npm run deploy:test` after changes. Run `npm run typecheck` and `npm test` from the repository root to verify the code.
 
 ## Compatibility note
 
