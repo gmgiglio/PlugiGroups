@@ -2,7 +2,7 @@
 
 An Obsidian plugin for organizing installed plugins into user-defined groups.
 
-Open **Plugin groups** from the ribbon icon or command palette. The dedicated tab lists installed community plugins, their enabled state, and your groups. Add, rename, or delete groups; drag plugins between groups or use each plugin's group selector. Use a plugin's switch to enable or disable it, or a group switch to enable or disable all installed plugins in that group. The group switch stays on while any plugin in the group is enabled; switching it off disables the remaining enabled plugins. Plugin Groups Admin stays enabled when its own group is switched off. Deleting a group moves its plugins to **Ungrouped**. Assignments are saved in the plugin's `data.json` and survive a plugin being uninstalled and later reinstalled.
+Open **Plugin groups** from the ribbon icon or command palette. The dedicated tab lists installed community plugins, their enabled state, and your groups. Add, rename, or delete groups; collapse or expand their plugin lists; drag plugins between groups or use each plugin's group selector. Click a plugin to open its settings page; plugins without one open in **Community plugins**. Search by plugin name or ID in **Ungrouped** to filter its list. Use a plugin's switch to enable or disable it, or a group switch to enable or disable all installed plugins in that group. The group switch stays on while any plugin in the group is enabled; switching it off disables the remaining enabled plugins. Plugin Groups Admin stays enabled when its own group is switched off. Deleting a group moves its plugins to **Ungrouped**. Assignments are saved in the plugin's `data.json` and survive a plugin being uninstalled and later reinstalled.
 
 ## Build and install
 
@@ -16,4 +16,4 @@ For development, run `npm run deploy:test` after changes. Run `npm run typecheck
 
 ## Compatibility note
 
-Obsidian's public API does not expose the installed community plugin list, enable/disable methods, or events for plugin enable, disable, install, and uninstall. This plugin accesses Obsidian's internal plugin manager in one small module. While loaded, it compares the installed plugin state every 1.5 seconds and refreshes open group tabs when that state changes. A future Obsidian update to that internal structure may require an update to this plugin.
+Obsidian's public API does not expose the installed community plugin list, enable/disable methods, settings navigation, or events for plugin enable, disable, install, and uninstall. This plugin accesses Obsidian's internal plugin manager and settings navigation in small modules. While loaded, it compares the installed plugin state every 1.5 seconds and refreshes open group tabs when that state changes. A future Obsidian update to those internal structures may require an update to this plugin.

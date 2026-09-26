@@ -2,6 +2,7 @@ import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
 import { dataFromSaved } from "./groups";
 import type { GroupData } from "./groups";
 import { installedPlugins, inventorySignature, setPluginEnabled } from "./inventory";
+import { openPluginSettings } from "./settings";
 import { GroupsView, VIEW_TYPE } from "./view";
 
 export default class PluginGroupsAdmin extends Plugin {
@@ -14,8 +15,11 @@ export default class PluginGroupsAdmin extends Plugin {
     this.lastInventory = inventorySignature(installedPlugins(this.app));
     this.registerView(VIEW_TYPE, leaf => new GroupsView(leaf, {
       data: this.data,
+      ungroupedSearch: "",
+      collapsedGroupIds: new Set<string | null>(),
       plugins: () => installedPlugins(this.app),
       setEnabled: (id, enabled) => setPluginEnabled(this.app, id, enabled),
+      openSettings: id => openPluginSettings(this.app, id),
       selfId: this.manifest.id,
       busyGroupIds: new Set<string>(),
       save: () => queueSave(this),

@@ -2,173 +2,258 @@
   box-sizing: border-box;
   height: 100%;
   overflow: auto;
-  padding: 24px;
+  padding: 36px 28px;
+  container: plugin-groups / inline-size;
+}
+
+.plugin-groups-admin-header,
+.plugin-groups-admin-section {
+  max-width: 1080px;
+  margin-inline: auto;
 }
 
 .plugin-groups-admin-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 24px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
 }
 
 .plugin-groups-admin-header h1 {
   margin: 0;
-  font-size: var(--h2-size);
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.7px;
+  line-height: 1.25;
+}
+
+.plugin-groups-admin-description {
+  margin: 8px 0 14px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  line-height: 1.5;
+}
+
+.plugin-groups-admin-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.plugin-groups-admin-summary span + span::before {
+  content: "·";
+  margin-right: 16px;
+  color: var(--text-faint);
 }
 
 .plugin-groups-admin-add,
 .plugin-groups-admin-section-header,
-.plugin-groups-admin-actions,
-.plugin-groups-admin-plugin {
+.plugin-groups-admin-actions {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.plugin-groups-admin-add input {
-  min-width: 180px;
-}
+.plugin-groups-admin-add { padding-top: 4px; }
+.plugin-groups-admin-add input { width: 180px; min-width: 0; }
+.plugin-groups-admin-add button { white-space: nowrap; }
 
 .plugin-groups-admin-section {
-  margin-bottom: 16px;
-  padding: 14px;
+  margin-bottom: 20px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-m);
-  background: var(--background-secondary);
+  border-radius: 12px;
+  background: var(--background-primary);
+  transition: border-color 120ms ease, background-color 120ms ease;
 }
 
 .plugin-groups-admin-section.is-drag-over {
   border-color: var(--interactive-accent);
   background: var(--background-modifier-hover);
+  box-shadow: 0 0 0 2px var(--interactive-accent);
 }
 
 .plugin-groups-admin-section-header {
-  margin-bottom: 10px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  border-radius: 12px 12px 0 0;
+  background: var(--background-secondary);
+}
+
+.plugin-groups-admin-section.is-collapsed .plugin-groups-admin-section-header {
+  border-bottom: 0;
+  border-radius: 12px;
 }
 
 .plugin-groups-admin-section-header h2 {
+  min-width: 0;
   margin: 0;
-  font-size: var(--h3-size);
+  font-size: var(--font-ui-medium);
+  font-weight: 600;
 }
 
-.plugin-groups-admin-section-header input {
-  min-width: 0;
+.plugin-groups-admin .plugin-groups-admin-collapse {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: auto;
+  padding: 2px 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--text-normal);
+  font: inherit;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
 }
+
+.plugin-groups-admin-chevron {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 120ms ease;
+}
+
+.plugin-groups-admin-chevron svg { width: 16px; height: 16px; }
+.plugin-groups-admin-collapse[aria-expanded="false"] .plugin-groups-admin-chevron { transform: rotate(-90deg); }
+.plugin-groups-admin-section-header input { min-width: 0; max-width: 100%; }
+.plugin-groups-admin-ungrouped-search { width: min(220px, 100%); margin-left: auto; }
+.plugin-groups-admin-ungrouped-search .search-input-container { width: 100%; }
+.plugin-groups-admin-ungrouped-search input { width: 100%; }
 
 .plugin-groups-admin-count {
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--background-modifier-hover);
   color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-variant-numeric: tabular-nums;
 }
 
-.plugin-groups-admin-actions {
-  margin-left: auto;
-}
-
+.plugin-groups-admin-actions { margin-left: auto; }
 .plugin-groups-admin-actions button {
-  font-size: var(--font-smaller);
+  padding: 4px 8px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
 }
-
-.plugin-groups-admin-list {
-  min-height: 36px;
-}
+.plugin-groups-admin-actions button:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.plugin-groups-admin-actions .plugin-groups-admin-delete:hover { color: var(--text-error); }
+.plugin-groups-admin-group-toggle { margin-left: 8px; }
+.plugin-groups-admin-list { min-height: 48px; padding: 4px 8px; }
 
 .plugin-groups-admin-plugin {
-  flex-wrap: wrap;
-  min-height: 42px;
-  padding: 6px 8px;
-  border-radius: var(--radius-s);
-  background: var(--background-primary);
-  margin-top: 6px;
-  cursor: grab;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 64px 160px 34px;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 10px 8px;
+  border-radius: 6px;
+  cursor: pointer;
 }
+.plugin-groups-admin-plugin + .plugin-groups-admin-plugin { border-top: 1px solid var(--background-modifier-border); }
+.plugin-groups-admin-plugin:hover { background: var(--background-modifier-hover); }
+.plugin-groups-admin-plugin:focus-within { background: var(--background-modifier-hover); }
+.plugin-groups-admin-grip { display: flex; color: var(--text-faint); cursor: grab; }
+.plugin-groups-admin-grip svg { width: 16px; height: 16px; }
+.plugin-groups-admin-grip:active { cursor: grabbing; }
 
-.plugin-groups-admin-plugin:active {
-  cursor: grabbing;
-}
-
-.plugin-groups-admin-plugin-name {
+.plugin-groups-admin .plugin-groups-admin-plugin-name {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  box-shadow: none;
+  background: transparent;
+  color: var(--text-normal);
+  font: inherit;
+  font-size: var(--font-ui-small);
   font-weight: var(--font-medium);
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
 }
-
-.plugin-groups-admin-version,
-.plugin-groups-admin-empty {
-  color: var(--text-muted);
-  font-size: var(--font-smaller);
+.plugin-groups-admin .plugin-groups-admin-plugin-name:hover { color: var(--text-accent); }
+.plugin-groups-admin :is(button, input, select):focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 3px;
 }
+.plugin-groups-admin-plugin.is-disabled .plugin-groups-admin-plugin-name { color: var(--text-muted); }
+.plugin-groups-admin-version { color: var(--text-muted); font-size: var(--font-ui-smaller); overflow-wrap: anywhere; }
 
 .plugin-groups-admin-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   position: relative;
-  color: var(--text-muted);
-  font-size: var(--font-smaller);
+  min-height: 28px;
   cursor: pointer;
 }
-
-.plugin-groups-admin-toggle input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
-
+.plugin-groups-admin-toggle input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .plugin-groups-admin-switch {
   position: relative;
-  width: 30px;
-  height: 18px;
-  border-radius: 9px;
-  background: var(--background-modifier-border);
+  width: 34px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--background-modifier-border-hover);
 }
-
 .plugin-groups-admin-switch::after {
   content: "";
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: var(--text-on-accent, white);
   transition: transform 120ms ease;
 }
-
-.plugin-groups-admin-toggle input:checked + .plugin-groups-admin-switch {
-  background: var(--interactive-accent);
-}
-
-.plugin-groups-admin-toggle input:checked + .plugin-groups-admin-switch::after {
-  transform: translateX(12px);
-}
-
-.plugin-groups-admin-toggle input:focus-visible + .plugin-groups-admin-switch {
-  outline: 2px solid var(--interactive-accent);
-  outline-offset: 2px;
-}
-
-.plugin-groups-admin-toggle input:disabled + .plugin-groups-admin-switch {
-  opacity: 0.5;
-}
-
-.plugin-groups-admin-toggle:has(input:checked) {
-  color: var(--text-success);
-}
-
-.plugin-groups-admin-toggle:has(input:disabled) {
-  cursor: default;
-}
-
-.plugin-groups-admin-group-toggle {
-  margin-right: 8px;
-}
-
-.plugin-groups-admin-plugin select {
-  margin-left: auto;
-  max-width: 180px;
-}
+.plugin-groups-admin-toggle input:checked + .plugin-groups-admin-switch { background: var(--interactive-accent); }
+.plugin-groups-admin-toggle input:checked + .plugin-groups-admin-switch::after { transform: translateX(14px); }
+.plugin-groups-admin-toggle input:focus-visible + .plugin-groups-admin-switch { outline: 2px solid var(--interactive-accent); outline-offset: 3px; }
+.plugin-groups-admin-toggle input:disabled + .plugin-groups-admin-switch { opacity: 0.5; }
+.plugin-groups-admin-toggle:has(input:disabled) { cursor: default; }
+.plugin-groups-admin-plugin select { width: 100%; min-width: 0; font-size: var(--font-ui-smaller); box-shadow: none; }
 
 .plugin-groups-admin-empty {
-  padding: 8px;
+  margin: 8px;
+  padding: 24px 16px;
+  border: 1px dashed var(--background-modifier-border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  text-align: center;
+}
+
+@container plugin-groups (max-width: 580px) {
+  .plugin-groups-admin-header { gap: 16px; }
+  .plugin-groups-admin-add { width: 100%; }
+  .plugin-groups-admin-add input { flex: 1; }
+  .plugin-groups-admin-section-header { gap: 10px; padding: 12px; }
+  .plugin-groups-admin-section-header h2 { max-width: calc(100% - 48px); }
+  .plugin-groups-admin-actions { width: 100%; justify-content: flex-end; }
+  .plugin-groups-admin-ungrouped-search { width: 100%; }
+  .plugin-groups-admin-plugin { grid-template-columns: 16px minmax(0, 1fr) 34px; gap: 6px 10px; }
+  .plugin-groups-admin-version { grid-column: 2; grid-row: 2; }
+  .plugin-groups-admin-plugin select { grid-column: 2; grid-row: 3; margin-top: 4px; }
+  .plugin-groups-admin-plugin > .plugin-groups-admin-toggle { grid-column: 3; grid-row: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plugin-groups-admin-section,
+  .plugin-groups-admin-chevron,
+  .plugin-groups-admin-switch::after { transition: none; }
 }
