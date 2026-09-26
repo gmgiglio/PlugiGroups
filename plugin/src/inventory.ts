@@ -3,6 +3,7 @@ import type { App, PluginManifest } from "obsidian";
 export interface InstalledPlugin {
   id: string;
   name: string;
+  description: string;
   version: string;
   enabled: boolean;
 }
@@ -25,6 +26,7 @@ export function installedPlugins(app: App): InstalledPlugin[] {
     .map(([id, manifest]) => ({
       id,
       name: manifest.name || id,
+      description: manifest.description || "",
       version: manifest.version || "",
       enabled: manager.enabledPlugins?.has(id) ?? false,
     }))
@@ -32,7 +34,7 @@ export function installedPlugins(app: App): InstalledPlugin[] {
 }
 
 export function inventorySignature(plugins: InstalledPlugin[]): string {
-  return JSON.stringify(plugins.map(({ id, name, version, enabled }) => [id, name, version, enabled]));
+  return JSON.stringify(plugins.map(({ id, name, description, version, enabled }) => [id, name, description, version, enabled]));
 }
 
 export async function setPluginEnabled(app: App, id: string, enabled: boolean): Promise<void> {

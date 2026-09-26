@@ -403,8 +403,10 @@ function renderPlugin(context: ViewContext, container: HTMLElement, list: HTMLEl
   row.draggable = true;
   row.addEventListener("dragstart", event => startDrag(event, plugin.id, groupId));
   row.addEventListener("click", event => openPluginFromRow(event, context, plugin));
-  const name = row.createEl("button", { cls: "plugin-groups-admin-plugin-name", text: plugin.name, attr: { type: "button" } });
+  const details = row.createDiv({ cls: "plugin-groups-admin-plugin-details" });
+  const name = details.createEl("button", { cls: "plugin-groups-admin-plugin-name", text: plugin.name, attr: { type: "button" } });
   name.addEventListener("click", () => openPlugin(context, plugin));
+  if (plugin.description) details.createDiv({ cls: "plugin-groups-admin-plugin-description", text: plugin.description });
   row.createEl("span", { cls: "plugin-groups-admin-version", text: `v${plugin.version}` });
   renderEnabledToggle(context, container, row, plugin);
 }

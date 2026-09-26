@@ -195,6 +195,7 @@
 .plugin-groups-admin-grip { display: flex; color: var(--text-faint); cursor: grab; }
 .plugin-groups-admin-grip svg { width: 16px; height: 16px; }
 .plugin-groups-admin-grip:active { cursor: grabbing; }
+.plugin-groups-admin-plugin-details { min-width: 0; }
 
 .plugin-groups-admin .plugin-groups-admin-plugin-name {
   appearance: none;
@@ -223,6 +224,13 @@
   outline-offset: 3px;
 }
 .plugin-groups-admin-plugin.is-disabled .plugin-groups-admin-plugin-name { color: var(--text-muted); }
+.plugin-groups-admin-plugin-description {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
 .plugin-groups-admin-version { color: var(--text-muted); font-size: var(--font-ui-smaller); overflow-wrap: anywhere; }
 
 .plugin-groups-admin-toggle {
