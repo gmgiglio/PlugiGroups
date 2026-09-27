@@ -181,7 +181,7 @@
 
 .plugin-groups-admin-plugin {
   display: grid;
-  grid-template-columns: 16px minmax(0, 1fr) 34px;
+  grid-template-columns: 16px minmax(0, 1fr) 28px 34px;
   align-items: center;
   gap: 12px;
   min-height: 54px;
@@ -189,7 +189,7 @@
   border-radius: 6px;
   cursor: pointer;
 }
-.plugin-groups-admin-plugin.is-grouped { grid-template-columns: 16px minmax(0, 1fr) 34px 28px; }
+.plugin-groups-admin-plugin.is-grouped { grid-template-columns: 16px minmax(0, 1fr) 28px 34px 28px; }
 .plugin-groups-admin-plugin + .plugin-groups-admin-plugin { border-top: 1px solid var(--background-modifier-border); }
 .plugin-groups-admin-plugin:hover { background: var(--background-modifier-hover); }
 .plugin-groups-admin-plugin:focus-within { background: var(--background-modifier-hover); }
@@ -237,7 +237,8 @@
   white-space: nowrap;
 }
 
-.plugin-groups-admin .plugin-groups-admin-remove-plugin {
+.plugin-groups-admin .plugin-groups-admin-remove-plugin,
+.plugin-groups-admin .plugin-groups-admin-plugin-menu {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -251,6 +252,8 @@
 }
 .plugin-groups-admin .plugin-groups-admin-remove-plugin:hover { background: var(--background-modifier-hover); color: var(--text-error); }
 .plugin-groups-admin-remove-plugin svg { width: 16px; height: 16px; }
+.plugin-groups-admin .plugin-groups-admin-plugin-menu { font-size: 20px; line-height: 1; }
+.plugin-groups-admin .plugin-groups-admin-plugin-menu:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
 
 .plugin-groups-admin-toggle {
   display: inline-flex;
@@ -302,8 +305,8 @@
   .plugin-groups-admin-section-header h2 { max-width: calc(100% - 48px); }
   .plugin-groups-admin-actions { width: 100%; justify-content: flex-end; }
   .plugin-groups-admin-ungrouped-search { width: 100%; }
-  .plugin-groups-admin-plugin { grid-template-columns: 16px minmax(0, 1fr) 34px; gap: 6px 10px; }
-  .plugin-groups-admin-plugin.is-grouped { grid-template-columns: 16px minmax(0, 1fr) 34px 28px; }
+  .plugin-groups-admin-plugin { grid-template-columns: 16px minmax(0, 1fr) 28px 34px; gap: 6px 10px; }
+  .plugin-groups-admin-plugin.is-grouped { grid-template-columns: 16px minmax(0, 1fr) 28px 34px 28px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

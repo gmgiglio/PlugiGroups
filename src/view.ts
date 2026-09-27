@@ -3,7 +3,8 @@ import { addGroup, addPluginToGroup, groupForPlugin, movePlugin, removeGroup, re
 import type { Group, GroupData } from "./groups";
 import { groupEnabledState, setGroupEnabled, toggleablePlugins } from "./groupToggle";
 import type { InstalledPlugin } from "./inventory";
-import type { SettingsDestination } from "./settings";
+import { showPluginMenu } from "./pluginMenu";
+import type { SettingsDestination } from "./pluginApi";
 
 export const VIEW_TYPE = "plugin-groups-admin-view";
 const DRAG_TYPE = "application/x-plugin-groups-admin-id";
@@ -407,8 +408,14 @@ function renderPlugin(context: ViewContext, container: HTMLElement, list: HTMLEl
   const name = details.createEl("button", { cls: "plugin-groups-admin-plugin-name", text: plugin.name, attr: { type: "button" } });
   name.addEventListener("click", () => openPlugin(context, plugin));
   renderPluginDescription(details, plugin);
+  renderPluginMenuButton(context, row, plugin);
   renderEnabledToggle(context, container, row, plugin);
   if (groupId !== null) renderRemovePluginButton(context, container, row, plugin, groupId);
+}
+
+function renderPluginMenuButton(context: ViewContext, row: HTMLElement, plugin: InstalledPlugin): void {
+  const button = row.createEl("button", { cls: "plugin-groups-admin-plugin-menu", text: "⋯", attr: { type: "button", "aria-label": `More options for ${plugin.name}`, title: `More options for ${plugin.name}` } });
+  button.addEventListener("click", event => showPluginMenu(context.app, plugin, event));
 }
 
 function renderPluginDescription(details: HTMLElement, plugin: InstalledPlugin): void {

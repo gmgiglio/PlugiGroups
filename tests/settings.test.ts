@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { App } from "obsidian";
-import { openPluginSettings } from "../src/settings";
+import { openPluginSettings } from "../src/pluginApi";
 
 test("plugin rows open a registered settings tab", () => {
   const calls: string[] = [];

@@ -1,18 +1,17 @@
 import { Notice, Plugin, PluginSettingTab, Setting, WorkspaceLeaf } from "obsidian";
 import { dataFromSaved, setMultipleGroupsAllowed } from "./groups";
 import type { GroupData } from "./groups";
-import { installedPlugins, inventorySignature, setPluginEnabled } from "./inventory";
-import { closeSettings, openPluginSettings } from "./settings";
+import { inventorySignature } from "./inventory";
+import { registerInventoryRefresh } from "./inventoryRefresh";
+import { closeSettings, installedPlugins, openPluginSettings, setPluginEnabled } from "./pluginApi";
 import { GroupsView, VIEW_TYPE } from "./view";
 
 export default class PluginGroupsAdmin extends Plugin {
   data: GroupData = { groups: [], allowMultipleGroups: false, ungroupedIndex: 0 };
-  lastInventory = "";
   saveQueue: Promise<void> = Promise.resolve();
 
   async onload(): Promise<void> {
     this.data = dataFromSaved(await this.loadData());
-    this.lastInventory = inventorySignature(installedPlugins(this.app));
     this.registerView(VIEW_TYPE, leaf => new GroupsView(leaf, {
       app: this.app,
       data: this.data,
@@ -28,7 +27,7 @@ export default class PluginGroupsAdmin extends Plugin {
     this.addRibbonIcon("layout-grid", "Open plugin groups", () => { void openGroups(this); });
     this.addCommand({ id: "open-plugin-groups", name: "Open plugin groups", callback: () => { void openGroups(this); } });
     this.addSettingTab(new GroupsSettingTab(this));
-    registerInventoryRefresh(this);
+    registerPluginInventoryRefresh(this);
   }
 
   onunload(): void {
@@ -65,11 +64,19 @@ function renderGroupsNavigation(plugin: PluginGroupsAdmin, container: HTMLElemen
     }));
 }
 
-function registerInventoryRefresh(plugin: PluginGroupsAdmin): void {
-  plugin.registerEvent(plugin.app.workspace.on("layout-change", () => refreshInventory(plugin)));
-  plugin.registerDomEvent(window, "focus", () => refreshInventory(plugin));
-  plugin.registerDomEvent(document, "visibilitychange", () => refreshInventory(plugin));
-  plugin.registerInterval(window.setInterval(() => refreshInventory(plugin), 1500));
+function registerPluginInventoryRefresh(plugin: PluginGroupsAdmin): void {
+  registerInventoryRefresh({
+    app: plugin.app,
+    lastInventory: inventorySignature(installedPlugins(plugin.app)),
+    views: () => plugin.app.workspace.getLeavesOfType(VIEW_TYPE)
+      .map(leaf => leaf.view)
+      .filter((view): view is GroupsView => view instanceof GroupsView),
+  }, {
+    registerEvent: event => plugin.registerEvent(event),
+    onLayoutChange: callback => plugin.app.workspace.on("layout-change", callback),
+    onFocus: callback => plugin.registerDomEvent(window, "focus", callback),
+    onVisibilityChange: callback => plugin.registerDomEvent(document, "visibilitychange", callback),
+  });
 }
 
 async function openGroups(plugin: PluginGroupsAdmin): Promise<void> {
@@ -77,13 +84,6 @@ async function openGroups(plugin: PluginGroupsAdmin): Promise<void> {
   const leaf = workspace.getLeavesOfType(VIEW_TYPE)[0] ?? workspace.getLeaf("tab");
   await leaf.setViewState({ type: VIEW_TYPE, active: true });
   await workspace.revealLeaf(leaf);
-}
-
-function refreshInventory(plugin: PluginGroupsAdmin): void {
-  const signature = inventorySignature(installedPlugins(plugin.app));
-  if (signature === plugin.lastInventory) return;
-  plugin.lastInventory = signature;
-  for (const leaf of plugin.app.workspace.getLeavesOfType(VIEW_TYPE)) refreshLeaf(leaf);
 }
 
 function refreshLeaf(leaf: WorkspaceLeaf): void {

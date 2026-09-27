@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { App } from "obsidian";
-import { installedPlugins, inventorySignature, setPluginEnabled } from "../src/inventory";
+import type { App, EventRef } from "obsidian";
+import { inventorySignature } from "../src/inventory";
+import { installedPlugins, onPluginInventoryChanged, setPluginEnabled } from "../src/pluginApi";
 
 test("inventory detects installed and enabled plugin changes", () => {
   const manager = {
@@ -32,7 +33,7 @@ test("enable and disable use Obsidian's saved plugin controls", async () => {
   const manager = {
     manifests: { alpha: { name: "Alpha" } },
     enabledPlugins,
-    async enablePluginAndSave(id: string) { calls.push(`enable:${id}`); enabledPlugins.add(id); },
+    async enablePluginAndSave(id: string) { calls.push(`enable:${id}`); enabledPlugins.add(id); return true; },
     async disablePluginAndSave(id: string) { calls.push(`disable:${id}`); enabledPlugins.delete(id); },
   };
   const app = { plugins: manager } as unknown as App;
@@ -41,4 +42,28 @@ test("enable and disable use Obsidian's saved plugin controls", async () => {
   await setPluginEnabled(app, "alpha", false);
   assert.deepEqual(calls, ["enable:alpha", "disable:alpha"]);
   await assert.rejects(setPluginEnabled(app, "missing", true), /not installed/);
+});
+
+test("inventory changes subscribe to the private plugin manager event", () => {
+  const calls: string[] = [];
+  const eventRef = {} as EventRef;
+  let notify: (() => void) | null = null;
+  const app = {
+    plugins: { on(name: string, callback: () => void) { calls.push(name); notify = callback; return eventRef; } },
+  } as unknown as App;
+  assert.equal(onPluginInventoryChanged(app, () => calls.push("changed")), eventRef);
+  assert.deepEqual(calls, ["changed"]);
+  (notify as (() => void) | null)?.();
+  assert.deepEqual(calls, ["changed", "changed"]);
+});
+
+test("failed enable is reported to the caller", async () => {
+  const app = {
+    plugins: {
+      manifests: { alpha: { name: "Alpha" } },
+      enabledPlugins: new Set<string>(),
+      enablePluginAndSave: async () => false,
+    },
+  } as unknown as App;
+  await assert.rejects(setPluginEnabled(app, "alpha", true), /Could not enable/);
 });

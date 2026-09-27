@@ -1,8 +1,8 @@
 {
   "id": "plugin-groups-admin",
   "name": "Plugin Groups Admin",
-  "version": "1.0.0",
-  "minAppVersion": "1.4.0",
+  "version": "0.1.0",
+  "minAppVersion": "1.13.7",
   "description": "Organize installed community plugins into custom groups.",
   "author": "Gianfranco Giglio",
   "isDesktopOnly": false
