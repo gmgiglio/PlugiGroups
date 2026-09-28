@@ -1,6 +1,6 @@
 import { App, Menu, Modal, Notice, Platform } from "obsidian";
 import type { InstalledPlugin } from "./inventory";
-import { openPluginHotkeys, openPluginSettingsOrCommunityTab, pluginFundingAndFolderDetails, pluginHasCommands, revealPluginFolder, uninstallPlugin } from "./pluginApi";
+import { openPluginHotkeys, openPluginSettingsOrCommunityTab, pluginFundingAndFolderDetails, pluginHasCommands, pluginHasSettingsTab, revealPluginFolder, uninstallPlugin } from "./pluginApi";
 import type { FundingUrl, PluginExtras } from "./pluginApi";
 
 class FundingModal extends Modal {
@@ -20,7 +20,7 @@ class FundingModal extends Modal {
 export function showPluginMenu(app: App, plugin: InstalledPlugin, event: MouseEvent): void {
   const extras = pluginFundingAndFolderDetails(app, plugin.id);
   const menu = new Menu();
-  menu.addItem(item => item.setTitle("Settings").setIcon("settings").onClick(() => openPluginSettingsWithFeedback(app, plugin)));
+  addPluginSettingsMenuItem(menu, app, plugin);
   if (pluginHasCommands(app, plugin.id)) menu.addItem(item => item.setTitle("Hotkeys").setIcon("keyboard").onClick(() => openPluginHotkeys(app, plugin.id)));
   menu.addItem(item => item.setTitle("View details").setIcon("info").onClick(() => openPluginDetailsPage(plugin.id)));
   menu.addItem(item => item.setTitle("Open community page").setIcon("external-link").onClick(() => openPluginCommunityPage(plugin.id)));
@@ -28,6 +28,14 @@ export function showPluginMenu(app: App, plugin: InstalledPlugin, event: MouseEv
   menu.addSeparator();
   menu.addItem(item => item.setTitle("Uninstall").setIcon("trash-2").setWarning(true).onClick(() => { void confirmAndUninstallPlugin(app, plugin); }));
   menu.showAtMouseEvent(event);
+}
+
+function addPluginSettingsMenuItem(menu: Menu, app: App, plugin: InstalledPlugin): void {
+  if (plugin.enabled && pluginHasSettingsTab(app, plugin.id)) {
+    menu.addItem(item => item.setTitle("Settings").setIcon("settings").onClick(() => openPluginSettingsWithFeedback(app, plugin)));
+    return;
+  }
+  menu.addItem(item => item.setTitle("No settings").setIcon("settings").setDisabled(true));
 }
 
 function addFundingAndFolderMenuActions(menu: Menu, app: App, plugin: InstalledPlugin, extras: PluginExtras): void {

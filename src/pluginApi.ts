@@ -100,11 +100,15 @@ export function closeObsidianSettings(app: App): void {
   (app as AppInternals).setting?.close?.();
 }
 
+export function pluginHasSettingsTab(app: App, pluginId: string): boolean {
+  return (app as AppInternals).setting?.pluginTabs?.some(tab => tab.id === pluginId) ?? false;
+}
+
 export function openPluginSettingsOrCommunityTab(app: App, pluginId: string): SettingsDestination {
   const settings = (app as AppInternals).setting;
   if (!settings?.open || !settings.openTabById) return "unavailable";
   settings.open();
-  if (settings.pluginTabs?.some(tab => tab.id === pluginId)) {
+  if (pluginHasSettingsTab(app, pluginId)) {
     settings.openTabById(pluginId);
     return "plugin";
   }
