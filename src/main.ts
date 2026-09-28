@@ -1,9 +1,9 @@
 import { Notice, Plugin, PluginSettingTab, Setting, WorkspaceLeaf } from "obsidian";
-import { dataFromSaved, setMultipleGroupsAllowed } from "./groups";
+import { normalizeSavedGroupData, setMultipleGroupsAllowed } from "./groups";
 import type { GroupData } from "./groups";
-import { inventorySignature } from "./inventory";
-import { registerInventoryRefresh } from "./inventoryRefresh";
-import { closeSettings, installedPlugins, openPluginSettings, setPluginEnabled } from "./pluginApi";
+import { pluginInventorySignature } from "./inventory";
+import { registerPluginInventoryRefreshListeners } from "./inventoryRefresh";
+import { closeObsidianSettings, installedCommunityPlugins, openPluginSettingsOrCommunityTab, setPluginEnabled } from "./pluginApi";
 import { GroupsView, VIEW_TYPE } from "./view";
 
 export default class PluginGroupsAdmin extends Plugin {
@@ -12,23 +12,25 @@ export default class PluginGroupsAdmin extends Plugin {
   ribbonButton: HTMLElement | null = null;
 
   async onload(): Promise<void> {
-    this.data = dataFromSaved(await this.loadData());
+    this.data = normalizeSavedGroupData(await this.loadData());
+    const pendingPluginIds = new Set<string>();
     this.registerView(VIEW_TYPE, leaf => new GroupsView(leaf, {
       app: this.app,
       data: this.data,
       ungroupedSearch: "",
       collapsedGroupIds: new Set<string | null>(),
-      plugins: () => installedPlugins(this.app),
-      setEnabled: (id, enabled) => setPluginEnabled(this.app, id, enabled),
-      openSettings: id => openPluginSettings(this.app, id),
+      getInstalledPlugins: () => installedCommunityPlugins(this.app),
+      setPluginEnabled: (id, enabled) => setPluginEnabled(this.app, id, enabled),
+      openPluginSettings: id => openPluginSettingsOrCommunityTab(this.app, id),
       selfId: this.manifest.id,
-      busyGroupIds: new Set<string>(),
-      save: () => queueSave(this),
+      pendingPluginIds,
+      refreshOpenGroupsViews: () => refreshOpenGroupsViews(this),
+      queueGroupDataSave: () => queueGroupDataSave(this),
     }));
     updateRibbonButton(this);
-    this.addCommand({ id: "open-plugin-groups", name: "Open plugin groups", callback: () => { void openGroups(this); } });
+    this.addCommand({ id: "open-plugin-groups", name: "Open plugin groups", callback: () => { void openGroupsTab(this); } });
     this.addSettingTab(new GroupsSettingTab(this));
-    registerPluginInventoryRefresh(this);
+    registerGroupsViewInventoryRefresh(this);
   }
 
   onunload(): void {
@@ -43,50 +45,50 @@ class GroupsSettingTab extends PluginSettingTab {
 
   display(): void {
     this.containerEl.empty();
-    renderGroupsNavigation(this.plugin, this.containerEl);
+    renderOpenGroupsSetting(this.plugin, this.containerEl);
     new Setting(this.containerEl)
       .setName("Show ribbon button")
       .setDesc("Show the Plugin groups button in the ribbon.")
       .addToggle(toggle => toggle.setValue(this.plugin.data.showRibbonButton).onChange(visible => {
         this.plugin.data.showRibbonButton = visible;
         updateRibbonButton(this.plugin);
-        queueSave(this.plugin);
+        queueGroupDataSave(this.plugin);
       }));
     new Setting(this.containerEl)
       .setName("Allow plugins in multiple groups")
       .setDesc("When turned off, each plugin stays in its first group.")
       .addToggle(toggle => toggle.setValue(this.plugin.data.allowMultipleGroups).onChange(allowed => {
         setMultipleGroupsAllowed(this.plugin.data, allowed);
-        queueSave(this.plugin);
-        for (const leaf of this.plugin.app.workspace.getLeavesOfType(VIEW_TYPE)) refreshLeaf(leaf);
+        queueGroupDataSave(this.plugin);
+        for (const leaf of this.plugin.app.workspace.getLeavesOfType(VIEW_TYPE)) refreshGroupsViewInLeaf(leaf);
       }));
   }
 }
 
 function updateRibbonButton(plugin: PluginGroupsAdmin): void {
   if (plugin.data.showRibbonButton && plugin.ribbonButton === null) {
-    plugin.ribbonButton = plugin.addRibbonIcon("layout-grid", "Open plugin groups", () => { void openGroups(plugin); });
+    plugin.ribbonButton = plugin.addRibbonIcon("layout-grid", "Open plugin groups", () => { void openGroupsTab(plugin); });
   } else if (!plugin.data.showRibbonButton && plugin.ribbonButton !== null) {
     plugin.ribbonButton.remove();
     plugin.ribbonButton = null;
   }
 }
 
-function renderGroupsNavigation(plugin: PluginGroupsAdmin, container: HTMLElement): void {
+function renderOpenGroupsSetting(plugin: PluginGroupsAdmin, container: HTMLElement): void {
   new Setting(container)
     .setName("Plugin groups")
     .setDesc("Organize your installed plugins into groups.")
     .addButton(button => button.setButtonText("Open plugin groups").onClick(() => {
-      closeSettings(plugin.app);
-      void openGroups(plugin);
+      closeObsidianSettings(plugin.app);
+      void openGroupsTab(plugin);
     }));
 }
 
-function registerPluginInventoryRefresh(plugin: PluginGroupsAdmin): void {
-  registerInventoryRefresh({
+function registerGroupsViewInventoryRefresh(plugin: PluginGroupsAdmin): void {
+  registerPluginInventoryRefreshListeners({
     app: plugin.app,
-    lastInventory: inventorySignature(installedPlugins(plugin.app)),
-    views: () => plugin.app.workspace.getLeavesOfType(VIEW_TYPE)
+    lastInventory: pluginInventorySignature(installedCommunityPlugins(plugin.app)),
+    openViews: () => plugin.app.workspace.getLeavesOfType(VIEW_TYPE)
       .map(leaf => leaf.view)
       .filter((view): view is GroupsView => view instanceof GroupsView),
   }, {
@@ -97,18 +99,22 @@ function registerPluginInventoryRefresh(plugin: PluginGroupsAdmin): void {
   });
 }
 
-async function openGroups(plugin: PluginGroupsAdmin): Promise<void> {
+async function openGroupsTab(plugin: PluginGroupsAdmin): Promise<void> {
   const workspace = plugin.app.workspace;
   const leaf = workspace.getLeavesOfType(VIEW_TYPE)[0] ?? workspace.getLeaf("tab");
   await leaf.setViewState({ type: VIEW_TYPE, active: true });
   await workspace.revealLeaf(leaf);
 }
 
-function refreshLeaf(leaf: WorkspaceLeaf): void {
-  if (leaf.view instanceof GroupsView) leaf.view.refresh();
+function refreshGroupsViewInLeaf(leaf: WorkspaceLeaf): void {
+  if (leaf.view instanceof GroupsView) leaf.view.refreshGroupsView();
 }
 
-function queueSave(plugin: PluginGroupsAdmin): void {
+function refreshOpenGroupsViews(plugin: PluginGroupsAdmin): void {
+  for (const leaf of plugin.app.workspace.getLeavesOfType(VIEW_TYPE)) refreshGroupsViewInLeaf(leaf);
+}
+
+function queueGroupDataSave(plugin: PluginGroupsAdmin): void {
   plugin.saveQueue = plugin.saveQueue.then(() => plugin.saveData(plugin.data)).catch(error => {
     console.error("Failed to save plugin groups", error);
     new Notice("Could not save plugin groups.");

@@ -1,11 +1,11 @@
 import type { App, EventRef } from "obsidian";
-import { inventorySignature } from "./inventory";
-import { installedPlugins, onPluginInventoryChanged } from "./pluginApi";
+import { pluginInventorySignature } from "./inventory";
+import { installedCommunityPlugins, subscribeToPluginInventoryChanges } from "./pluginApi";
 
 export interface InventoryRefreshState {
   app: App;
   lastInventory: string;
-  views: () => { refresh: () => void }[];
+  openViews: () => { refreshGroupsView: () => void }[];
 }
 
 export interface InventoryRefreshEvents {
@@ -15,18 +15,18 @@ export interface InventoryRefreshEvents {
   onVisibilityChange: (callback: () => void) => void;
 }
 
-export function registerInventoryRefresh(state: InventoryRefreshState, events: InventoryRefreshEvents): void {
-  const refresh = () => refreshInventory(state);
-  const changeEvent = onPluginInventoryChanged(state.app, refresh);
+export function registerPluginInventoryRefreshListeners(state: InventoryRefreshState, events: InventoryRefreshEvents): void {
+  const refresh = () => refreshViewsIfPluginInventoryChanged(state);
+  const changeEvent = subscribeToPluginInventoryChanges(state.app, refresh);
   if (changeEvent) events.registerEvent(changeEvent);
   events.registerEvent(events.onLayoutChange(refresh));
   events.onFocus(refresh);
   events.onVisibilityChange(refresh);
 }
 
-export function refreshInventory(state: InventoryRefreshState): void {
-  const signature = inventorySignature(installedPlugins(state.app));
+export function refreshViewsIfPluginInventoryChanged(state: InventoryRefreshState): void {
+  const signature = pluginInventorySignature(installedCommunityPlugins(state.app));
   if (signature === state.lastInventory) return;
   state.lastInventory = signature;
-  for (const view of state.views()) view.refresh();
+  for (const view of state.openViews()) view.refreshGroupsView();
 }

@@ -6,20 +6,20 @@ import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 
-const pluginRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
+const pluginRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const vaultRoot = resolve(pluginRoot, "../test_vault");
 const fixtureId = `plugin-groups-admin-integration-${randomUUID().slice(0, 8)}`;
 const fixtureName = `Integration Fixture ${fixtureId.slice(-8)}`;
 const fixtureRoot = join(vaultRoot, ".obsidian/plugins", fixtureId);
 const viewType = "plugin-groups-admin-view";
 
-function cli(command, ...args) {
+function runObsidianCli(command, ...args) {
   return execFileSync("obsidian", ["vault=test_vault", command, ...args], { encoding: "utf8", timeout: 30000 });
 }
 
-function evaluate(expression) {
+function evaluateInObsidian(expression) {
   const code = `JSON.stringify((() => { try { return ${expression}; } catch (error) { return { __error: String(error) }; } })())`;
-  const output = cli("eval", `code=${code}`);
+  const output = runObsidianCli("eval", `code=${code}`);
   const result = output.slice(output.lastIndexOf("=> ") + 3).trim();
   assert.ok(output.includes("=> "), `Obsidian eval returned no result for ${code}: ${output}`);
   const value = JSON.parse(result);
@@ -27,13 +27,13 @@ function evaluate(expression) {
   return value;
 }
 
-function fixtureRow() {
+function fixturePluginRowExpression() {
   return `[...document.querySelectorAll(".plugin-groups-admin-plugin")].find(row => row.querySelector(".plugin-groups-admin-plugin-name")?.textContent === ${JSON.stringify(fixtureName)})`;
 }
 
-function state() {
-  return evaluate(`(() => {
-    const row = ${fixtureRow()};
+function currentFixtureViewState() {
+  return evaluateInObsidian(`(() => {
+    const row = ${fixturePluginRowExpression()};
     return { count: globalThis.__pluginGroupsRefreshTest?.count, present: !!row,
       enabled: row?.querySelector("input[type=checkbox]")?.checked,
       details: row?.querySelector(".plugin-groups-admin-plugin-description")?.textContent };
@@ -42,7 +42,7 @@ function state() {
 
 async function waitForFixtureManifest() {
   for (let attempt = 0; attempt < 50; attempt++) {
-    const result = evaluate(`({ done: globalThis.__pluginGroupsManifestLoad?.done,
+    const result = evaluateInObsidian(`({ done: globalThis.__pluginGroupsManifestLoad?.done,
       error: globalThis.__pluginGroupsManifestLoad?.error,
       installed: !!app.plugins.manifests[${JSON.stringify(fixtureId)}] })`);
     if (result.error) throw new Error(result.error);
@@ -59,8 +59,8 @@ function installFixtureFiles() {
   writeFileSync(join(fixtureRoot, "main.js"), "module.exports = class extends require('obsidian').Plugin {};");
 }
 
-function startManifestLoad() {
-  evaluate(`(() => {
+function startFixtureManifestLoad() {
+  evaluateInObsidian(`(() => {
     const status = { done: false, error: null };
     globalThis.__pluginGroupsManifestLoad = status;
     Promise.resolve(app.plugins.loadManifests()).then(() => { status.done = true; }, error => { status.error = String(error); status.done = true; });
@@ -68,22 +68,22 @@ function startManifestLoad() {
   })()`);
 }
 
-function instrumentOpenView() {
-  const result = evaluate(`(() => {
+function trackOpenGroupsViewRefreshes() {
+  const result = evaluateInObsidian(`(() => {
     const views = app.workspace.getLeavesOfType(${JSON.stringify(viewType)});
     const view = views[0]?.view;
     if (!view) return { open: false };
-    const original = view.refresh;
+    const original = view.refreshGroupsView;
     const test = { count: 0, view, original };
     globalThis.__pluginGroupsRefreshTest = test;
-    view.refresh = function () { test.count++; return original.call(this); };
+    view.refreshGroupsView = function () { test.count++; return original.call(this); };
     return { open: true, views: views.length };
   })()`);
   assert.equal(result.open, true, "plugin group tab did not open");
 }
 
 function assertUnchangedEventsDoNotRender() {
-  const result = evaluate(`(() => {
+  const result = evaluateInObsidian(`(() => {
     const test = globalThis.__pluginGroupsRefreshTest;
     const header = test.view.contentEl.querySelector(".plugin-groups-admin-header");
     const before = test.count;
@@ -95,9 +95,9 @@ function assertUnchangedEventsDoNotRender() {
   assert.deepEqual(result, { renders: 0, sameHeader: true });
 }
 
-async function waitForRefresh(before, version) {
+async function waitForFixtureVersionRefresh(before, version) {
   for (let attempt = 0; attempt < 30; attempt++) {
-    const current = state();
+    const current = currentFixtureViewState();
     if (current.count > before) {
       assert.equal(current.count, before + 1);
       assert.match(current.details, new RegExp(version.replaceAll(".", "\\.")));
@@ -109,19 +109,19 @@ async function waitForRefresh(before, version) {
 }
 
 async function assertMissedChangesRefresh() {
-  const beforeLayout = state().count;
-  evaluate(`(setTimeout(() => { app.plugins.manifests[${JSON.stringify(fixtureId)}].version = "2.0.0"; app.workspace.trigger("layout-change"); }, 0), true)`);
-  await waitForRefresh(beforeLayout, "2.0.0");
-  const beforeFocus = state().count;
-  evaluate(`(setTimeout(() => { app.plugins.manifests[${JSON.stringify(fixtureId)}].version = "3.0.0"; window.dispatchEvent(new Event("focus")); }, 0), true)`);
-  await waitForRefresh(beforeFocus, "3.0.0");
+  const beforeLayout = currentFixtureViewState().count;
+  evaluateInObsidian(`(setTimeout(() => { app.plugins.manifests[${JSON.stringify(fixtureId)}].version = "2.0.0"; app.workspace.trigger("layout-change"); }, 0), true)`);
+  await waitForFixtureVersionRefresh(beforeLayout, "2.0.0");
+  const beforeFocus = currentFixtureViewState().count;
+  evaluateInObsidian(`(setTimeout(() => { app.plugins.manifests[${JSON.stringify(fixtureId)}].version = "3.0.0"; window.dispatchEvent(new Event("focus")); }, 0), true)`);
+  await waitForFixtureVersionRefresh(beforeFocus, "3.0.0");
 }
 
-function restoreView() {
+function restoreGroupsViewRefresh() {
   try {
-    evaluate(`(() => {
+    evaluateInObsidian(`(() => {
       const test = globalThis.__pluginGroupsRefreshTest;
-      if (test) test.view.refresh = test.original;
+      if (test) test.view.refreshGroupsView = test.original;
       delete globalThis.__pluginGroupsRefreshTest;
       delete globalThis.__pluginGroupsManifestLoad;
       return true;
@@ -131,32 +131,32 @@ function restoreView() {
   }
 }
 
-async function run() {
-  const actualVault = cli("vault", "info=path").trim().split("\n").pop();
+async function runLiveRefreshIntegrationTest() {
+  const actualVault = runObsidianCli("vault", "info=path").trim().split("\n").pop();
   assert.equal(actualVault, vaultRoot, "Obsidian CLI must target the local test vault");
   execFileSync("npm", ["run", "deploy:test"], { cwd: pluginRoot, stdio: "inherit" });
-  cli("plugin:reload", "id=plugin-groups-admin");
-  cli("command", "id=plugin-groups-admin:open-plugin-groups");
-  instrumentOpenView();
+  runObsidianCli("plugin:reload", "id=plugin-groups-admin");
+  runObsidianCli("command", "id=plugin-groups-admin:open-plugin-groups");
+  trackOpenGroupsViewRefreshes();
   try {
     assertUnchangedEventsDoNotRender();
     installFixtureFiles();
-    startManifestLoad();
+    startFixtureManifestLoad();
     await waitForFixtureManifest();
-    assert.equal(state().present, true, "install did not update the open tab");
-    cli("plugin:enable", `id=${fixtureId}`);
-    assert.equal(state().enabled, true, "enable did not update the open tab");
-    cli("plugin:disable", `id=${fixtureId}`);
-    assert.equal(state().enabled, false, "disable did not update the open tab");
+    assert.equal(currentFixtureViewState().present, true, "install did not update the open tab");
+    runObsidianCli("plugin:enable", `id=${fixtureId}`);
+    assert.equal(currentFixtureViewState().enabled, true, "enable did not update the open tab");
+    runObsidianCli("plugin:disable", `id=${fixtureId}`);
+    assert.equal(currentFixtureViewState().enabled, false, "disable did not update the open tab");
     await assertMissedChangesRefresh();
-    cli("plugin:uninstall", `id=${fixtureId}`);
-    assert.equal(state().present, false, "uninstall did not update the open tab");
+    runObsidianCli("plugin:uninstall", `id=${fixtureId}`);
+    assert.equal(currentFixtureViewState().present, false, "uninstall did not update the open tab");
     console.log("Live refresh integration test passed in test_vault");
   } finally {
-    restoreView();
-    try { if (existsSync(fixtureRoot)) cli("plugin:uninstall", `id=${fixtureId}`); } catch { /* Remove test files below. */ }
+    restoreGroupsViewRefresh();
+    try { if (existsSync(fixtureRoot)) runObsidianCli("plugin:uninstall", `id=${fixtureId}`); } catch { /* Remove test files below. */ }
     rmSync(fixtureRoot, { recursive: true, force: true });
   }
 }
 
-await run();
+await runLiveRefreshIntegrationTest();

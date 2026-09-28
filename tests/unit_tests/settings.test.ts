@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { App } from "obsidian";
-import { openPluginSettings } from "../src/pluginApi";
+import { openPluginSettingsOrCommunityTab } from "../../src/pluginApi";
 
 test("plugin rows open a registered settings tab", () => {
   const calls: string[] = [];
@@ -12,7 +12,7 @@ test("plugin rows open a registered settings tab", () => {
       openTabById: (id: string) => calls.push(`tab:${id}`),
     },
   } as unknown as App;
-  assert.equal(openPluginSettings(app, "alpha"), "plugin");
+  assert.equal(openPluginSettingsOrCommunityTab(app, "alpha"), "plugin");
   assert.deepEqual(calls, ["open", "tab:alpha"]);
 });
 
@@ -26,6 +26,6 @@ test("plugins without a settings tab are revealed in Community plugins", () => {
       openTabById: (id: string) => calls.push(`tab:${id}`),
     },
   } as unknown as App;
-  assert.equal(openPluginSettings(app, "beta"), "community");
+  assert.equal(openPluginSettingsOrCommunityTab(app, "beta"), "community");
   assert.deepEqual(calls, ["open", "tab:community-plugins", "reveal:beta"]);
 });

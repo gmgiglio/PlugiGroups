@@ -7,6 +7,6 @@ export interface InstalledPlugin {
   enabled: boolean;
 }
 
-export function inventorySignature(plugins: InstalledPlugin[]): string {
+export function pluginInventorySignature(plugins: InstalledPlugin[]): string {
   return JSON.stringify(plugins.map(({ id, name, description, version, author, enabled }) => [id, name, description, version, author, enabled]));
 }

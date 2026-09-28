@@ -11,28 +11,29 @@ export interface GroupData {
   ungroupedIndex: number;
 }
 
-export function dataFromSaved(value: unknown): GroupData {
-  const source = isRecord(value) && Array.isArray(value.groups) ? value.groups : [];
+// Validate saved group data and fill in defaults before using it
+export function normalizeSavedGroupData(value: unknown): GroupData {
+  const source = isNonArrayRecord(value) && Array.isArray(value.groups) ? value.groups : [];
   const groups: Group[] = [];
   const groupIds = new Set<string>();
-  const allowMultipleGroups = isRecord(value) && value.allowMultipleGroups === true;
-  const showRibbonButton = !isRecord(value) || value.showRibbonButton !== false;
+  const allowMultipleGroups = isNonArrayRecord(value) && value.allowMultipleGroups === true;
+  const showRibbonButton = !isNonArrayRecord(value) || value.showRibbonButton !== false;
   const pluginIds = new Set<string>();
   for (const entry of source) {
-    const group = groupFromSaved(entry, groupIds, pluginIds, allowMultipleGroups);
+    const group = normalizeSavedGroup(entry, groupIds, pluginIds, allowMultipleGroups);
     if (group !== null) groups.push(group);
   }
-  return { groups, allowMultipleGroups, showRibbonButton, ungroupedIndex: ungroupedIndexFromSaved(value, groups.length) };
+  return { groups, allowMultipleGroups, showRibbonButton, ungroupedIndex: normalizeSavedUngroupedIndex(value, groups.length) };
 }
 
-function ungroupedIndexFromSaved(value: unknown, groupCount: number): number {
-  const index = isRecord(value) ? value.ungroupedIndex : null;
+function normalizeSavedUngroupedIndex(value: unknown, groupCount: number): number {
+  const index = isNonArrayRecord(value) ? value.ungroupedIndex : null;
   return typeof index === "number" && Number.isInteger(index)
     ? Math.max(0, Math.min(index, groupCount)) : groupCount;
 }
 
-function groupFromSaved(value: unknown, groupIds: Set<string>, pluginIds: Set<string>, allowMultipleGroups: boolean): Group | null {
-  if (!isRecord(value) || typeof value.id !== "string" || typeof value.name !== "string") return null;
+function normalizeSavedGroup(value: unknown, groupIds: Set<string>, pluginIds: Set<string>, allowMultipleGroups: boolean): Group | null {
+  if (!isNonArrayRecord(value) || typeof value.id !== "string" || typeof value.name !== "string") return null;
   if (!value.id || !value.name.trim() || groupIds.has(value.id)) return null;
   groupIds.add(value.id);
   const candidates = Array.isArray(value.pluginIds) ? value.pluginIds : [];
@@ -45,15 +46,17 @@ function groupFromSaved(value: unknown, groupIds: Set<string>, pluginIds: Set<st
   return { id: value.id, name: value.name.trim(), pluginIds: assigned };
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+function isNonArrayRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-export function addGroup(data: GroupData, name: string, id: string): boolean {
+export function addGroup(data: GroupData, name: string, id?: string): boolean {
   const trimmed = name.trim();
-  if (!trimmed || data.groups.some(group => group.id === id || group.name.toLowerCase() === trimmed.toLowerCase())) return false;
+  if (!trimmed || data.groups.some(group => group.name.toLowerCase() === trimmed.toLowerCase())) return false;
+  const groupId = id || crypto.randomUUID();
+  if (data.groups.some(group => group.id === groupId)) return false;
   if (data.ungroupedIndex === data.groups.length) data.ungroupedIndex++;
-  data.groups.push({ id, name: trimmed, pluginIds: [] });
+  data.groups.push({ id: groupId, name: trimmed, pluginIds: [] });
   return true;
 }
 
@@ -74,14 +77,17 @@ export function removeGroup(data: GroupData, id: string): boolean {
   return true;
 }
 
-export function sectionIds(data: GroupData): (string | null)[] {
+
+// A section is a named group or the Ungrouped list.
+
+export function orderedSectionIdsIncludingUngrouped(data: GroupData): (string | null)[] {
   const ids: (string | null)[] = data.groups.map(group => group.id);
   ids.splice(data.ungroupedIndex, 0, null);
   return ids;
 }
 
 export function reorderSection(data: GroupData, id: string | null, targetId: string | null, position: "before" | "after"): boolean {
-  const order = sectionIds(data);
+  const order = orderedSectionIdsIncludingUngrouped(data);
   const from = order.indexOf(id);
   const target = order.indexOf(targetId);
   if (from < 0 || target < 0 || from === target) return false;
@@ -89,23 +95,27 @@ export function reorderSection(data: GroupData, id: string | null, targetId: str
   if (from === destination) return false;
   const [sectionId] = order.splice(from, 1);
   order.splice(destination, 0, sectionId);
-  setSectionOrder(data, order);
+  applySectionOrder(data, order);
   return true;
 }
 
-function setSectionOrder(data: GroupData, order: (string | null)[]): void {
+function applySectionOrder(data: GroupData, order: (string | null)[]): void {
   const groupsById = new Map(data.groups.map(group => [group.id, group]));
   data.groups = order.filter((id): id is string => id !== null).map(id => groupsById.get(id)!);
   data.ungroupedIndex = order.indexOf(null);
 }
 
-export function groupForPlugin(data: GroupData, pluginId: string): string | null {
+export function firstGroupIdForPlugin(data: GroupData, pluginId: string): string | null {
   return data.groups.find(group => group.pluginIds.includes(pluginId))?.id ?? null;
 }
 
 export function setMultipleGroupsAllowed(data: GroupData, allowed: boolean): void {
   data.allowMultipleGroups = allowed;
   if (allowed) return;
+  removeDuplicatePluginMemberships(data);
+}
+
+function removeDuplicatePluginMemberships(data: GroupData): void {
   const assigned = new Set<string>();
   for (const group of data.groups) {
     group.pluginIds = group.pluginIds.filter(id => !assigned.has(id));
@@ -116,7 +126,7 @@ export function setMultipleGroupsAllowed(data: GroupData, allowed: boolean): voi
 export function addPluginToGroup(data: GroupData, pluginId: string, groupId: string): boolean {
   const group = data.groups.find(group => group.id === groupId);
   if (!group || group.pluginIds.includes(pluginId)) return false;
-  if (!data.allowMultipleGroups) return movePlugin(data, pluginId, groupId);
+  if (!data.allowMultipleGroups) return movePluginToGroup(data, pluginId, groupId);
   group.pluginIds.push(pluginId);
   return true;
 }
@@ -128,9 +138,9 @@ export function removePluginFromGroup(data: GroupData, pluginId: string, groupId
   return true;
 }
 
-export function movePlugin(data: GroupData, pluginId: string, groupId: string | null): boolean {
+export function movePluginToGroup(data: GroupData, pluginId: string, groupId: string | null): boolean {
   if (groupId !== null && !data.groups.some(group => group.id === groupId)) return false;
-  if (groupForPlugin(data, pluginId) === groupId) return false;
+  if (firstGroupIdForPlugin(data, pluginId) === groupId) return false;
   for (const group of data.groups) group.pluginIds = group.pluginIds.filter(id => id !== pluginId);
   if (groupId !== null) data.groups.find(group => group.id === groupId)!.pluginIds.push(pluginId);
   return true;

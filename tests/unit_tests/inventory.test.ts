@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { App, EventRef } from "obsidian";
-import { inventorySignature } from "../src/inventory";
-import { installedPlugins, onPluginInventoryChanged, setPluginEnabled } from "../src/pluginApi";
+import { pluginInventorySignature } from "../../src/inventory";
+import { installedCommunityPlugins, subscribeToPluginInventoryChanges, setPluginEnabled } from "../../src/pluginApi";
 
 test("inventory detects installed and enabled plugin changes", () => {
   const manager = {
@@ -10,21 +10,21 @@ test("inventory detects installed and enabled plugin changes", () => {
     enabledPlugins: new Set(["alpha"]),
   };
   const app = { plugins: manager } as unknown as App;
-  const initial = installedPlugins(app);
+  const initial = installedCommunityPlugins(app);
   assert.deepEqual(initial.map(plugin => [plugin.id, plugin.enabled]), [["alpha", true], ["beta", false]]);
   assert.deepEqual(initial.map(plugin => plugin.description), ["", "Beta tools"]);
   assert.deepEqual(initial.map(plugin => plugin.author), ["", "Beta Creator"]);
   manager.enabledPlugins.add("beta");
-  const enabled = installedPlugins(app);
-  assert.notEqual(inventorySignature(initial), inventorySignature(enabled));
+  const enabled = installedCommunityPlugins(app);
+  assert.notEqual(pluginInventorySignature(initial), pluginInventorySignature(enabled));
   manager.manifests.beta.version = "1.1";
-  assert.notEqual(inventorySignature(enabled), inventorySignature(installedPlugins(app)));
-  const versioned = installedPlugins(app);
+  assert.notEqual(pluginInventorySignature(enabled), pluginInventorySignature(installedCommunityPlugins(app)));
+  const versioned = installedCommunityPlugins(app);
   manager.manifests.beta.description = "Updated Beta tools";
-  assert.notEqual(inventorySignature(versioned), inventorySignature(installedPlugins(app)));
-  const described = installedPlugins(app);
+  assert.notEqual(pluginInventorySignature(versioned), pluginInventorySignature(installedCommunityPlugins(app)));
+  const described = installedCommunityPlugins(app);
   manager.manifests.beta.author = "New Creator";
-  assert.notEqual(inventorySignature(described), inventorySignature(installedPlugins(app)));
+  assert.notEqual(pluginInventorySignature(described), pluginInventorySignature(installedCommunityPlugins(app)));
 });
 
 test("enable and disable use Obsidian's saved plugin controls", async () => {
@@ -51,7 +51,7 @@ test("inventory changes subscribe to the private plugin manager event", () => {
   const app = {
     plugins: { on(name: string, callback: () => void) { calls.push(name); notify = callback; return eventRef; } },
   } as unknown as App;
-  assert.equal(onPluginInventoryChanged(app, () => calls.push("changed")), eventRef);
+  assert.equal(subscribeToPluginInventoryChanges(app, () => calls.push("changed")), eventRef);
   assert.deepEqual(calls, ["changed"]);
   (notify as (() => void) | null)?.();
   assert.deepEqual(calls, ["changed", "changed"]);

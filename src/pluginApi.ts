@@ -37,7 +37,7 @@ interface AppInternals extends App {
   showInFolder?: (path: string) => void;
 }
 
-export function installedPlugins(app: App): InstalledPlugin[] {
+export function installedCommunityPlugins(app: App): InstalledPlugin[] {
   const manager = (app as AppInternals).plugins;
   if (!manager?.manifests) return [];
   return Object.entries(manager.manifests)
@@ -52,7 +52,7 @@ export function installedPlugins(app: App): InstalledPlugin[] {
     .sort((left, right) => left.name.localeCompare(right.name));
 }
 
-export function onPluginInventoryChanged(app: App, callback: () => void): EventRef | null {
+export function subscribeToPluginInventoryChanges(app: App, callback: () => void): EventRef | null {
   return (app as AppInternals).plugins?.on?.("changed", callback) ?? null;
 }
 
@@ -69,7 +69,7 @@ export async function setPluginEnabled(app: App, id: string, enabled: boolean): 
   await manager.disablePluginAndSave(id);
 }
 
-export function pluginExtras(app: App, id: string): PluginExtras {
+export function pluginFundingAndFolderDetails(app: App, id: string): PluginExtras {
   const manifest = (app as AppInternals).plugins?.manifests?.[id];
   return { fundingUrl: manifest?.fundingUrl ?? null, folder: manifest?.dir ?? null };
 }
@@ -96,11 +96,11 @@ export function revealPluginFolder(app: App, path: string): void {
   (app as AppInternals).showInFolder?.(path);
 }
 
-export function closeSettings(app: App): void {
+export function closeObsidianSettings(app: App): void {
   (app as AppInternals).setting?.close?.();
 }
 
-export function openPluginSettings(app: App, pluginId: string): SettingsDestination {
+export function openPluginSettingsOrCommunityTab(app: App, pluginId: string): SettingsDestination {
   const settings = (app as AppInternals).setting;
   if (!settings?.open || !settings.openTabById) return "unavailable";
   settings.open();
