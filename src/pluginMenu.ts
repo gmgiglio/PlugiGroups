@@ -2,6 +2,7 @@
 
 
 import { App, Menu, Modal, Notice, Platform } from "obsidian";
+import { showDestructiveConfirmation } from "./confirmation";
 import type { InstalledPlugin } from "./inventory";
 import { openPluginHotkeys, openPluginSettingsOrCommunityTab, pluginFundingAndFolderDetails, pluginHasCommands, pluginHasSettingsTab, revealPluginFolder, uninstallPlugin } from "./pluginApi";
 import type { FundingUrl, PluginExtras } from "./pluginApi";
@@ -29,7 +30,9 @@ export function showPluginMenu(app: App, plugin: InstalledPlugin, event: MouseEv
   menu.addItem(item => item.setTitle("Open community page").setIcon("external-link").onClick(() => openPluginCommunityPage(plugin.id)));
   addFundingAndFolderMenuActions(menu, app, plugin, extras);
   menu.addSeparator();
-  menu.addItem(item => item.setTitle("Uninstall").setIcon("trash-2").setWarning(true).onClick(() => { void confirmAndUninstallPlugin(app, plugin); }));
+  menu.addItem(item => item.setTitle("Uninstall").setIcon("trash-2").setWarning(true).onClick(() => {
+    showDestructiveConfirmation(app, `Uninstall ${plugin.name}?`, "This removes the plugin from this vault.", "Uninstall", () => uninstallPluginWithFeedback(app, plugin));
+  }));
   menu.showAtMouseEvent(event);
 }
 
@@ -66,8 +69,7 @@ function showPluginFundingOptions(app: App, plugin: InstalledPlugin, fundingUrl:
   else new FundingModal(app, plugin, Object.entries(fundingUrl)).open();
 }
 
-async function confirmAndUninstallPlugin(app: App, plugin: InstalledPlugin): Promise<void> {
-  if (!window.confirm(`Uninstall ${plugin.name}?`)) return;
+async function uninstallPluginWithFeedback(app: App, plugin: InstalledPlugin): Promise<void> {
   try {
     await uninstallPlugin(app, plugin.id);
   } catch (error) {

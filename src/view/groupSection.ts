@@ -1,4 +1,5 @@
 import { App, Notice, SuggestModal } from "obsidian";
+import { showDestructiveConfirmation } from "../confirmation";
 import { addPluginToGroup, removeGroup, renameGroup } from "../groups";
 import type { Group } from "../groups";
 import { groupEnabledState, setGroupPluginsEnabled, pluginsEligibleForGroupToggle } from "../groupToggle";
@@ -108,9 +109,12 @@ function handleGroupRenameKey(event: KeyboardEvent, context: ViewContext, group:
 
 function confirmAndRemoveGroup(context: ViewContext, group: Group): void {
   const message = context.data.allowMultipleGroups
-    ? `Delete “${group.name}”? Plugins in other groups will keep those memberships.`
-    : `Delete “${group.name}”? Its plugins will move to Ungrouped.`;
-  if (!window.confirm(message)) return;
+    ? "Plugins in other groups will keep those memberships."
+    : "Its plugins will move to Ungrouped.";
+  showDestructiveConfirmation(context.app, `Delete “${group.name}”?`, message, "Delete", () => removeGroupAndRefresh(context, group));
+}
+
+function removeGroupAndRefresh(context: ViewContext, group: Group): void {
   if (!removeGroup(context.data, group.id)) return;
   context.collapsedGroupIds.delete(group.id);
   saveGroupChangesAndRefreshViews(context);
