@@ -28,16 +28,28 @@ function evaluateInObsidian(expression) {
 }
 
 function fixturePluginRowExpression() {
-  return `[...document.querySelectorAll(".plugin-groups-admin-plugin")].find(row => row.querySelector(".plugin-groups-admin-plugin-name")?.textContent === ${JSON.stringify(fixtureName)})`;
+  return `[...globalThis.__pluginGroupsRefreshTest.view.contentEl.querySelectorAll(".plugin-groups-admin-plugin")].find(row => row.querySelector(".plugin-groups-admin-plugin-name")?.textContent === ${JSON.stringify(fixtureName)})`;
 }
 
 function currentFixtureViewState() {
   return evaluateInObsidian(`(() => {
     const row = ${fixturePluginRowExpression()};
-    return { count: globalThis.__pluginGroupsRefreshTest?.count, present: !!row,
+    return { count: globalThis.__pluginGroupsRefreshTest?.count,
+      installed: !!app.plugins.manifests[${JSON.stringify(fixtureId)}],
+      managerEnabled: app.plugins.enabledPlugins.has(${JSON.stringify(fixtureId)}), present: !!row,
       enabled: row?.querySelector("input[type=checkbox]")?.checked,
       details: row?.querySelector(".plugin-groups-admin-plugin-description")?.textContent };
   })()`);
+}
+
+async function waitForFixtureViewState(action, before, expected) {
+  let current;
+  for (let attempt = 0; attempt < 50; attempt++) {
+    current = currentFixtureViewState();
+    if (current.count > before && Object.entries(expected).every(([key, value]) => current[key] === value)) return;
+    await setTimeout(100);
+  }
+  assert.fail(`${action} did not refresh the open tab to the expected state: ${JSON.stringify({ before, expected, current })}`);
 }
 
 async function waitForFixtureManifest() {
@@ -141,16 +153,20 @@ async function runLiveRefreshIntegrationTest() {
   try {
     assertUnchangedEventsDoNotRender();
     installFixtureFiles();
+    const beforeInstall = currentFixtureViewState().count;
     startFixtureManifestLoad();
     await waitForFixtureManifest();
-    assert.equal(currentFixtureViewState().present, true, "install did not update the open tab");
+    await waitForFixtureViewState("install", beforeInstall, { installed: true, managerEnabled: false, present: true, enabled: false });
+    const beforeEnable = currentFixtureViewState().count;
     runObsidianCli("plugin:enable", `id=${fixtureId}`);
-    assert.equal(currentFixtureViewState().enabled, true, "enable did not update the open tab");
+    await waitForFixtureViewState("enable", beforeEnable, { installed: true, managerEnabled: true, present: true, enabled: true });
+    const beforeDisable = currentFixtureViewState().count;
     runObsidianCli("plugin:disable", `id=${fixtureId}`);
-    assert.equal(currentFixtureViewState().enabled, false, "disable did not update the open tab");
+    await waitForFixtureViewState("disable", beforeDisable, { installed: true, managerEnabled: false, present: true, enabled: false });
     await assertMissedChangesRefresh();
+    const beforeUninstall = currentFixtureViewState().count;
     runObsidianCli("plugin:uninstall", `id=${fixtureId}`);
-    assert.equal(currentFixtureViewState().present, false, "uninstall did not update the open tab");
+    await waitForFixtureViewState("uninstall", beforeUninstall, { installed: false, managerEnabled: false, present: false });
     console.log("Live refresh integration test passed in test_vault");
   } finally {
     restoreGroupsViewRefresh();
