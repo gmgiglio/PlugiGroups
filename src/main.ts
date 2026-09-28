@@ -1,4 +1,5 @@
-import { Notice, Plugin, PluginSettingTab, Setting, WorkspaceLeaf } from "obsidian";
+import { Notice, Plugin, PluginSettingTab, WorkspaceLeaf } from "obsidian";
+import type { SettingDefinitionItem } from "obsidian";
 import { normalizeSavedGroupData, setMultipleGroupsAllowed } from "./groups";
 import type { GroupData } from "./groups";
 import { pluginInventorySignature } from "./inventory";
@@ -39,26 +40,54 @@ class GroupsSettingTab extends PluginSettingTab {
     super(plugin.app, plugin);
   }
 
-  display(): void {
-    this.containerEl.empty();
-    renderOpenGroupsSetting(this.plugin, this.containerEl);
-    new Setting(this.containerEl)
-      .setName("Show ribbon button")
-      .setDesc("Show the PlugiGroups button in the ribbon.")
-      .addToggle(toggle => toggle.setValue(this.plugin.data.showRibbonButton).onChange(visible => {
-        this.plugin.data.showRibbonButton = visible;
-        updateRibbonButton(this.plugin);
-        queueGroupDataSave(this.plugin);
-      }));
-    new Setting(this.containerEl)
-      .setName("Allow plugins in multiple groups")
-      .setDesc("When turned off, each plugin stays in its first group.")
-      .addToggle(toggle => toggle.setValue(this.plugin.data.allowMultipleGroups).onChange(allowed => {
-        setMultipleGroupsAllowed(this.plugin.data, allowed);
-        queueGroupDataSave(this.plugin);
-        for (const leaf of this.plugin.app.workspace.getLeavesOfType(VIEW_TYPE)) refreshGroupsViewInLeaf(leaf);
-      }));
+  getSettingDefinitions(): SettingDefinitionItem[] {
+    return [
+      {
+        name: "PlugiGroups",
+        desc: "Organize your installed plugins into groups.",
+        render: setting => {
+          setting.addButton(button => button.setButtonText("Open PlugiGroups").onClick(() => {
+            closeObsidianSettings(this.plugin.app);
+            void openGroupsTab(this.plugin);
+          }));
+        },
+      },
+      {
+        name: "Show ribbon button",
+        desc: "Show the PlugiGroups button in the ribbon.",
+        control: { type: "toggle", key: "showRibbonButton" },
+      },
+      {
+        name: "Allow plugins in multiple groups",
+        desc: "When turned off, each plugin stays in its first group.",
+        control: { type: "toggle", key: "allowMultipleGroups" },
+      },
+    ];
   }
+
+  getControlValue(key: string): unknown {
+    if (key === "showRibbonButton") return this.plugin.data.showRibbonButton;
+    if (key === "allowMultipleGroups") return this.plugin.data.allowMultipleGroups;
+    return undefined;
+  }
+
+  setControlValue(key: string, value: unknown): void {
+    if (typeof value !== "boolean") return;
+    if (key === "showRibbonButton") setRibbonButtonSetting(this.plugin, value);
+    if (key === "allowMultipleGroups") setMultipleGroupsSetting(this.plugin, value);
+  }
+}
+
+function setRibbonButtonSetting(plugin: PlugiGroups, visible: boolean): void {
+  plugin.data.showRibbonButton = visible;
+  updateRibbonButton(plugin);
+  queueGroupDataSave(plugin);
+}
+
+function setMultipleGroupsSetting(plugin: PlugiGroups, allowed: boolean): void {
+  setMultipleGroupsAllowed(plugin.data, allowed);
+  queueGroupDataSave(plugin);
+  for (const leaf of plugin.app.workspace.getLeavesOfType(VIEW_TYPE)) refreshGroupsViewInLeaf(leaf);
 }
 
 function updateRibbonButton(plugin: PlugiGroups): void {
@@ -68,16 +97,6 @@ function updateRibbonButton(plugin: PlugiGroups): void {
     plugin.ribbonButton.remove();
     plugin.ribbonButton = null;
   }
-}
-
-function renderOpenGroupsSetting(plugin: PlugiGroups, container: HTMLElement): void {
-  new Setting(container)
-    .setName("PlugiGroups")
-    .setDesc("Organize your installed plugins into groups.")
-    .addButton(button => button.setButtonText("Open PlugiGroups").onClick(() => {
-      closeObsidianSettings(plugin.app);
-      void openGroupsTab(plugin);
-    }));
 }
 
 function registerGroupsViewInventoryRefresh(plugin: PlugiGroups): void {
