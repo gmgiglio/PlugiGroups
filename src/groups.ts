@@ -7,6 +7,7 @@ export interface Group {
 export interface GroupData {
   groups: Group[];
   allowMultipleGroups: boolean;
+  showRibbonButton: boolean;
   ungroupedIndex: number;
 }
 
@@ -15,12 +16,13 @@ export function dataFromSaved(value: unknown): GroupData {
   const groups: Group[] = [];
   const groupIds = new Set<string>();
   const allowMultipleGroups = isRecord(value) && value.allowMultipleGroups === true;
+  const showRibbonButton = !isRecord(value) || value.showRibbonButton !== false;
   const pluginIds = new Set<string>();
   for (const entry of source) {
     const group = groupFromSaved(entry, groupIds, pluginIds, allowMultipleGroups);
     if (group !== null) groups.push(group);
   }
-  return { groups, allowMultipleGroups, ungroupedIndex: ungroupedIndexFromSaved(value, groups.length) };
+  return { groups, allowMultipleGroups, showRibbonButton, ungroupedIndex: ungroupedIndexFromSaved(value, groups.length) };
 }
 
 function ungroupedIndexFromSaved(value: unknown, groupCount: number): number {

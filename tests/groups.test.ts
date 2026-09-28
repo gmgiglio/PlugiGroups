@@ -107,3 +107,9 @@ test("renaming checks duplicates and deleting returns plugins to ungrouped", () 
   assert.equal(removeGroup(data, "one"), true);
   assert.equal(groupForPlugin(data, "plugin"), null);
 });
+
+test("ribbon button stays visible for existing data and respects a saved toggle", () => {
+  assert.equal(dataFromSaved(null).showRibbonButton, true);
+  assert.equal(dataFromSaved({ groups: [] }).showRibbonButton, true);
+  assert.equal(dataFromSaved({ groups: [], showRibbonButton: false }).showRibbonButton, false);
+});

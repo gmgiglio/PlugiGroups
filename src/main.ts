@@ -7,8 +7,9 @@ import { closeSettings, installedPlugins, openPluginSettings, setPluginEnabled }
 import { GroupsView, VIEW_TYPE } from "./view";
 
 export default class PluginGroupsAdmin extends Plugin {
-  data: GroupData = { groups: [], allowMultipleGroups: false, ungroupedIndex: 0 };
+  data: GroupData = { groups: [], allowMultipleGroups: false, showRibbonButton: true, ungroupedIndex: 0 };
   saveQueue: Promise<void> = Promise.resolve();
+  ribbonButton: HTMLElement | null = null;
 
   async onload(): Promise<void> {
     this.data = dataFromSaved(await this.loadData());
@@ -24,7 +25,7 @@ export default class PluginGroupsAdmin extends Plugin {
       busyGroupIds: new Set<string>(),
       save: () => queueSave(this),
     }));
-    this.addRibbonIcon("layout-grid", "Open plugin groups", () => { void openGroups(this); });
+    updateRibbonButton(this);
     this.addCommand({ id: "open-plugin-groups", name: "Open plugin groups", callback: () => { void openGroups(this); } });
     this.addSettingTab(new GroupsSettingTab(this));
     registerPluginInventoryRefresh(this);
@@ -44,6 +45,14 @@ class GroupsSettingTab extends PluginSettingTab {
     this.containerEl.empty();
     renderGroupsNavigation(this.plugin, this.containerEl);
     new Setting(this.containerEl)
+      .setName("Show ribbon button")
+      .setDesc("Show the Plugin groups button in the ribbon.")
+      .addToggle(toggle => toggle.setValue(this.plugin.data.showRibbonButton).onChange(visible => {
+        this.plugin.data.showRibbonButton = visible;
+        updateRibbonButton(this.plugin);
+        queueSave(this.plugin);
+      }));
+    new Setting(this.containerEl)
       .setName("Allow plugins in multiple groups")
       .setDesc("When turned off, each plugin stays in its first group.")
       .addToggle(toggle => toggle.setValue(this.plugin.data.allowMultipleGroups).onChange(allowed => {
@@ -51,6 +60,15 @@ class GroupsSettingTab extends PluginSettingTab {
         queueSave(this.plugin);
         for (const leaf of this.plugin.app.workspace.getLeavesOfType(VIEW_TYPE)) refreshLeaf(leaf);
       }));
+  }
+}
+
+function updateRibbonButton(plugin: PluginGroupsAdmin): void {
+  if (plugin.data.showRibbonButton && plugin.ribbonButton === null) {
+    plugin.ribbonButton = plugin.addRibbonIcon("layout-grid", "Open plugin groups", () => { void openGroups(plugin); });
+  } else if (!plugin.data.showRibbonButton && plugin.ribbonButton !== null) {
+    plugin.ribbonButton.remove();
+    plugin.ribbonButton = null;
   }
 }
 
