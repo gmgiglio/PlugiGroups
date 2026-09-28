@@ -28,7 +28,7 @@ export default class PlugiGroups extends Plugin {
       queueGroupDataSave: () => queueGroupDataSave(this),
     }));
     updateRibbonButton(this);
-    this.addCommand({ id: "open-plugin-groups", name: "Open PlugiGroups", callback: () => { void openGroupsTab(this); } });
+    this.addCommand({ id: "open-plugin-groups", name: "Open groups", callback: () => { void openGroupsTab(this); } });
     this.addSettingTab(new GroupsSettingTab(this));
     registerGroupsViewInventoryRefresh(this);
   }
