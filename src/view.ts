@@ -33,7 +33,7 @@ export class GroupsView extends ItemView {
   }
 
   getViewType(): string { return VIEW_TYPE; }
-  getDisplayText(): string { return "Plugin groups"; }
+  getDisplayText(): string { return "PlugiGroups"; }
   getIcon(): string { return "layout-grid"; }
 
   async onOpen(): Promise<void> {
@@ -107,7 +107,7 @@ function renderGroupsHeader(context: ViewContext, container: HTMLElement, plugin
 }
 
 function renderPluginSettingsButton(context: ViewContext, header: HTMLElement): void {
-  const button = header.createEl("button", { text: "Settings", attr: { type: "button", "aria-label": "Open Plugin Groups Admin settings" } });
+  const button = header.createEl("button", { text: "Settings", attr: { type: "button", "aria-label": "Open PlugiGroups settings" } });
   button.addEventListener("click", () => {
     if (context.openPluginSettings(context.selfId) === "unavailable") new Notice("Could not open Obsidian settings.");
   });
@@ -316,7 +316,7 @@ function renderGroupEnabledToggle(context: ViewContext, container: HTMLElement, 
   toggle.checked = state === "enabled";
   toggle.disabled = manageable.length === 0 || busy;
   if (busy) label.setAttribute("title", "Updating plugins…");
-  else if (plugins.some(plugin => plugin.id === context.selfId)) label.setAttribute("title", "Plugin Groups Admin stays enabled.");
+  else if (plugins.some(plugin => plugin.id === context.selfId)) label.setAttribute("title", "PlugiGroups stays enabled.");
   label.createEl("span", { cls: "plugin-groups-admin-switch", attr: { "aria-hidden": "true" } });
   toggle.addEventListener("change", () => { void changeGroupPluginsEnabled(context, container, group, manageable, toggle.checked); });
 }

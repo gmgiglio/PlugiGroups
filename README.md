@@ -1,10 +1,10 @@
-Plugin Groups Admin allows you to order plugins into groups and manage them.
+PlugiGroups allows you to order plugins into groups and manage them.
 
 ![Plugin groups showing Writing & editing, Daily notes, and Appearance](./images/plugin-groups.png)
 
 ## Using the tab
 
-Open **Plugin groups** from the ribbon or command palette. Select **+ Add group** to create a group. Drag plugins from **Ungrouped** into a group, or use **+ Add plugin** in a group to choose one from a searchable list. You can rename, reorder, collapse, and delete groups.
+Open **PlugiGroups** from the ribbon or command palette. Select **+ Add group** to create a group. Drag plugins from **Ungrouped** into a group, or use **+ Add plugin** in a group to choose one from a searchable list. You can rename, reorder, collapse, and delete groups.
 
 To hide the ribbon button, turn off **Show ribbon button** in the plugin settings. The command palette entry remains available.
 
@@ -16,7 +16,7 @@ To hide the ribbon button, turn off **Show ribbon button** in the plugin setting
 - Click a plugin to open its settings. Plugins without a settings page open in **Community plugins**.
 - Use a plugin's **⋯** menu for details and other available actions, such as hotkeys or uninstall.
 
-Plugin Groups Admin stays enabled if you switch off a group that contains it.
+PlugiGroups stays enabled if you switch off a group that contains it.
 
 ## Allow multiple groups
 

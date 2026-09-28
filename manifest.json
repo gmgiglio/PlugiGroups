@@ -1,6 +1,6 @@
 {
   "id": "plugin-groups-admin",
-  "name": "Plugin Groups Admin",
+  "name": "PlugiGroups",
   "version": "0.1.0",
   "minAppVersion": "1.13.7",
   "description": "Organize installed community plugins into custom groups.",
