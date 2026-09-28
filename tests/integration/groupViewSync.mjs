@@ -10,7 +10,7 @@ const viewType = "plugin-groups-admin-view";
 const groupName = `View sync ${randomUUID().slice(0, 8)}`;
 
 function runObsidianCli(command, ...args) {
-  return execFileSync("obsidian", ["vault=test_vault", command, ...args], { encoding: "utf8", timeout: 30000 });
+  return execFileSync("obsidian", ["vault=testVault_plugiGroups", command, ...args], { encoding: "utf8", timeout: 30000 });
 }
 
 function evaluateInObsidian(expression, expectResult = true) {
@@ -53,7 +53,7 @@ async function waitForGroupsView() {
 }
 
 const vault = runObsidianCli("vault", "info=path").trim().split("\n").pop();
-assert.ok(vault.endsWith("/PluginGroupsAdmin_ObsidianPlugin/test_vault"));
+assert.ok(vault.endsWith("/PluginGroupsAdmin_ObsidianPlugin/testVault_plugiGroups"));
 runObsidianCli("command", "id=plugin-groups-admin:open-plugin-groups");
 await waitForGroupsView();
 
@@ -115,4 +115,4 @@ const result = await waitForGroupViewSyncResult();
 assert.equal(result.error, null);
 assert.deepEqual(result.result, { refreshes: 1, membershipRemoved: true, firstEmpty: true, secondEmpty: true });
 evaluateInObsidian("(delete globalThis.__pluginGroupsViewSyncTest, true)");
-console.log("Group edits refreshed both open tabs in test_vault");
+console.log("Group edits refreshed both open tabs in testVault_plugiGroups");

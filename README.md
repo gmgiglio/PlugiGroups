@@ -21,3 +21,5 @@ PlugiGroups stays enabled if you switch off a group that contains it.
 ## Allow multiple groups
 
 By default, a plugin can belong to one group. The **Allow plugins in multiple groups** setting lets it appear in several groups. Group assignments are saved.
+
+**Mobile support:** PlugiGroups does not work on mobile yet.

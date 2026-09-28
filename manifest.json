@@ -5,5 +5,5 @@
   "minAppVersion": "1.13.7",
   "description": "Organize installed community plugins into custom groups.",
   "author": "Gianfranco Giglio",
-  "isDesktopOnly": false
+  "isDesktopOnly": true
 }

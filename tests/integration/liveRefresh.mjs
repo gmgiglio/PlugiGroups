@@ -7,14 +7,14 @@ import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 
 const pluginRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
-const vaultRoot = resolve(pluginRoot, "../test_vault");
+const vaultRoot = resolve(pluginRoot, "../testVault_plugiGroups");
 const fixtureId = `plugin-groups-admin-integration-${randomUUID().slice(0, 8)}`;
 const fixtureName = `Integration Fixture ${fixtureId.slice(-8)}`;
 const fixtureRoot = join(vaultRoot, ".obsidian/plugins", fixtureId);
 const viewType = "plugin-groups-admin-view";
 
 function runObsidianCli(command, ...args) {
-  return execFileSync("obsidian", ["vault=test_vault", command, ...args], { encoding: "utf8", timeout: 30000 });
+  return execFileSync("obsidian", ["vault=testVault_plugiGroups", command, ...args], { encoding: "utf8", timeout: 30000 });
 }
 
 function evaluateInObsidian(expression) {
@@ -167,7 +167,7 @@ async function runLiveRefreshIntegrationTest() {
     const beforeUninstall = currentFixtureViewState().count;
     runObsidianCli("plugin:uninstall", `id=${fixtureId}`);
     await waitForFixtureViewState("uninstall", beforeUninstall, { installed: false, managerEnabled: false, present: false });
-    console.log("Live refresh integration test passed in test_vault");
+    console.log("Live refresh integration test passed in testVault_plugiGroups");
   } finally {
     restoreGroupsViewRefresh();
     try { if (existsSync(fixtureRoot)) runObsidianCli("plugin:uninstall", `id=${fixtureId}`); } catch { /* Remove test files below. */ }

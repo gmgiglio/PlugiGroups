@@ -6,4 +6,4 @@
 /data.json
 /scripts/
 # Safeguard against accidentally copying the private test vault into this repository.
-/test_vault/
+/testVault_plugiGroups/

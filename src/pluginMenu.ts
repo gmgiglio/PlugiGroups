@@ -1,3 +1,6 @@
+// Builds the ⋯ menu for each plugin in the PlugiGroups tab.
+
+
 import { App, Menu, Modal, Notice, Platform } from "obsidian";
 import type { InstalledPlugin } from "./inventory";
 import { openPluginHotkeys, openPluginSettingsOrCommunityTab, pluginFundingAndFolderDetails, pluginHasCommands, pluginHasSettingsTab, revealPluginFolder, uninstallPlugin } from "./pluginApi";
