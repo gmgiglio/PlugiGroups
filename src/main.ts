@@ -32,10 +32,6 @@ export default class PlugiGroups extends Plugin {
     this.addSettingTab(new GroupsSettingTab(this));
     registerGroupsViewInventoryRefresh(this);
   }
-
-  onunload(): void {
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE);
-  }
 }
 
 class GroupsSettingTab extends PluginSettingTab {
