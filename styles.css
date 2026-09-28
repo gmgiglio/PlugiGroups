@@ -69,16 +69,17 @@
 .plugin-groups-admin-section {
   position: relative;
   margin-bottom: 20px;
-  border: 1px solid var(--background-modifier-border);
   border-radius: 12px;
   background: var(--background-primary);
-  transition: border-color 120ms ease, background-color 120ms ease;
+  transition: background-color 120ms ease;
+}
+
+.plugin-groups-admin-section[data-group-id=""] {
+  border: 1px solid var(--background-modifier-border);
 }
 
 .plugin-groups-admin-section.is-drag-over {
-  border-color: var(--interactive-accent);
   background: var(--background-modifier-hover);
-  box-shadow: 0 0 0 2px var(--interactive-accent);
 }
 
 .plugin-groups-admin-section:is(.is-group-drop-before, .is-group-drop-after)::after {
@@ -99,13 +100,19 @@
 .plugin-groups-admin-section-header {
   flex-wrap: wrap;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--background-modifier-border);
   border-radius: 12px 12px 0 0;
   background: var(--background-secondary);
 }
 
+.plugin-groups-admin-section[data-group-id]:not([data-group-id=""]) .plugin-groups-admin-section-header {
+  background: transparent;
+}
+
+.plugin-groups-admin-section[data-group-id=""]:not(.is-collapsed) .plugin-groups-admin-section-header {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
 .plugin-groups-admin-section.is-collapsed .plugin-groups-admin-section-header {
-  border-bottom: 0;
   border-radius: 12px;
 }
 
@@ -177,7 +184,7 @@
 .plugin-groups-admin-actions button:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
 .plugin-groups-admin-actions .plugin-groups-admin-delete:hover { color: var(--text-error); }
 .plugin-groups-admin-group-toggle { margin-left: 8px; }
-.plugin-groups-admin-list { min-height: 48px; padding: 4px 8px; }
+.plugin-groups-admin-list { min-height: 48px; padding: 4px 8px 4px 48px; }
 
 .plugin-groups-admin-plugin {
   display: grid;
@@ -290,8 +297,6 @@
 .plugin-groups-admin-empty {
   margin: 8px;
   padding: 24px 16px;
-  border: 1px dashed var(--background-modifier-border);
-  border-radius: 8px;
   color: var(--text-muted);
   font-size: var(--font-ui-small);
   text-align: center;
