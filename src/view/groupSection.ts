@@ -65,6 +65,7 @@ function renderGroupEnabledToggle(context: ViewContext, actions: HTMLElement, gr
   const toggle = label.createEl("input", { attr: { type: "checkbox", "aria-label": `Plugins in ${group.name}` } });
   toggle.checked = state === "enabled";
   toggle.disabled = manageable.length === 0 || busy;
+  label.classList.toggle("is-disabled", toggle.disabled);
   if (busy) label.setAttribute("title", "Updating plugins…");
   else if (plugins.some(plugin => plugin.id === context.selfId)) label.setAttribute("title", "PlugiGroups stays enabled.");
   label.createEl("span", { cls: "plugin-groups-admin-switch", attr: { "aria-hidden": "true" } });
@@ -88,7 +89,7 @@ async function changeGroupPluginsEnabled(context: ViewContext, group: Group, plu
 
 function showGroupRenameInput(context: ViewContext, heading: HTMLElement, group: Group): void {
   const title = heading.querySelector("h2")!;
-  const input = document.createElement("input");
+  const input = heading.createEl("input");
   input.value = group.name;
   input.setAttribute("aria-label", `New name for ${group.name}`);
   title.replaceWith(input);

@@ -297,7 +297,7 @@
 .plugin-groups-admin-toggle input:checked + .plugin-groups-admin-switch::after { transform: translateX(14px); }
 .plugin-groups-admin-toggle input:focus-visible + .plugin-groups-admin-switch { outline: 2px solid var(--interactive-accent); outline-offset: 3px; }
 .plugin-groups-admin-toggle input:disabled + .plugin-groups-admin-switch { opacity: 0.5; }
-.plugin-groups-admin-toggle:has(input:disabled) { cursor: default; }
+.plugin-groups-admin-toggle.is-disabled { cursor: default; }
 
 .plugin-groups-admin-empty {
   margin: 8px;
