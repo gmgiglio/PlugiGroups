@@ -68,7 +68,7 @@ function renderGroupEnabledToggle(context: ViewContext, actions: HTMLElement, gr
   label.classList.toggle("is-disabled", toggle.disabled);
   if (busy) label.setAttribute("title", "Updating plugins…");
   else if (plugins.some(plugin => plugin.id === context.selfId)) label.setAttribute("title", "PlugiGroups stays enabled.");
-  label.createEl("span", { cls: "plugin-groups-admin-switch", attr: { "aria-hidden": "true" } });
+  label.createSpan({ cls: "plugin-groups-admin-switch", attr: { "aria-hidden": "true" } });
   toggle.addEventListener("change", () => { void changeGroupPluginsEnabled(context, group, manageable, toggle.checked); });
 }
 

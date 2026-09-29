@@ -7,7 +7,7 @@ const UNGROUPED_DRAG_TYPE = "application/x-plugin-groups-admin-ungrouped";
 
 export function renderSectionDragHandle(container: HTMLElement, section: HTMLElement, name: string, groupId: string | null): void {
   const heading = section.querySelector<HTMLElement>(".plugin-groups-admin-section-header")!;
-  const handle = heading.createEl("span", { cls: "plugin-groups-admin-group-grip", attr: { draggable: "true", role: "img", "aria-label": `Drag to reorder ${name}`, title: `Drag to reorder ${name}` } });
+  const handle = heading.createSpan({ cls: "plugin-groups-admin-group-grip", attr: { draggable: "true", role: "img", "aria-label": `Drag to reorder ${name}`, title: `Drag to reorder ${name}` } });
   heading.prepend(handle);
   setIcon(handle, "grip-vertical");
   handle.addEventListener("dragstart", event => startSectionDrag(event, container, section, groupId));

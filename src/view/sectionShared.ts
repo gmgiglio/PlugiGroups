@@ -14,7 +14,7 @@ export function createPluginSection(context: ViewContext, container: HTMLElement
   body.hidden = context.collapsedGroupIds.has(groupId);
   section.classList.toggle("is-collapsed", body.hidden);
   renderCollapseButton(context, section, heading, body, name, groupId);
-  heading.createEl("span", { cls: "plugin-groups-admin-count", text: String(count) });
+  heading.createSpan({ cls: "plugin-groups-admin-count", text: String(count) });
   return { section, body };
 }
 

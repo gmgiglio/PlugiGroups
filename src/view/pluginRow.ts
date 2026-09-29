@@ -62,7 +62,7 @@ function renderPluginEnabledToggle(context: ViewContext, row: HTMLElement, plugi
   toggle.disabled = plugin.id === context.selfId || context.pendingPluginIds.has(plugin.id);
   label.classList.toggle("is-disabled", toggle.disabled);
   if (plugin.id === context.selfId) label.setAttribute("title", "This plugin cannot disable itself from its own tab.");
-  label.createEl("span", { cls: "plugin-groups-admin-switch", attr: { "aria-hidden": "true" } });
+  label.createSpan({ cls: "plugin-groups-admin-switch", attr: { "aria-hidden": "true" } });
   toggle.addEventListener("change", () => { void changePluginEnabled(context, plugin, toggle); });
 }
 
