@@ -193,7 +193,7 @@
 
 .plugin-groups-admin-plugin {
   display: grid;
-  grid-template-columns: 16px minmax(0, 1fr) 28px 34px;
+  grid-template-columns: 16px minmax(0, 1fr) 28px 34px 28px;
   align-items: center;
   gap: 12px;
   min-height: 54px;
@@ -250,6 +250,7 @@
 }
 
 .plugin-groups-admin .plugin-groups-admin-remove-plugin,
+.plugin-groups-admin .plugin-groups-admin-move-plugin,
 .plugin-groups-admin .plugin-groups-admin-plugin-menu {
   display: inline-flex;
   align-items: center;
@@ -262,6 +263,9 @@
   background: transparent;
   color: var(--text-muted);
 }
+.plugin-groups-admin .plugin-groups-admin-move-plugin:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.plugin-groups-admin .plugin-groups-admin-move-plugin:disabled { opacity: 0.5; cursor: default; }
+.plugin-groups-admin-move-plugin svg { width: 16px; height: 16px; }
 .plugin-groups-admin .plugin-groups-admin-remove-plugin:hover { background: var(--background-modifier-hover); color: var(--text-error); }
 .plugin-groups-admin-remove-plugin svg { width: 16px; height: 16px; }
 .plugin-groups-admin .plugin-groups-admin-plugin-menu { font-size: 20px; line-height: 1; }
@@ -315,7 +319,7 @@
   .plugin-groups-admin-section-header h2 { max-width: calc(100% - 48px); }
   .plugin-groups-admin-actions { width: 100%; justify-content: flex-end; }
   .plugin-groups-admin-ungrouped-search { width: 100%; }
-  .plugin-groups-admin-plugin { grid-template-columns: 16px minmax(0, 1fr) 28px 34px; gap: 6px 10px; }
+  .plugin-groups-admin-plugin { grid-template-columns: 16px minmax(0, 1fr) 28px 34px 28px; gap: 6px 10px; }
   .plugin-groups-admin-plugin.is-grouped { grid-template-columns: 16px minmax(0, 1fr) 28px 34px 28px; }
 }
 

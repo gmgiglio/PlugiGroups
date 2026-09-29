@@ -1,5 +1,5 @@
-import { Notice, setIcon } from "obsidian";
-import { removePluginFromGroup } from "../groups";
+import { Menu, Notice, setIcon } from "obsidian";
+import { addPluginToGroup, removePluginFromGroup } from "../groups";
 import type { InstalledPlugin } from "../inventory";
 import { runPluginOperationWithPendingState } from "../pendingPluginOperations";
 import { showPluginMenu } from "../pluginMenu";
@@ -18,7 +18,23 @@ export function renderPluginRow(context: ViewContext, list: HTMLElement, plugin:
   renderPluginDescription(details, plugin);
   renderPluginMenuButton(context, row, plugin);
   renderPluginEnabledToggle(context, row, plugin);
-  if (groupId !== null) renderRemovePluginButton(context, row, plugin, groupId);
+  if (groupId === null) renderMovePluginButton(context, row, plugin);
+  else renderRemovePluginButton(context, row, plugin, groupId);
+}
+
+function renderMovePluginButton(context: ViewContext, row: HTMLElement, plugin: InstalledPlugin): void {
+  const button = row.createEl("button", { cls: "plugin-groups-admin-move-plugin", attr: { type: "button", "aria-label": `Move ${plugin.name} to a group`, title: `Move ${plugin.name} to a group` } });
+  setIcon(button, "arrow-right");
+  button.disabled = context.data.groups.length === 0;
+  button.addEventListener("click", event => {
+    const menu = new Menu();
+    for (const group of context.data.groups) {
+      menu.addItem(item => item.setTitle(group.name).onClick(() => {
+        if (addPluginToGroup(context.data, plugin.id, group.id)) saveGroupChangesAndRefreshViews(context);
+      }));
+    }
+    menu.showAtMouseEvent(event);
+  });
 }
 
 function renderPluginMenuButton(context: ViewContext, row: HTMLElement, plugin: InstalledPlugin): void {
