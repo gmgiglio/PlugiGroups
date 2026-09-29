@@ -54,14 +54,14 @@ async function waitForGroupsView() {
 
 const vault = runObsidianCli("vault", "info=path").trim().split("\n").pop();
 assert.ok(vault.endsWith("/PluginGroupsAdmin_ObsidianPlugin/testVault_plugiGroups"));
-runObsidianCli("command", "id=plugin-groups-admin:open-plugin-groups");
+runObsidianCli("command", "id=plugigroups:open-plugin-groups");
 await waitForGroupsView();
 
 evaluateInObsidian(`(() => {
   const status = { done: false, error: null, result: null };
   globalThis.__pluginGroupsViewSyncTest = status;
   void (async () => {
-    const plugin = app.plugins.plugins["plugin-groups-admin"];
+    const plugin = app.plugins.plugins["plugigroups"];
     const first = app.workspace.getLeavesOfType(${JSON.stringify(viewType)})[0].view;
     const originalIndex = plugin.data.ungroupedIndex;
     let second = null;
@@ -77,7 +77,7 @@ evaluateInObsidian(`(() => {
       if (!group) throw new Error("The group was not created");
       const section = view => view.contentEl.querySelector('[data-group-id="' + group.id + '"]');
       if (!section(first) || !section(other)) throw new Error("The new group did not appear in both tabs");
-      group.pluginIds.push("plugin-groups-admin");
+      group.pluginIds.push("plugigroups");
       first.refreshGroupsView();
       other.refreshGroupsView();
       if (!section(other).querySelector(".plugin-groups-admin-plugin")) throw new Error("Membership setup failed");
@@ -91,7 +91,7 @@ evaluateInObsidian(`(() => {
       }
       status.result = {
         refreshes,
-        membershipRemoved: !group.pluginIds.includes("plugin-groups-admin"),
+        membershipRemoved: !group.pluginIds.includes("plugigroups"),
         firstEmpty: !section(first).querySelector(".plugin-groups-admin-plugin"),
         secondEmpty: !section(other).querySelector(".plugin-groups-admin-plugin"),
       };
