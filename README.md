@@ -1,6 +1,6 @@
 PlugiGroups allows you to order plugins into groups and manage them.
 
-![Plugin groups showing Writing & editing, Daily notes, and Appearance](./images/plugin-groups-2026-09.png)
+![Updated PlugiGroups UI showing six groups with plugin and group controls](./images/plugin-groups-2026-09.png)
 
 ## Using the tab
 
