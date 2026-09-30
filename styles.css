@@ -206,6 +206,29 @@
 }
 .plugin-groups-admin-actions button:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
 .plugin-groups-admin-actions .plugin-groups-admin-delete:hover { color: var(--text-error); }
+.plugin-groups-admin-actions .plugin-groups-admin-group-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 32px;
+  height: 28px;
+}
+.plugin-groups-admin-action-icon { display: inline-flex; flex-shrink: 0; }
+.plugin-groups-admin-action-icon svg { width: 16px; height: 16px; }
+.plugin-groups-admin-action-label {
+  max-width: 0;
+  margin-left: 0;
+  overflow: hidden;
+  opacity: 0;
+  white-space: nowrap;
+  transition: max-width 160ms ease, margin-left 160ms ease, opacity 160ms ease;
+}
+.plugin-groups-admin-group-action:is(:hover, :focus-visible) .plugin-groups-admin-action-label {
+  max-width: 9em;
+  margin-left: 6px;
+  opacity: 1;
+}
 .plugin-groups-admin-group-toggle { margin-left: 8px; }
 .plugin-groups-admin-list { min-height: 48px; padding: 4px 8px 4px 48px; }
 
@@ -344,5 +367,6 @@
 @media (prefers-reduced-motion: reduce) {
   .plugin-groups-admin-section,
   .plugin-groups-admin-chevron,
+  .plugin-groups-admin-action-label,
   .plugin-groups-admin-switch::after { transition: none; }
 }

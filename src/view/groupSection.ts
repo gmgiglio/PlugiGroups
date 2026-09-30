@@ -1,4 +1,4 @@
-import { App, Notice, SuggestModal } from "obsidian";
+import { App, Notice, setIcon, SuggestModal } from "obsidian";
 import { showDestructiveConfirmation } from "../confirmation";
 import { addPluginToGroup, removeGroup, renameGroup } from "../groups";
 import type { Group } from "../groups";
@@ -48,13 +48,25 @@ export function renderGroup(context: ViewContext, container: HTMLElement, group:
 function renderGroupActions(context: ViewContext, section: HTMLElement, group: Group, plugins: InstalledPlugin[]): void {
   const heading = section.querySelector<HTMLElement>(".plugin-groups-admin-section-header")!;
   const actions = heading.createDiv({ cls: "plugin-groups-admin-actions" });
-  const add = actions.createEl("button", { text: "+ Add plugin", attr: { type: "button", "aria-label": `Add plugin to ${group.name}` } });
-  const rename = actions.createEl("button", { text: "Rename", attr: { type: "button", "aria-label": `Rename ${group.name}` } });
-  const remove = actions.createEl("button", { cls: "plugin-groups-admin-delete", text: "Delete", attr: { type: "button", "aria-label": `Delete ${group.name}` } });
+  const add = createGroupAction(actions, "plus", "Add plugin", `Add plugin to ${group.name}`);
+  const rename = createGroupAction(actions, "pencil", "Rename", `Rename ${group.name}`);
+  const remove = createGroupAction(actions, "trash-2", "Delete", `Delete ${group.name}`);
+  remove.addClass("plugin-groups-admin-delete");
   renderGroupEnabledToggle(context, actions, group, plugins);
   add.addEventListener("click", () => new AddPluginModal(context.app, context, group).open());
   rename.addEventListener("click", () => showGroupRenameInput(context, heading, group));
   remove.addEventListener("click", () => confirmAndRemoveGroup(context, group));
+}
+
+function createGroupAction(actions: HTMLElement, icon: string, text: string, accessibleLabel: string): HTMLButtonElement {
+  const button = actions.createEl("button", {
+    cls: "plugin-groups-admin-group-action",
+    attr: { type: "button", "aria-label": accessibleLabel },
+  });
+  const iconElement = button.createSpan({ cls: "plugin-groups-admin-action-icon", attr: { "aria-hidden": "true" } });
+  setIcon(iconElement, icon);
+  button.createSpan({ cls: "plugin-groups-admin-action-label", text, attr: { "aria-hidden": "true" } });
+  return button;
 }
 
 function renderGroupEnabledToggle(context: ViewContext, actions: HTMLElement, group: Group, plugins: InstalledPlugin[]): void {
