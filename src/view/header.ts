@@ -5,10 +5,12 @@ import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
 
 export function renderGroupsHeader(context: ViewContext, container: HTMLElement, plugins: InstalledPlugin[]): void {
   const header = container.createDiv({ cls: "plugin-groups-admin-header" });
-  renderGroupsSummaryHeading(header, context.data.groups.length, plugins);
+  renderGroupsHeading(header);
   renderPluginSettingsButton(context, header);
-  const addButton = header.createEl("button", { cls: "mod-cta plugin-groups-admin-add-button", text: "+ Add group", attr: { type: "button" } });
-  const form = header.createEl("form", { cls: "plugin-groups-admin-add" });
+  const controls = header.createDiv({ cls: "plugin-groups-admin-group-controls" });
+  renderGroupsSummary(controls, context.data.groups.length, plugins);
+  const addButton = controls.createEl("button", { cls: "mod-cta plugin-groups-admin-add-button", text: "+ Add group", attr: { type: "button" } });
+  const form = controls.createEl("form", { cls: "plugin-groups-admin-add" });
   form.hidden = true;
   const input = form.createEl("input", { attr: { type: "text", placeholder: "New group name", "aria-label": "New group name" } });
   form.createEl("button", { cls: "mod-cta", text: "Create group", attr: { type: "submit" } });
@@ -41,11 +43,14 @@ function hideAddGroupForm(form: HTMLFormElement, addButton: HTMLButtonElement, i
   addButton.focus();
 }
 
-function renderGroupsSummaryHeading(header: HTMLElement, groupCount: number, plugins: InstalledPlugin[]): void {
+function renderGroupsHeading(header: HTMLElement): void {
   const heading = header.createDiv({ cls: "plugin-groups-admin-heading" });
   heading.createEl("h1", { text: "Plugin groups" });
   heading.createEl("p", { cls: "plugin-groups-admin-description", text: "A place for every plugin. Drag to organize, click to configure." });
-  const summary = heading.createDiv({ cls: "plugin-groups-admin-summary" });
+}
+
+function renderGroupsSummary(container: HTMLElement, groupCount: number, plugins: InstalledPlugin[]): void {
+  const summary = container.createDiv({ cls: "plugin-groups-admin-summary" });
   summary.createSpan({ text: `${groupCount} ${groupCount === 1 ? "group" : "groups"}` });
   summary.createSpan({ text: `${plugins.length} installed` });
   summary.createSpan({ text: `${plugins.filter(plugin => plugin.enabled).length} enabled` });

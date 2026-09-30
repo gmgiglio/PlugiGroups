@@ -55,8 +55,8 @@ export function addGroup(data: GroupData, name: string, id?: string): boolean {
   if (!trimmed || data.groups.some(group => group.name.toLowerCase() === trimmed.toLowerCase())) return false;
   const groupId = id || crypto.randomUUID();
   if (data.groups.some(group => group.id === groupId)) return false;
-  if (data.ungroupedIndex === data.groups.length) data.ungroupedIndex++;
-  data.groups.push({ id: groupId, name: trimmed, pluginIds: [] });
+  data.ungroupedIndex++;
+  data.groups.unshift({ id: groupId, name: trimmed, pluginIds: [] });
   return true;
 }
 

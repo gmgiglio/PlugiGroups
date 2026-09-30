@@ -16,9 +16,9 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 24px;
+  gap: 20px;
   flex-wrap: wrap;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .plugin-groups-admin-heading { flex: 1; min-width: 0; }
@@ -32,7 +32,7 @@
 }
 
 .plugin-groups-admin-description {
-  margin: 8px 0 14px;
+  margin: 8px 0 0;
   color: var(--text-muted);
   font-size: var(--font-ui-small);
   line-height: 1.5;
@@ -40,15 +40,16 @@
 
 .plugin-groups-admin-summary {
   display: flex;
+  flex: 1;
   flex-wrap: wrap;
-  gap: 8px 16px;
+  gap: 6px 12px;
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
 }
 
 .plugin-groups-admin-summary span + span::before {
   content: "·";
-  margin-right: 16px;
+  margin-right: 12px;
   color: var(--text-faint);
 }
 
@@ -60,10 +61,20 @@
   gap: 8px;
 }
 
-.plugin-groups-admin-add { margin-left: auto; padding-top: 4px; }
+.plugin-groups-admin-group-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  width: 100%;
+  padding-top: 16px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.plugin-groups-admin-add { flex-wrap: wrap; }
 .plugin-groups-admin-add[hidden], .plugin-groups-admin-add-button[hidden] { display: none; }
-.plugin-groups-admin-add-button { margin-top: 4px; white-space: nowrap; }
-.plugin-groups-admin-add input { width: 180px; min-width: 0; }
+.plugin-groups-admin-add-button { white-space: nowrap; }
+.plugin-groups-admin-add input { width: 220px; min-width: 0; }
 .plugin-groups-admin-add button { white-space: nowrap; }
 
 .plugin-groups-admin-section {
@@ -112,9 +123,16 @@
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
+.plugin-groups-admin-section.is-collapsed {
+  margin-bottom: 4px;
+}
+
 .plugin-groups-admin-section.is-collapsed .plugin-groups-admin-section-header {
+  padding-block: 8px;
   border-radius: 12px;
 }
+
+.plugin-groups-admin-section.is-collapsed.is-group-drop-after::after { bottom: -4px; }
 
 .plugin-groups-admin .plugin-groups-admin-section-header h2 {
   flex: 0 1 auto;

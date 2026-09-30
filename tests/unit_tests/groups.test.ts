@@ -30,10 +30,10 @@ test("Ungrouped moves between named groups and keeps its position across changes
   assert.equal(reorderSection(data, null, "one", "before"), true);
   assert.deepEqual(orderedSectionIdsIncludingUngrouped(normalizeSavedGroupData(JSON.parse(JSON.stringify(data)))), [null, "one", "two"]);
   assert.equal(addGroup(data, "Third", "three"), true);
-  assert.deepEqual(orderedSectionIdsIncludingUngrouped(data), [null, "one", "two", "three"]);
+  assert.deepEqual(orderedSectionIdsIncludingUngrouped(data), ["three", null, "one", "two"]);
   assert.equal(removeGroup(data, "one"), true);
-  assert.deepEqual(orderedSectionIdsIncludingUngrouped(data), [null, "two", "three"]);
-  assert.deepEqual(data.groups.map(group => group.pluginIds), [["b"], []]);
+  assert.deepEqual(orderedSectionIdsIncludingUngrouped(data), ["three", null, "two"]);
+  assert.deepEqual(data.groups.map(group => group.pluginIds), [[], ["b"]]);
 });
 
 test("saved data drops duplicate assignments but keeps absent plugin IDs", () => {
@@ -62,7 +62,7 @@ test("groups accept unique names and moving a plugin gives it one group", () => 
   assert.equal(movePluginToGroup(data, "plugin", "one"), true);
   assert.equal(movePluginToGroup(data, "plugin", "two"), true);
   assert.equal(firstGroupIdForPlugin(data, "plugin"), "two");
-  assert.deepEqual(data.groups[0].pluginIds, []);
+  assert.deepEqual(data.groups.find(group => group.id === "one")!.pluginIds, []);
   assert.equal(movePluginToGroup(data, "plugin", null), true);
   assert.equal(firstGroupIdForPlugin(data, "plugin"), null);
 });
@@ -97,7 +97,7 @@ test("multiple group setting keeps memberships across saving and allows individu
   assert.equal(addPluginToGroup(data, "plugin", "two"), false);
   assert.deepEqual(normalizeSavedGroupData(JSON.parse(JSON.stringify(data))), data);
   assert.equal(removePluginFromGroup(data, "plugin", "one"), true);
-  assert.deepEqual(data.groups.map(group => group.pluginIds), [[], ["plugin"]]);
+  assert.deepEqual(data.groups.map(group => group.pluginIds), [["plugin"], []]);
   assert.equal(removePluginFromGroup(data, "plugin", "two"), true);
   assert.equal(firstGroupIdForPlugin(data, "plugin"), null);
 });
