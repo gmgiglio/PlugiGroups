@@ -277,7 +277,8 @@
   outline: 2px solid var(--interactive-accent);
   outline-offset: 3px;
 }
-.plugin-groups-admin-plugin.is-disabled .plugin-groups-admin-plugin-name { color: var(--text-muted); }
+.plugin-groups-admin-plugin.is-disabled .plugin-groups-admin-plugin-name,
+.plugin-groups-admin .plugin-groups-admin-section.is-disabled .plugin-groups-admin-collapse { color: var(--text-muted); }
 .plugin-groups-admin-plugin-description {
   margin-top: 2px;
   color: var(--text-muted);

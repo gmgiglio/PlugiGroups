@@ -39,6 +39,7 @@ export function renderGroup(context: ViewContext, container: HTMLElement, group:
   const groupPlugins = plugins.filter(plugin => group.pluginIds.includes(plugin.id));
   const { section, body } = createPluginSection(context, container, group.name, groupPlugins.length, group.id);
   section.dataset.groupId = group.id;
+  section.classList.toggle("is-disabled", groupEnabledState(pluginsEligibleForGroupToggle(groupPlugins, context.selfId)) === "disabled");
   renderSectionDragHandle(container, section, group.name, group.id);
   renderGroupActions(context, section, group, groupPlugins);
   registerPluginDropTarget(context, section, group.id, plugins);
