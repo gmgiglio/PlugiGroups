@@ -121,6 +121,10 @@ function handleGroupRenameKey(event: KeyboardEvent, context: ViewContext, group:
 }
 
 function confirmAndRemoveGroup(context: ViewContext, group: Group): void {
+  if (!context.data.confirmGroupDeletion) {
+    removeGroupAndRefresh(context, group);
+    return;
+  }
   const message = context.data.allowMultipleGroups
     ? "Plugins in other groups will keep those memberships."
     : "Its plugins will move to Ungrouped.";

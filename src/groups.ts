@@ -8,6 +8,7 @@ export interface GroupData {
   groups: Group[];
   allowMultipleGroups: boolean;
   showRibbonButton: boolean;
+  confirmGroupDeletion: boolean;
   ungroupedIndex: number;
 }
 
@@ -18,12 +19,13 @@ export function normalizeSavedGroupData(value: unknown): GroupData {
   const groupIds = new Set<string>();
   const allowMultipleGroups = isNonArrayRecord(value) && value.allowMultipleGroups === true;
   const showRibbonButton = !isNonArrayRecord(value) || value.showRibbonButton !== false;
+  const confirmGroupDeletion = !isNonArrayRecord(value) || value.confirmGroupDeletion !== false;
   const pluginIds = new Set<string>();
   for (const entry of source) {
     const group = normalizeSavedGroup(entry, groupIds, pluginIds, allowMultipleGroups);
     if (group !== null) groups.push(group);
   }
-  return { groups, allowMultipleGroups, showRibbonButton, ungroupedIndex: normalizeSavedUngroupedIndex(value, groups.length) };
+  return { groups, allowMultipleGroups, showRibbonButton, confirmGroupDeletion, ungroupedIndex: normalizeSavedUngroupedIndex(value, groups.length) };
 }
 
 function normalizeSavedUngroupedIndex(value: unknown, groupCount: number): number {

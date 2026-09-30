@@ -8,7 +8,7 @@ import { closeObsidianSettings, installedCommunityPlugins, openPluginSettingsOrC
 import { GroupsView, VIEW_TYPE } from "./view";
 
 export default class PlugiGroups extends Plugin {
-  data: GroupData = { groups: [], allowMultipleGroups: false, showRibbonButton: true, ungroupedIndex: 0 };
+  data: GroupData = normalizeSavedGroupData(null);
   saveQueue: Promise<void> = Promise.resolve();
   ribbonButton: HTMLElement | null = null;
 
@@ -62,12 +62,18 @@ class GroupsSettingTab extends PluginSettingTab {
         desc: "When turned off, each plugin stays in its first group.",
         control: { type: "toggle", key: "allowMultipleGroups" },
       },
+      {
+        name: "Confirm before deleting groups",
+        desc: "Show a confirmation dialog before deleting a group.",
+        control: { type: "toggle", key: "confirmGroupDeletion" },
+      },
     ];
   }
 
   getControlValue(key: string): unknown {
     if (key === "showRibbonButton") return this.plugin.data.showRibbonButton;
     if (key === "allowMultipleGroups") return this.plugin.data.allowMultipleGroups;
+    if (key === "confirmGroupDeletion") return this.plugin.data.confirmGroupDeletion;
     return undefined;
   }
 
@@ -75,7 +81,13 @@ class GroupsSettingTab extends PluginSettingTab {
     if (typeof value !== "boolean") return;
     if (key === "showRibbonButton") setRibbonButtonSetting(this.plugin, value);
     if (key === "allowMultipleGroups") setMultipleGroupsSetting(this.plugin, value);
+    if (key === "confirmGroupDeletion") setGroupDeletionConfirmationSetting(this.plugin, value);
   }
+}
+
+function setGroupDeletionConfirmationSetting(plugin: PlugiGroups, enabled: boolean): void {
+  plugin.data.confirmGroupDeletion = enabled;
+  queueGroupDataSave(plugin);
 }
 
 function setRibbonButtonSetting(plugin: PlugiGroups, visible: boolean): void {

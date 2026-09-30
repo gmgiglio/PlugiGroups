@@ -10,6 +10,8 @@ To hide the ribbon button, turn off **Show ribbon button** in the plugin setting
 
 **Ungrouped** lists plugins that are not in a group. Its search field filters by plugin name or ID. Deleting a group does not uninstall its plugins; they return to **Ungrouped** unless they belong to another group.
 
+To delete groups without a confirmation dialog, turn off **Confirm before deleting groups** in the plugin settings. Confirmation is enabled by default.
+
 ## Plugin controls
 
 - Use a plugin's switch to enable or disable it. A group's switch controls all installed plugins in that group.
