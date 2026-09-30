@@ -7,3 +7,5 @@
 /scripts/
 # Safeguard against accidentally copying the private test vault into this repository.
 /testVault_plugiGroups/
+
+/test_vault/

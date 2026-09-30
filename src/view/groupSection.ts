@@ -117,7 +117,6 @@ function confirmAndRemoveGroup(context: ViewContext, group: Group): void {
 
 function removeGroupAndRefresh(context: ViewContext, group: Group): void {
   if (!removeGroup(context.data, group.id)) return;
-  context.collapsedGroupIds.delete(group.id);
   saveGroupChangesAndRefreshViews(context);
 }
 

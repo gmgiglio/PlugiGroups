@@ -8,7 +8,7 @@ import { closeObsidianSettings, installedCommunityPlugins, openPluginSettingsOrC
 import { GroupsView, VIEW_TYPE } from "./view";
 
 export default class PlugiGroups extends Plugin {
-  data: GroupData = { groups: [], allowMultipleGroups: false, showRibbonButton: true, ungroupedIndex: 0 };
+  data: GroupData = { groups: [], allowMultipleGroups: false, showRibbonButton: true, ungroupedIndex: 0, collapsedGroupIds: [] };
   saveQueue: Promise<void> = Promise.resolve();
   ribbonButton: HTMLElement | null = null;
 
@@ -19,7 +19,6 @@ export default class PlugiGroups extends Plugin {
       app: this.app,
       data: this.data,
       ungroupedSearch: "",
-      collapsedGroupIds: new Set<string | null>(),
       getInstalledPlugins: () => installedCommunityPlugins(this.app),
       setPluginEnabled: (id, enabled) => setPluginEnabled(this.app, id, enabled),
       openPluginSettings: id => openPluginSettingsOrCommunityTab(this.app, id),

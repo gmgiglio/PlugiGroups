@@ -123,3 +123,21 @@ test("renaming checks duplicates and deleting returns plugins to ungrouped", () 
   assert.equal(removeGroup(data, "one"), true);
   assert.equal(firstGroupIdForPlugin(data, "plugin"), null);
 });
+
+
+test("collapse state defaults to expanded and validates saved section IDs", () => {
+  assert.deepEqual(normalizeSavedGroupData(null).collapsedGroupIds, []);
+  assert.deepEqual(normalizeSavedGroupData({ groups: [] }).collapsedGroupIds, []);
+  assert.deepEqual(normalizeSavedGroupData({ collapsedGroupIds: "one" }).collapsedGroupIds, []);
+  const data = normalizeSavedGroupData({
+    groups: [{ id: "one", name: "First", pluginIds: [] }, { id: "two", name: "Second", pluginIds: [] }],
+    collapsedGroupIds: ["one", null, "one", null, "missing", 123, {}, false],
+  });
+  assert.deepEqual(data.collapsedGroupIds, ["one", null]);
+  assert.deepEqual(normalizeSavedGroupData(JSON.parse(JSON.stringify(data))).collapsedGroupIds, ["one", null]);
+  renameGroup(data, "one", "Renamed");
+  reorderSection(data, "one", "two", "after");
+  assert.deepEqual(data.collapsedGroupIds, ["one", null]);
+  removeGroup(data, "one");
+  assert.deepEqual(data.collapsedGroupIds, [null]);
+});
