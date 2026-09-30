@@ -2,8 +2,16 @@
   box-sizing: border-box;
   height: 100%;
   overflow: auto;
+  overflow-anchor: none;
   padding: 36px 28px;
   container: plugin-groups / inline-size;
+}
+
+/* Keep room below the last header so collapsing it cannot clamp the scroll position. */
+.plugin-groups-admin::after {
+  content: "";
+  display: block;
+  height: 100%;
 }
 
 .plugin-groups-admin-header,
