@@ -10,6 +10,7 @@ export interface GroupData {
   showRibbonButton: boolean;
   confirmGroupDeletion: boolean;
   ungroupedIndex: number;
+  collapsedGroupIds: (string | null)[];
 }
 
 // Validate saved group data and fill in defaults before using it
@@ -25,7 +26,15 @@ export function normalizeSavedGroupData(value: unknown): GroupData {
     const group = normalizeSavedGroup(entry, groupIds, pluginIds, allowMultipleGroups);
     if (group !== null) groups.push(group);
   }
-  return { groups, allowMultipleGroups, showRibbonButton, confirmGroupDeletion, ungroupedIndex: normalizeSavedUngroupedIndex(value, groups.length) };
+  return { groups, allowMultipleGroups, showRibbonButton, confirmGroupDeletion,
+    ungroupedIndex: normalizeSavedUngroupedIndex(value, groups.length),
+    collapsedGroupIds: normalizeSavedCollapsedGroupIds(value, groupIds) };
+}
+
+function normalizeSavedCollapsedGroupIds(value: unknown, groupIds: Set<string>): (string | null)[] {
+  if (!isNonArrayRecord(value) || !Array.isArray(value.collapsedGroupIds)) return [];
+  return [...new Set(value.collapsedGroupIds.filter((id): id is string | null =>
+    id === null || (typeof id === "string" && groupIds.has(id))))];
 }
 
 function normalizeSavedUngroupedIndex(value: unknown, groupCount: number): number {
@@ -76,6 +85,7 @@ export function removeGroup(data: GroupData, id: string): boolean {
   if (index < 0) return false;
   if (index < data.ungroupedIndex) data.ungroupedIndex--;
   data.groups.splice(index, 1);
+  data.collapsedGroupIds = data.collapsedGroupIds.filter(groupId => groupId !== id);
   return true;
 }
 

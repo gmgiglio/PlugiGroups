@@ -7,7 +7,6 @@ export interface ViewContext {
   app: App;
   data: GroupData;
   ungroupedSearch: string;
-  collapsedGroupIds: Set<string | null>;
   getInstalledPlugins: () => InstalledPlugin[];
   setPluginEnabled: (id: string, enabled: boolean) => Promise<void>;
   openPluginSettings: (id: string) => SettingsDestination;

@@ -19,7 +19,6 @@ export default class PlugiGroups extends Plugin {
       app: this.app,
       data: this.data,
       ungroupedSearch: "",
-      collapsedGroupIds: new Set<string | null>(),
       getInstalledPlugins: () => installedCommunityPlugins(this.app),
       setPluginEnabled: (id, enabled) => setPluginEnabled(this.app, id, enabled),
       openPluginSettings: id => openPluginSettingsOrCommunityTab(this.app, id),
