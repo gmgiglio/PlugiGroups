@@ -45,7 +45,6 @@ function hideAddGroupForm(form: HTMLFormElement, addButton: HTMLButtonElement, i
 
 function renderGroupsHeading(header: HTMLElement): void {
   const heading = header.createDiv({ cls: "plugin-groups-admin-heading" });
-  heading.createEl("h1", { text: "Plugin groups" });
   heading.createEl("p", { cls: "plugin-groups-admin-description", text: "A place for every plugin. Drag to organize, click to configure." });
 }
 
