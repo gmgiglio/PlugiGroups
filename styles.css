@@ -23,18 +23,10 @@
 
 .plugin-groups-admin-heading { flex: 1; min-width: 0; }
 
-.plugin-groups-admin-header h1 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 650;
-  letter-spacing: -0.7px;
-  line-height: 1.25;
-}
-
 .plugin-groups-admin-description {
-  margin: 8px 0 0;
+  margin: 0;
   color: var(--text-muted);
-  font-size: var(--font-ui-small);
+  font-size: var(--font-ui-medium);
   line-height: 1.5;
 }
 
