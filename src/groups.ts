@@ -5,12 +5,14 @@ export interface Group {
 }
 
 export type CollapseMode = "individual" | "collapsed" | "expanded";
+export type OpenLocation = "tab" | "window";
 
 export interface GroupData {
   groups: Group[];
   allowMultipleGroups: boolean;
   showRibbonButton: boolean;
   confirmGroupDeletion: boolean;
+  openLocation: OpenLocation;
   ungroupedIndex: number;
   collapsedGroupIds: (string | null)[];
   collapseMode: CollapseMode;
@@ -31,6 +33,7 @@ export function normalizeSavedGroupData(value: unknown): GroupData {
     if (group !== null) groups.push(group);
   }
   return { groups, allowMultipleGroups, showRibbonButton, confirmGroupDeletion,
+    openLocation: isNonArrayRecord(value) && value.openLocation === "window" ? "window" : "tab",
     ungroupedIndex: normalizeSavedUngroupedIndex(value, groups.length),
     collapsedGroupIds: normalizeIndividualCollapsedGroupIds(value, groupIds),
     collapseMode: normalizeCollapseMode(value),

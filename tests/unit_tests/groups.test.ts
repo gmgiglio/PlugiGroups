@@ -55,6 +55,15 @@ test("ribbon button stays visible for existing data and respects a saved toggle"
   assert.equal(normalizeSavedGroupData({ groups: [], showRibbonButton: false }).showRibbonButton, false);
 });
 
+test("open location defaults to a tab and preserves the window preference across reloads", () => {
+  for (const value of [null, { groups: [] }, { openLocation: "invalid" }, { openLocation: true }]) {
+    assert.equal(normalizeSavedGroupData(value).openLocation, "tab");
+  }
+  const data = normalizeSavedGroupData({ openLocation: "window" });
+  assert.equal(data.openLocation, "window");
+  assert.equal(normalizeSavedGroupData(JSON.parse(JSON.stringify(data))).openLocation, "window");
+});
+
 test("groups accept unique names and moving a plugin gives it one group", () => {
   const data = normalizeSavedGroupData(null);
   assert.equal(addGroup(data, "Work", "one"), true);

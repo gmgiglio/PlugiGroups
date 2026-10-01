@@ -1,9 +1,10 @@
 import { Notice, Plugin, PluginSettingTab, WorkspaceLeaf } from "obsidian";
-import type { SettingDefinitionItem } from "obsidian";
+import type { SettingDefinitionItem, Workspace } from "obsidian";
 import { normalizeSavedGroupData, setMultipleGroupsAllowed } from "./groups";
-import type { GroupData } from "./groups";
+import type { GroupData, OpenLocation } from "./groups";
 import { pluginInventorySignature } from "./inventory";
 import { registerPluginInventoryRefreshListeners } from "./inventoryRefresh";
+import { registerDedicatedGroupsWindows } from "./dedicatedWindow";
 import { closeObsidianSettings, installedCommunityPlugins, openPluginSettingsOrCommunityTab, setPluginEnabled } from "./pluginApi";
 import { GroupsView, VIEW_TYPE } from "./view";
 
@@ -27,9 +28,10 @@ export default class PlugiGroups extends Plugin {
       queueGroupDataSave: () => queueGroupDataSave(this),
     }));
     updateRibbonButton(this);
-    this.addCommand({ id: "open-plugin-groups", name: "Open groups", callback: () => { void openGroupsTab(this); } });
+    this.addCommand({ id: "open-plugin-groups", name: "Open groups", callback: () => { void openGroupsView(this); } });
     this.addSettingTab(new GroupsSettingTab(this));
     registerGroupsViewInventoryRefresh(this);
+    registerDedicatedGroupsWindows(this, VIEW_TYPE);
   }
 }
 
@@ -46,9 +48,14 @@ class GroupsSettingTab extends PluginSettingTab {
         render: setting => {
           setting.addButton(button => button.setButtonText("Open PlugiGroups").onClick(() => {
             closeObsidianSettings(this.plugin.app);
-            void openGroupsTab(this.plugin);
+            void openGroupsView(this.plugin);
           }));
         },
+      },
+      {
+        name: "Open PlugiGroups in",
+        desc: "Choose where the ribbon, command palette, and settings button open PlugiGroups.",
+        control: { type: "dropdown", key: "openLocation", options: { tab: "Tab", window: "New window" } },
       },
       {
         name: "Show ribbon button",
@@ -69,6 +76,7 @@ class GroupsSettingTab extends PluginSettingTab {
   }
 
   getControlValue(key: string): unknown {
+    if (key === "openLocation") return this.plugin.data.openLocation;
     if (key === "showRibbonButton") return this.plugin.data.showRibbonButton;
     if (key === "allowMultipleGroups") return this.plugin.data.allowMultipleGroups;
     if (key === "confirmGroupDeletion") return this.plugin.data.confirmGroupDeletion;
@@ -76,11 +84,17 @@ class GroupsSettingTab extends PluginSettingTab {
   }
 
   setControlValue(key: string, value: unknown): void {
+    if (key === "openLocation" && (value === "tab" || value === "window")) setOpenLocationSetting(this.plugin, value);
     if (typeof value !== "boolean") return;
     if (key === "showRibbonButton") setRibbonButtonSetting(this.plugin, value);
     if (key === "allowMultipleGroups") setMultipleGroupsSetting(this.plugin, value);
     if (key === "confirmGroupDeletion") setGroupDeletionConfirmationSetting(this.plugin, value);
   }
+}
+
+function setOpenLocationSetting(plugin: PlugiGroups, location: OpenLocation): void {
+  plugin.data.openLocation = location;
+  queueGroupDataSave(plugin);
 }
 
 function setGroupDeletionConfirmationSetting(plugin: PlugiGroups, enabled: boolean): void {
@@ -102,7 +116,7 @@ function setMultipleGroupsSetting(plugin: PlugiGroups, allowed: boolean): void {
 
 function updateRibbonButton(plugin: PlugiGroups): void {
   if (plugin.data.showRibbonButton && plugin.ribbonButton === null) {
-    plugin.ribbonButton = plugin.addRibbonIcon("layout-grid", "Open PlugiGroups", () => { void openGroupsTab(plugin); });
+    plugin.ribbonButton = plugin.addRibbonIcon("layout-grid", "Open PlugiGroups", () => { void openGroupsView(plugin); });
   } else if (!plugin.data.showRibbonButton && plugin.ribbonButton !== null) {
     plugin.ribbonButton.remove();
     plugin.ribbonButton = null;
@@ -124,11 +138,21 @@ function registerGroupsViewInventoryRefresh(plugin: PlugiGroups): void {
   });
 }
 
-async function openGroupsTab(plugin: PlugiGroups): Promise<void> {
+async function openGroupsView(plugin: PlugiGroups): Promise<void> {
   const workspace = plugin.app.workspace;
-  const leaf = workspace.getLeavesOfType(VIEW_TYPE)[0] ?? workspace.getLeaf("tab");
+  const location = plugin.data.openLocation;
+  const leaf = workspace.getLeavesOfType(VIEW_TYPE).find(leaf =>
+    (leaf.getContainer() === workspace.rootSplit) === (location === "tab"))
+    ?? (location === "tab" ? createMainWindowTab(workspace) : workspace.getLeaf("window"));
   await leaf.setViewState({ type: VIEW_TYPE, active: true });
   await workspace.revealLeaf(leaf);
+}
+
+function createMainWindowTab(workspace: Workspace): WorkspaceLeaf {
+  const mainLeaf = workspace.getMostRecentLeaf(workspace.rootSplit);
+  if (!mainLeaf) return workspace.createLeafInParent(workspace.rootSplit, 0);
+  workspace.setActiveLeaf(mainLeaf, { focus: false });
+  return workspace.getLeaf("tab");
 }
 
 function refreshGroupsViewInLeaf(leaf: WorkspaceLeaf): void {

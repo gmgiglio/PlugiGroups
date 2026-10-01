@@ -13,7 +13,8 @@
     "test:collapse-persistence": "node tests/integration/collapsePersistence.mjs",
     "test:collapse-layout": "node tests/integration/collapseLayout.mjs",
     "test:search": "node tests/integration/globalSearch.mjs",
-    "test:group-sync": "node tests/integration/groupViewSync.mjs"
+    "test:group-sync": "node tests/integration/groupViewSync.mjs",
+    "test:dedicated-window": "node tests/integration/dedicatedWindow.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

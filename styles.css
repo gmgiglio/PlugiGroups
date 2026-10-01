@@ -489,3 +489,23 @@
   background: var(--background-modifier-hover);
 }
 .plugin-groups-admin-collapse-cycle svg { width: 20px; height: 20px; }
+.plugin-groups-admin-dedicated-window .workspace-tab-header-container-inner,
+.plugin-groups-admin-dedicated-window .workspace-tab-header-new-tab,
+.plugin-groups-admin-dedicated-window .workspace-tab-header-tab-list,
+.plugin-groups-admin-dedicated-window .workspace-tab-header-spacer,
+.plugin-groups-admin-dedicated-window .view-header {
+  display: none !important;
+}
+
+.plugin-groups-admin-dedicated-window .workspace-tab-header-container {
+  -webkit-app-region: drag;
+}
+
+.plugin-groups-admin-dedicated-window .workspace-tab-header-container::after {
+  content: "PlugiGroups";
+  margin: auto;
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+  pointer-events: none;
+}

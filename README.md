@@ -1,12 +1,16 @@
 PlugiGroups allows you to order plugins into groups and manage them.
 
-![Updated PlugiGroups UI showing six groups with plugin and group controls](./images/plugin-groups-2026-09.png)
+![PlugiGroups window showing six groups, global search, collapse control, and plugin switches](./images/plugin-groups-2026-10.png)
 
 ## Using the tab
 
 Open **PlugiGroups** from the ribbon or command palette. Select the **Add group** (+) icon to create a group. Drag plugins from **Ungrouped** into a group, use their **Move to** button to choose a group, or use **+ Add plugin** in a group to choose one from a searchable list. You can rename, reorder, collapse, and delete groups.
 
 To hide the ribbon button, turn off **Show ribbon button** in the plugin settings. The command palette entry remains available.
+
+Use **Open PlugiGroups in** in the plugin settings to choose **Tab** (the default) or **New window**. This applies to the ribbon, command palette, and settings button. Opening PlugiGroups focuses an existing view in the chosen location when available.
+
+The new window is dedicated to PlugiGroups, with a window title and no tab bar or view navigation. Other tabs opened in that window move to the main Obsidian window.
 
 The button immediately beside the group/plugin stats cycles through **saved group states** (list with collapse chevrons) → **all collapsed** (inward chevrons) → **all expanded** (outward chevrons) → saved states. Its icon shows the current mode, with text appearing on hover or keyboard focus; its tooltip describes the next action. Global modes preserve individual group states. Clicking a group's chevron changes only that group and saves its new state without switching the general mode. Selecting another general mode reapplies it to every group; the individual mode retains those manual changes. The selected mode and individual states persist across reloads and synchronize across tabs. The button is disabled during a global search, which reveals matching plugins.
 
