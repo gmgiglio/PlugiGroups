@@ -18,7 +18,6 @@ export default class PlugiGroups extends Plugin {
     this.registerView(VIEW_TYPE, leaf => new GroupsView(leaf, {
       app: this.app,
       data: this.data,
-      ungroupedSearch: "",
       getInstalledPlugins: () => installedCommunityPlugins(this.app),
       setPluginEnabled: (id, enabled) => setPluginEnabled(this.app, id, enabled),
       openPluginSettings: id => openPluginSettingsOrCommunityTab(this.app, id),

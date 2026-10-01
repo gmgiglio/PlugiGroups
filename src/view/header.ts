@@ -1,36 +1,49 @@
 import { Notice } from "obsidian";
+import { renderGroupsSearch, type GroupsSearchState } from "./search";
+import { createHeaderAction } from "./headerAction";
 import { addGroup } from "../groups";
 import type { InstalledPlugin } from "../inventory";
 import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
 
-export function renderGroupsHeader(context: ViewContext, container: HTMLElement, plugins: InstalledPlugin[]): void {
+export function renderGroupsHeader(context: ViewContext, container: HTMLElement, plugins: InstalledPlugin[], search: GroupsSearchState): void {
   const header = container.createDiv({ cls: "plugin-groups-admin-header" });
-  renderGroupsHeading(header);
-  renderPluginSettingsButton(context, header);
+  const introduction = header.createDiv({ cls: "plugin-groups-admin-introduction" });
+  renderGroupsHeading(introduction);
+  renderPluginSettingsButton(context, introduction);
   const controls = header.createDiv({ cls: "plugin-groups-admin-group-controls" });
   renderGroupsSummary(controls, context.data.groups.length, plugins);
-  const addButton = controls.createEl("button", { cls: "mod-cta plugin-groups-admin-add-button", text: "+ Add group", attr: { type: "button" } });
-  const form = controls.createEl("form", { cls: "plugin-groups-admin-add" });
+  const actions = controls.createDiv({ cls: "plugin-groups-admin-header-actions" });
+  renderAddGroupControls(context, actions, header);
+  renderGroupsSearch(search, header, container, context);
+}
+
+function renderAddGroupControls(context: ViewContext, actions: HTMLElement, header: HTMLElement): void {
+  const addButton = createHeaderAction(actions, "plus", "Add group", "plugin-groups-admin-add-button", "Add group");
+  const form = header.createEl("form", { cls: "plugin-groups-admin-add" });
   form.hidden = true;
   const input = form.createEl("input", { attr: { type: "text", placeholder: "New group name", "aria-label": "New group name" } });
   form.createEl("button", { cls: "mod-cta", text: "Create group", attr: { type: "submit" } });
   const cancel = form.createEl("button", { text: "Cancel", attr: { type: "button" } });
-  addButton.addEventListener("click", () => {
-    addButton.hidden = true;
-    form.hidden = false;
-    input.focus();
-  });
+  addButton.addEventListener("click", () => showAddGroupForm(form, addButton, input));
   cancel.addEventListener("click", () => hideAddGroupForm(form, addButton, input));
-  form.addEventListener("keydown", event => {
-    if (event.key !== "Escape") return;
-    event.preventDefault();
-    hideAddGroupForm(form, addButton, input);
-  });
+  form.addEventListener("keydown", event => closeAddGroupForm(event, form, addButton, input));
   form.addEventListener("submit", event => addGroupFromForm(event, context, input));
 }
 
+function showAddGroupForm(form: HTMLFormElement, addButton: HTMLButtonElement, input: HTMLInputElement): void {
+  addButton.hidden = true;
+  form.hidden = false;
+  input.focus();
+}
+
+function closeAddGroupForm(event: KeyboardEvent, form: HTMLFormElement, addButton: HTMLButtonElement, input: HTMLInputElement): void {
+  if (event.key !== "Escape") return;
+  event.preventDefault();
+  hideAddGroupForm(form, addButton, input);
+}
+
 function renderPluginSettingsButton(context: ViewContext, header: HTMLElement): void {
-  const button = header.createEl("button", { text: "Settings", attr: { type: "button", "aria-label": "Open PlugiGroups settings" } });
+  const button = createHeaderAction(header, "settings", "PlugiGroups settings", "plugin-groups-admin-settings-button", "Open PlugiGroups settings");
   button.addEventListener("click", () => {
     if (context.openPluginSettings(context.selfId) === "unavailable") new Notice("Could not open Obsidian settings.");
   });

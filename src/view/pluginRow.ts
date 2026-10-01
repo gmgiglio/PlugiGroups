@@ -9,6 +9,7 @@ import { startPluginDrag } from "./pluginDrop";
 export function renderPluginRow(context: ViewContext, list: HTMLElement, plugin: InstalledPlugin, groupId: string | null): void {
   const row = list.createDiv({ cls: `plugin-groups-admin-plugin${plugin.enabled ? "" : " is-disabled"}${groupId === null ? "" : " is-grouped"}` });
   setIcon(row.createSpan({ cls: "plugin-groups-admin-grip", attr: { "aria-hidden": "true" } }), "grip-vertical");
+  row.dataset.pluginSearch = `${plugin.name}\n${plugin.id}`.toLocaleLowerCase();
   row.draggable = true;
   row.addEventListener("dragstart", event => startPluginDrag(event, plugin.id, groupId));
   row.addEventListener("click", event => openPluginSettingsFromRow(event, context, plugin));

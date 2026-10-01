@@ -6,7 +6,6 @@ import type { SettingsDestination } from "../pluginApi";
 export interface ViewContext {
   app: App;
   data: GroupData;
-  ungroupedSearch: string;
   getInstalledPlugins: () => InstalledPlugin[];
   setPluginEnabled: (id: string, enabled: boolean) => Promise<void>;
   openPluginSettings: (id: string) => SettingsDestination;

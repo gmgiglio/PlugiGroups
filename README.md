@@ -4,11 +4,11 @@ PlugiGroups allows you to order plugins into groups and manage them.
 
 ## Using the tab
 
-Open **PlugiGroups** from the ribbon or command palette. Select **+ Add group** to create a group. Drag plugins from **Ungrouped** into a group, use their **Move to** button to choose a group, or use **+ Add plugin** in a group to choose one from a searchable list. You can rename, reorder, collapse, and delete groups.
+Open **PlugiGroups** from the ribbon or command palette. Select the **Add group** (+) icon to create a group. Drag plugins from **Ungrouped** into a group, use their **Move to** button to choose a group, or use **+ Add plugin** in a group to choose one from a searchable list. You can rename, reorder, collapse, and delete groups.
 
 To hide the ribbon button, turn off **Show ribbon button** in the plugin settings. The command palette entry remains available.
 
-**Ungrouped** lists plugins that are not in a group. Its search field filters by plugin name or ID. Deleting a group does not uninstall its plugins; they return to **Ungrouped** unless they belong to another group.
+**Ungrouped** lists plugins that are not in a group. Use the search bar below the header controls to search by plugin name or ID across all groups and Ungrouped. Results update as you type, including plugins in collapsed groups. Clear the field or press **Escape** to show everything again. Ungrouped also has its own permanent search bar. Its search icon focuses the field. This filters only Ungrouped, together with any global search. Press **Escape** in that field to clear its filter. Deleting a group does not uninstall its plugins; they return to **Ungrouped** unless they belong to another group.
 
 To delete groups without a confirmation dialog, turn off **Confirm before deleting groups** in the plugin settings. Confirmation is enabled by default.
 

@@ -12,6 +12,7 @@
     "test:integration": "node tests/integration/liveRefresh.mjs",
     "test:collapse-persistence": "node tests/integration/collapsePersistence.mjs",
     "test:collapse-layout": "node tests/integration/collapseLayout.mjs",
+    "test:search": "node tests/integration/globalSearch.mjs",
     "test:group-sync": "node tests/integration/groupViewSync.mjs"
   },
   "devDependencies": {
