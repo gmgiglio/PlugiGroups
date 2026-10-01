@@ -1,5 +1,6 @@
 import { SearchComponent } from "obsidian";
 import type { ViewContext } from "./context";
+import { isSectionCollapsed } from "../groups";
 
 export interface GroupsSearchState {
   query: string;
@@ -31,6 +32,7 @@ function clearGroupsSearch(event: KeyboardEvent, state: GroupsSearchState, searc
 
 export function applyGroupsSearch(state: GroupsSearchState, container: HTMLElement, context: ViewContext): void {
   const query = state.query.trim().toLocaleLowerCase();
+  container.querySelector<HTMLButtonElement>(".plugin-groups-admin-collapse-cycle")!.disabled = query !== "";
   const sections = Array.from(container.querySelectorAll<HTMLElement>(".plugin-groups-admin-section"));
   for (const section of sections) filterPluginSection(section, query, state, context);
   renderSearchEmptyState(container, query !== "" && sections.every(section => section.hidden));
@@ -50,7 +52,7 @@ function filterPluginSection(section: HTMLElement, query: string, state: GroupsS
 
 function updateSearchSectionCollapse(section: HTMLElement, query: string, context: ViewContext): void {
   const searching = query !== "";
-  const collapsed = !searching && context.data.collapsedGroupIds.includes(section.dataset.groupId || null);
+  const collapsed = !searching && isSectionCollapsed(context.data, section.dataset.groupId || null);
   section.querySelector<HTMLElement>(".plugin-groups-admin-section-body")!.hidden = collapsed;
   section.classList.toggle("is-collapsed", collapsed);
   const button = section.querySelector<HTMLButtonElement>(".plugin-groups-admin-collapse")!;

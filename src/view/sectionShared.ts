@@ -1,4 +1,5 @@
 import { setIcon } from "obsidian";
+import { isSectionCollapsed, setSectionCollapsed } from "../groups";
 import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
 
 interface GroupSection {
@@ -11,7 +12,7 @@ export function createPluginSection(context: ViewContext, container: HTMLElement
   const heading = section.createDiv({ cls: "plugin-groups-admin-section-header" });
   const body = section.createDiv({ cls: "plugin-groups-admin-section-body" });
   body.id = `plugin-groups-admin-body-${crypto.randomUUID()}`;
-  body.hidden = context.data.collapsedGroupIds.includes(groupId);
+  body.hidden = isSectionCollapsed(context.data, groupId);
   section.classList.toggle("is-collapsed", body.hidden);
   renderCollapseButton(context, section, heading, body, name, groupId);
   heading.createSpan({ cls: "plugin-groups-admin-count", text: String(count) });
@@ -29,8 +30,7 @@ function renderCollapseButton(context: ViewContext, section: HTMLElement, headin
 
 function toggleSectionCollapse(context: ViewContext, section: HTMLElement, body: HTMLElement, button: HTMLButtonElement, name: string, groupId: string | null): void {
   body.hidden = !body.hidden;
-  if (body.hidden) context.data.collapsedGroupIds.push(groupId);
-  else context.data.collapsedGroupIds = context.data.collapsedGroupIds.filter(id => id !== groupId);
+  setSectionCollapsed(context.data, groupId, body.hidden);
   section.classList.toggle("is-collapsed", body.hidden);
   updateCollapseButtonState(button, name, body.hidden);
   saveGroupChangesAndRefreshViews(context);

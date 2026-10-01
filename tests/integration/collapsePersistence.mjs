@@ -53,6 +53,11 @@ const setup = `
   const leaves = () => app.workspace.getLeavesOfType(${JSON.stringify(viewType)});
   const section = (view, id) => view.contentEl.querySelector('[data-group-id="' + (id ?? '') + '"]');
   const isCollapsed = (view, id) => section(view, id).querySelector(".plugin-groups-admin-section-body").hidden;
+  const selectMode = (view, mode) => {
+    for (let step = 0; step < 3 && plugin.data.collapseMode !== mode; step++) {
+      view.contentEl.querySelector(".plugin-groups-admin-collapse-cycle").click();
+    }
+  };
   const toggle = (view, id) => section(view, id).querySelector(".plugin-groups-admin-collapse").click();
   const check = (condition, message) => { if (!condition) throw new Error(message); };
   const open = async () => {
@@ -69,6 +74,8 @@ try {
     plugin.data.groups.push({ id: ${JSON.stringify(groupId)}, name: "Collapse persistence fixture", pluginIds: [] },
       { id: ${JSON.stringify(expandedId)}, name: "Expanded persistence fixture", pluginIds: [] });
     plugin.data.collapsedGroupIds = [];
+    plugin.data.collapseMode = "individual";
+    plugin.data.collapseModeExceptionIds = [];
     const first = await open();
     const second = await open();
     toggle(first, ${JSON.stringify(groupId)});
@@ -93,8 +100,69 @@ try {
   await runInApp(`${setup}
     const view = await open();
     check(!isCollapsed(view, ${JSON.stringify(groupId)}) && !isCollapsed(view, null), "Expansion did not persist across reload");
+    toggle(view, ${JSON.stringify(groupId)});
+    toggle(view, null);
+    const second = await open();
+    const cycleButton = view.contentEl.querySelector(".plugin-groups-admin-collapse-cycle");
+    check(view.contentEl.querySelector(".plugin-groups-admin-summary").nextElementSibling === cycleButton, "Cycle button must appear after the stats");
+    for (const mode of ["collapsed", "expanded", "individual"]) {
+      const cycle = second.contentEl.querySelector(".plugin-groups-admin-collapse-cycle");
+      cycle.focus();
+      cycle.click();
+      check(plugin.data.collapseMode === mode, "Cycle button selected the wrong mode");
+      for (const target of [view, second]) {
+        check(target.contentEl.querySelector(".plugin-groups-admin-collapse-cycle").dataset.currentMode === mode, "Cycle button did not synchronize");
+        const label = { individual: "some expanded", collapsed: "all collapsed", expanded: "all expanded" }[mode];
+        check(target.contentEl.querySelector(".plugin-groups-admin-collapse-cycle").textContent === label, "Cycle button text did not update");
+      }
+      check(second.contentEl.ownerDocument.activeElement === second.contentEl.querySelector(".plugin-groups-admin-collapse-cycle"), "Cycle button lost keyboard focus");
+    }
+    for (const mode of ["collapsed", "expanded", "individual", "collapsed"]) {
+      selectMode(view, mode);
+      for (const target of [view, second]) {
+        check(target.contentEl.querySelector(".plugin-groups-admin-collapse-cycle").dataset.currentMode === mode, "Active mode did not synchronize");
+        if (mode === "individual") {
+          check(isCollapsed(target, ${JSON.stringify(groupId)}) && isCollapsed(target, null) && !isCollapsed(target, ${JSON.stringify(expandedId)}), "Saved states were lost");
+        } else {
+          check(Array.from(target.contentEl.querySelectorAll(".plugin-groups-admin-section-body")).every(body => body.hidden === (mode === "collapsed")), "Global mode did not apply to all sections");
+        }
+      }
+    }
+    check(plugin.data.collapsedGroupIds.includes(${JSON.stringify(groupId)}) && !plugin.data.collapsedGroupIds.includes(${JSON.stringify(expandedId)}), "Modes changed saved individual states");
+    await plugin.saveQueue;
   `);
-  console.log("Collapsed and expanded groups persisted across tab reopening and plugin reload; open tabs stayed synchronized.");
+  cli("plugin:reload", `id=${pluginId}`);
+  await runInApp(`${setup}
+    const view = await open();
+    check(plugin.data.collapseMode === "collapsed" && isCollapsed(view, ${JSON.stringify(expandedId)}), "Collapsed mode did not persist");
+    toggle(view, ${JSON.stringify(groupId)});
+    check(plugin.data.collapseMode === "collapsed" && !plugin.data.collapsedGroupIds.includes(${JSON.stringify(groupId)}) && !isCollapsed(view, ${JSON.stringify(groupId)}), "Expansion must update saved state without changing global mode");
+    check(isCollapsed(view, ${JSON.stringify(expandedId)}) && isCollapsed(view, null), "Individual expansion changed other sections");
+    selectMode(view, "expanded");
+    await plugin.saveQueue;
+  `);
+  cli("plugin:reload", `id=${pluginId}`);
+  await runInApp(`${setup}
+    const view = await open();
+    check(plugin.data.collapseMode === "expanded" && !isCollapsed(view, null), "Expanded mode did not persist");
+    toggle(view, ${JSON.stringify(groupId)});
+    check(plugin.data.collapseMode === "expanded" && plugin.data.collapsedGroupIds.includes(${JSON.stringify(groupId)}) && isCollapsed(view, ${JSON.stringify(groupId)}), "Collapse must update saved state without changing global mode");
+    check(!isCollapsed(view, ${JSON.stringify(expandedId)}) && !isCollapsed(view, null), "Individual collapse changed other sections");
+    selectMode(view, "collapsed");
+    view.contentEl.querySelector(".plugin-groups-admin-ungrouped-search-button").click();
+    check(plugin.data.collapseMode === "collapsed" && !isCollapsed(view, null), "Ungrouped search must expand without changing global mode");
+    const second = await open();
+    check(!isCollapsed(second, null) && isCollapsed(second, ${JSON.stringify(groupId)}), "Manual changes must synchronize without affecting others");
+    await plugin.saveQueue;
+  `);
+  cli("plugin:reload", `id=${pluginId}`);
+  await runInApp(`${setup}
+    const view = await open();
+    check(plugin.data.collapseMode === "collapsed" && !isCollapsed(view, null) && isCollapsed(view, ${JSON.stringify(groupId)}), "Manual changes under global mode did not persist");
+    selectMode(view, "individual");
+    check(!isCollapsed(view, null) && isCollapsed(view, ${JSON.stringify(groupId)}) && !isCollapsed(view, ${JSON.stringify(expandedId)}), "Individual mode did not retain manual changes");
+  `);
+  console.log("Individual collapse and collapse all persisted across plugin reload; open tabs stayed synchronized.");
 } finally {
   await runInApp(`${setup}
     await plugin.saveQueue;

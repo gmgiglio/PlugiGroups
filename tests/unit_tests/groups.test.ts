@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { isSectionCollapsed, setSectionCollapsed, setCollapseMode } from "../../src/groups";
 import { addGroup, addPluginToGroup, normalizeSavedGroupData, firstGroupIdForPlugin, movePluginToGroup, removeGroup, removePluginFromGroup, renameGroup, reorderSection, orderedSectionIdsIncludingUngrouped, setMultipleGroupsAllowed } from "../../src/groups";
 
 test("reordering groups preserves memberships and persists the new order", () => {
@@ -140,4 +141,67 @@ test("collapse state defaults to expanded and validates saved section IDs", () =
   assert.deepEqual(data.collapsedGroupIds, ["one", null]);
   removeGroup(data, "one");
   assert.deepEqual(data.collapsedGroupIds, [null]);
+});
+
+test("collapse all preserves individual states across reload and group changes", () => {
+  const data = normalizeSavedGroupData({ groups: [
+    { id: "one", name: "First", pluginIds: [] },
+    { id: "two", name: "Second", pluginIds: [] },
+  ], collapsedGroupIds: ["one", null] });
+  data.collapseMode = "collapsed";
+  const reloaded = normalizeSavedGroupData(JSON.parse(JSON.stringify(data)));
+  assert.deepEqual(reloaded.collapsedGroupIds, ["one", null]);
+  assert.equal(reloaded.collapseMode, "collapsed");
+  removeGroup(reloaded, "one");
+  addGroup(reloaded, "Third", "three");
+  reloaded.collapseMode = "individual";
+  assert.deepEqual(reloaded.collapsedGroupIds, [null]);
+  assert.equal(reloaded.collapseMode, "individual");
+});
+
+test("collapse all defaults off and migrates the old snapshot without losing individual states", () => {
+  assert.equal(normalizeSavedGroupData(null).collapseMode, "individual");
+  const data = normalizeSavedGroupData({ groups: [
+    { id: "one", name: "First", pluginIds: [] },
+    { id: "two", name: "Second", pluginIds: [] },
+  ], collapsedGroupIds: ["one", "two", null], previousCollapsedGroupIds: ["one", "missing", null] });
+  assert.equal(data.collapseMode, "collapsed");
+  assert.deepEqual(data.collapsedGroupIds, ["one", null]);
+  assert.equal("previousCollapsedGroupIds" in data, false);
+  data.collapseMode = "individual";
+  assert.deepEqual(data.collapsedGroupIds, ["one", null]);
+  assert.equal(data.collapseMode, "individual");
+});
+
+test("manual changes preserve the global mode, affect only that group, and persist", () => {
+  const data = normalizeSavedGroupData({ groups: [
+    { id: "one", name: "First", pluginIds: [] },
+    { id: "two", name: "Second", pluginIds: [] },
+  ], collapsedGroupIds: ["one", null], collapseMode: "collapsed" });
+  setSectionCollapsed(data, "one", false);
+  assert.equal(data.collapseMode, "collapsed");
+  assert.equal(isSectionCollapsed(data, "one"), false);
+  assert.equal(isSectionCollapsed(data, "two"), true);
+  const reloaded = normalizeSavedGroupData(JSON.parse(JSON.stringify(data)));
+  assert.equal(isSectionCollapsed(reloaded, "one"), false);
+  assert.equal(reloaded.collapseMode, "collapsed");
+  setCollapseMode(reloaded, "expanded");
+  assert.deepEqual(reloaded.collapseModeExceptionIds, []);
+  setSectionCollapsed(reloaded, "two", true);
+  assert.equal(reloaded.collapseMode, "expanded");
+  assert.equal(isSectionCollapsed(reloaded, "two"), true);
+  assert.equal(isSectionCollapsed(reloaded, null), false);
+  setCollapseMode(reloaded, "individual");
+  assert.deepEqual(reloaded.collapsedGroupIds, [null, "two"]);
+  assert.equal(isSectionCollapsed(reloaded, "one"), false);
+  assert.equal(isSectionCollapsed(reloaded, "two"), true);
+});
+
+test("manual exceptions validate saved IDs and are removed with deleted groups", () => {
+  const data = normalizeSavedGroupData({ groups: [{ id: "one", name: "First", pluginIds: [] }],
+    collapseModeExceptionIds: ["one", "one", null, "missing", 123] });
+  assert.deepEqual(data.collapseModeExceptionIds, ["one", null]);
+  removeGroup(data, "one");
+  assert.deepEqual(data.collapseModeExceptionIds, [null]);
+  assert.equal(normalizeSavedGroupData({ collapseAll: true }).collapseMode, "collapsed");
 });

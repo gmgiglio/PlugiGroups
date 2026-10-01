@@ -8,6 +8,8 @@ Open **PlugiGroups** from the ribbon or command palette. Select the **Add group*
 
 To hide the ribbon button, turn off **Show ribbon button** in the plugin settings. The command palette entry remains available.
 
+The button immediately beside the group/plugin stats cycles through **saved group states** (list with collapse chevrons) → **all collapsed** (inward chevrons) → **all expanded** (outward chevrons) → saved states. Its icon shows the current mode, with text appearing on hover or keyboard focus; its tooltip describes the next action. Global modes preserve individual group states. Clicking a group's chevron changes only that group and saves its new state without switching the general mode. Selecting another general mode reapplies it to every group; the individual mode retains those manual changes. The selected mode and individual states persist across reloads and synchronize across tabs. The button is disabled during a global search, which reveals matching plugins.
+
 **Ungrouped** lists plugins that are not in a group. Use the search bar below the header controls to search by plugin name or ID across all groups and Ungrouped. Results update as you type, including plugins in collapsed groups. Clear the field or press **Escape** to show everything again. Ungrouped also has its own permanent search bar. Its search icon focuses the field. This filters only Ungrouped, together with any global search. Press **Escape** in that field to clear its filter. Deleting a group does not uninstall its plugins; they return to **Ungrouped** unless they belong to another group.
 
 To delete groups without a confirmation dialog, turn off **Confirm before deleting groups** in the plugin settings. Confirmation is enabled by default.

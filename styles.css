@@ -457,3 +457,35 @@
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
+
+.plugin-groups-admin-stats-controls {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.plugin-groups-admin-stats-controls .plugin-groups-admin-summary { flex: 0 1 auto; }
+.plugin-groups-admin .plugin-groups-admin-collapse-cycle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 40px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 8px;
+  box-shadow: none;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  white-space: nowrap;
+}
+.plugin-groups-admin-collapse-cycle:is(:hover, :focus-visible) .plugin-groups-admin-action-label {
+  max-width: 12em;
+  margin-left: 6px;
+  opacity: 1;
+}
+.plugin-groups-admin .plugin-groups-admin-collapse-cycle:hover {
+  background: var(--background-modifier-hover);
+}
+.plugin-groups-admin-collapse-cycle svg { width: 20px; height: 20px; }

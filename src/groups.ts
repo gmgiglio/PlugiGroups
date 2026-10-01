@@ -4,6 +4,8 @@ export interface Group {
   pluginIds: string[];
 }
 
+export type CollapseMode = "individual" | "collapsed" | "expanded";
+
 export interface GroupData {
   groups: Group[];
   allowMultipleGroups: boolean;
@@ -11,6 +13,8 @@ export interface GroupData {
   confirmGroupDeletion: boolean;
   ungroupedIndex: number;
   collapsedGroupIds: (string | null)[];
+  collapseMode: CollapseMode;
+  collapseModeExceptionIds: (string | null)[];
 }
 
 // Validate saved group data and fill in defaults before using it
@@ -28,7 +32,46 @@ export function normalizeSavedGroupData(value: unknown): GroupData {
   }
   return { groups, allowMultipleGroups, showRibbonButton, confirmGroupDeletion,
     ungroupedIndex: normalizeSavedUngroupedIndex(value, groups.length),
-    collapsedGroupIds: normalizeSavedCollapsedGroupIds(value, groupIds) };
+    collapsedGroupIds: normalizeIndividualCollapsedGroupIds(value, groupIds),
+    collapseMode: normalizeCollapseMode(value),
+    collapseModeExceptionIds: normalizeSavedCollapseExceptions(value, groupIds) };
+}
+
+function normalizeSavedCollapseExceptions(value: unknown, groupIds: Set<string>): (string | null)[] {
+  const ids = isNonArrayRecord(value) ? value.collapseModeExceptionIds : null;
+  return normalizeSavedCollapsedGroupIds({ collapsedGroupIds: ids }, groupIds);
+}
+
+function normalizeCollapseMode(value: unknown): CollapseMode {
+  if (!isNonArrayRecord(value)) return "individual";
+  if (value.collapseMode === "individual" || value.collapseMode === "collapsed" || value.collapseMode === "expanded") return value.collapseMode;
+  return value.collapseAll === true || hasLegacyCollapseSnapshot(value) ? "collapsed" : "individual";
+}
+
+function hasLegacyCollapseSnapshot(value: Record<string, unknown>): boolean {
+  return typeof value.collapseAll !== "boolean" && Array.isArray(value.previousCollapsedGroupIds);
+}
+
+function normalizeIndividualCollapsedGroupIds(value: unknown, groupIds: Set<string>): (string | null)[] {
+  const source = isNonArrayRecord(value) && hasLegacyCollapseSnapshot(value)
+    ? { collapsedGroupIds: value.previousCollapsedGroupIds } : value;
+  return normalizeSavedCollapsedGroupIds(source, groupIds);
+}
+
+export function isSectionCollapsed(data: GroupData, groupId: string | null): boolean {
+  if (data.collapseMode === "individual" || data.collapseModeExceptionIds.includes(groupId)) return data.collapsedGroupIds.includes(groupId);
+  return data.collapseMode === "collapsed";
+}
+
+export function setCollapseMode(data: GroupData, mode: CollapseMode): void {
+  data.collapseMode = mode;
+  data.collapseModeExceptionIds = [];
+}
+
+export function setSectionCollapsed(data: GroupData, groupId: string | null, collapsed: boolean): void {
+  if (data.collapseMode !== "individual" && !data.collapseModeExceptionIds.includes(groupId)) data.collapseModeExceptionIds.push(groupId);
+  data.collapsedGroupIds = data.collapsedGroupIds.filter(id => id !== groupId);
+  if (collapsed) data.collapsedGroupIds.push(groupId);
 }
 
 function normalizeSavedCollapsedGroupIds(value: unknown, groupIds: Set<string>): (string | null)[] {
@@ -86,6 +129,7 @@ export function removeGroup(data: GroupData, id: string): boolean {
   if (index < data.ungroupedIndex) data.ungroupedIndex--;
   data.groups.splice(index, 1);
   data.collapsedGroupIds = data.collapsedGroupIds.filter(groupId => groupId !== id);
+  data.collapseModeExceptionIds = data.collapseModeExceptionIds.filter(groupId => groupId !== id);
   return true;
 }
 

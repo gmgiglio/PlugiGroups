@@ -69,6 +69,8 @@ try {
     const id = crypto.randomUUID();
     plugin.data.groups = [{ id, name: "Search fixture", pluginIds: [first.id] }];
     plugin.data.collapsedGroupIds = [id];
+    plugin.data.collapseMode = "individual";
+    plugin.data.collapseModeExceptionIds = [];
     const view = await open();
     const container = view.contentEl;
     const searchInput = () => container.querySelector(".plugin-groups-admin-search input");
@@ -84,6 +86,7 @@ try {
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "f", code: "KeyF", ctrlKey: true, bubbles: true, cancelable: true }));
     check(document.activeElement === searchInput(), "Ctrl+F must focus search in the active groups view");
     search("  " + first.id.toUpperCase() + "  ");
+    check(container.querySelector(".plugin-groups-admin-collapse-cycle").disabled, "Global search must disable collapse all");
     check(visibleRows().length >= 1 && visibleRows().every(row => row.dataset.pluginSearch.includes(first.id.toLowerCase())), "ID matching should ignore case and surrounding whitespace");
     check(!section(view, id).querySelector(".plugin-groups-admin-section-body").hidden, "Search must reveal collapsed matches");
     check(plugin.data.collapsedGroupIds.includes(id), "Search must preserve saved collapse state");
@@ -96,6 +99,7 @@ try {
     search("no-match-" + crypto.randomUUID());
     check(visibleRows().length === 0 && !container.querySelector(".plugin-groups-admin-search-empty").hidden, "No results must show empty state");
     search("");
+    check(!container.querySelector(".plugin-groups-admin-collapse-cycle").disabled, "Clearing search must enable collapse all");
     check(visibleRows().length === installed.length, "Clearing must restore all rows");
     check(section(view, id).querySelector(".plugin-groups-admin-section-body").hidden, "Clearing must restore collapse state");
     search(first.id);
