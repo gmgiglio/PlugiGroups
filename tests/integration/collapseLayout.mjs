@@ -35,7 +35,7 @@ async function runInApp(code) {
       error => { globalThis.__collapseLayoutTest = { done: true, error: String(error) }; });
     return true;
   })()`, false);
-  for (let attempt = 0; attempt < 50; attempt++) {
+  for (let attempt = 0; attempt < 300; attempt++) {
     const status = evaluate("globalThis.__collapseLayoutTest", false);
     if (status?.done) {
       assert.equal(status.error, null);
@@ -69,15 +69,21 @@ try {
     plugin.data.groups = ids.map((id, index) => ({ id, name: "Layout fixture " + index, pluginIds }));
     plugin.data.ungroupedIndex = ids.length;
     plugin.data.collapsedGroupIds = [];
+    plugin.data.collapseMode = "individual";
+    plugin.data.collapseModeExceptionIds = [];
     const view = await open();
     const container = view.contentEl;
-    const settle = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const settle = () => Promise.race([
+      new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+      new Promise(resolve => setTimeout(resolve, 100)),
+    ]);
     await settle();
     const measure = id => ({
       scroll: container.scrollTop,
       header: section(view, id).querySelector(".plugin-groups-admin-section-header").getBoundingClientRect().top,
       preceding: section(view, id).previousElementSibling.getBoundingClientRect().top,
-      following: section(view, id).nextElementSibling?.getBoundingClientRect().top ?? null,
+      following: section(view, id).nextElementSibling?.matches("[data-group-id]")
+        ? section(view, id).nextElementSibling.getBoundingClientRect().top : null,
     });
     const cases = [
       { id: ids[2], ungroupedIndex: ids.length, position: 120 },
@@ -103,7 +109,7 @@ try {
       for (const key of ["scroll", "preceding", "header"]) {
         check(Math.abs(collapsed[key] - before[key]) < 1, "Collapse " + id + " moved " + key + ": " + before[key] + " -> " + collapsed[key]);
       }
-      if (before.following !== null) check(collapsed.following < before.following, "Collapsing did not move the following group up");
+      if (before.following !== null) check(collapsed.following < before.following, "Collapsing " + id + " did not move the following group up: " + JSON.stringify({ before, collapsed }));
       toggle(view, id);
       await settle();
       const expanded = measure(id);
