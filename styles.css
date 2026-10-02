@@ -489,12 +489,12 @@
   background: var(--background-modifier-hover);
 }
 .plugin-groups-admin-collapse-cycle svg { width: 20px; height: 20px; }
-.plugin-groups-admin-dedicated-window .workspace-tab-header-container-inner,
-.plugin-groups-admin-dedicated-window .workspace-tab-header-new-tab,
-.plugin-groups-admin-dedicated-window .workspace-tab-header-tab-list,
-.plugin-groups-admin-dedicated-window .workspace-tab-header-spacer,
-.plugin-groups-admin-dedicated-window .view-header {
-  display: none !important;
+body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-container-inner,
+body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-new-tab,
+body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-tab-list,
+body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-spacer,
+body.plugin-groups-admin-dedicated-window .workspace .view-header {
+  display: none;
 }
 
 .plugin-groups-admin-dedicated-window .workspace-tab-header-container {
