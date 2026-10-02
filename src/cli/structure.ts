@@ -88,9 +88,12 @@ function requireUnique(values: unknown[], field: string): void {
 function validateSectionIds(input: unknown, groups: Group[]): (string | null)[] {
   if (!Array.isArray(input)) throw new Error("Collapse group IDs must be an array");
   const known = new Set(groups.map(group => group.id));
-  if (input.some(id => !known.has(id))) throw new Error("Unknown collapse group ID");
-  requireUnique(input, "collapse group IDs");
-  return input.map(id => id === UNGROUPED_ID ? null : id) as (string | null)[];
+  const ids = input.map((id: unknown): string | null => {
+    if (typeof id !== "string" || !known.has(id)) throw new Error("Unknown collapse group ID");
+    return id === UNGROUPED_ID ? null : id;
+  });
+  requireUnique(ids, "collapse group IDs");
+  return ids;
 }
 
 function validateCollapseMode(input: unknown): GroupData["collapseMode"] {
@@ -123,5 +126,5 @@ function validateLegacyUngrouped(input: unknown, count: number): number {
 
 function legacySectionIds(input: unknown, groups: Group[]): (string | null)[] {
   if (!Array.isArray(input)) throw new Error("Collapse group IDs must be an array");
-  return validateSectionIds(input.map(id => id ?? UNGROUPED_ID), groups);
+  return validateSectionIds(input.map((id: unknown): unknown => id ?? UNGROUPED_ID), groups);
 }
