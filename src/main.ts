@@ -7,6 +7,11 @@ import { registerPluginInventoryRefreshListeners } from "./inventoryRefresh";
 import { registerDedicatedGroupsWindows } from "./dedicatedWindow";
 import { closeObsidianSettings, installedCommunityPlugins, openPluginSettingsOrCommunityTab, setPluginEnabled } from "./pluginApi";
 import { GroupsView, VIEW_TYPE } from "./view";
+import { registerGroupsCli } from "./cli";
+import { cloneGroupData } from "./cli/parameters";
+import { readFile } from "node:fs/promises";
+import { isAbsolute, resolve } from "node:path";
+import { FileSystemAdapter } from "obsidian";
 
 export default class PlugiGroups extends Plugin {
   data: GroupData = normalizeSavedGroupData(null);
@@ -32,6 +37,7 @@ export default class PlugiGroups extends Plugin {
     this.addSettingTab(new GroupsSettingTab(this));
     registerGroupsViewInventoryRefresh(this);
     registerDedicatedGroupsWindows(this, VIEW_TYPE);
+    registerPluginCli(this, pendingPluginIds);
   }
 }
 
@@ -164,8 +170,58 @@ function refreshOpenGroupsViews(plugin: PlugiGroups): void {
 }
 
 function queueGroupDataSave(plugin: PlugiGroups): void {
-  plugin.saveQueue = plugin.saveQueue.then(() => plugin.saveData(plugin.data)).catch(error => {
+  void saveGroupData(plugin, plugin.data).catch(error => {
     console.error("Failed to save plugin groups", error);
     new Notice("Could not save plugin groups.");
   });
+}
+
+function saveGroupData(plugin: PlugiGroups, data: GroupData): Promise<void> {
+  const snapshot = cloneGroupData(data);
+  const result = plugin.saveQueue.then(() => plugin.saveData(snapshot));
+  plugin.saveQueue = result.catch(() => undefined);
+  return result;
+}
+
+function registerPluginCli(plugin: PlugiGroups, pendingPluginIds: Set<string>): void {
+  registerGroupsCli({
+    data: plugin.data, selfId: plugin.manifest.id, pendingPluginIds,
+    getInstalledPlugins: () => installedCommunityPlugins(plugin.app),
+    commitData: data => commitCliGroupData(plugin, data),
+    refreshViews: () => refreshOpenGroupsViews(plugin),
+    setPluginEnabled: (id, enabled) => setPluginEnabled(plugin.app, id, enabled),
+    readFile: path => readCliStructureFile(plugin, path),
+    filterViews: (query, scope) => filterOpenGroupsViews(plugin, query, scope),
+  }, (command, description, flags, handler) => plugin.registerCliHandler(command, description, flags, handler));
+}
+
+async function commitCliGroupData(plugin: PlugiGroups, data: GroupData): Promise<void> {
+  const previous = cloneGroupData(plugin.data);
+  const applied = JSON.stringify(data);
+  applyCliGroupData(plugin, data);
+  try { await saveGroupData(plugin, data); }
+  catch (error) {
+    if (JSON.stringify(plugin.data) === applied) applyCliGroupData(plugin, previous);
+    throw error;
+  }
+}
+
+function applyCliGroupData(plugin: PlugiGroups, data: GroupData): void {
+  Object.assign(plugin.data, data);
+  updateRibbonButton(plugin);
+  refreshOpenGroupsViews(plugin);
+}
+
+async function readCliStructureFile(plugin: PlugiGroups, path: string): Promise<string> {
+  if (isAbsolute(path)) return readFile(path, "utf8");
+  const adapter = plugin.app.vault.adapter;
+  if (!(adapter instanceof FileSystemAdapter)) throw new Error("Local filesystem access is unavailable");
+  return readFile(resolve(adapter.getBasePath(), path), "utf8");
+}
+
+function filterOpenGroupsViews(plugin: PlugiGroups, query: string, scope: string | null): number {
+  const views = plugin.app.workspace.getLeavesOfType(VIEW_TYPE).map(leaf => leaf.view)
+    .filter((view): view is GroupsView => view instanceof GroupsView);
+  for (const view of views) view.setSearchFilter(query, scope);
+  return views.length;
 }

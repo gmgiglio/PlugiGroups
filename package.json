@@ -14,7 +14,8 @@
     "test:collapse-layout": "node tests/integration/collapseLayout.mjs",
     "test:search": "node tests/integration/globalSearch.mjs",
     "test:group-sync": "node tests/integration/groupViewSync.mjs",
-    "test:dedicated-window": "node tests/integration/dedicatedWindow.mjs"
+    "test:dedicated-window": "node tests/integration/dedicatedWindow.mjs",
+    "test:cli": "node tests/integration/cli.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

@@ -109,7 +109,7 @@ function isNonArrayRecord(value: unknown): value is Record<string, unknown> {
 
 export function addGroup(data: GroupData, name: string, id?: string): boolean {
   const trimmed = name.trim();
-  if (!trimmed || data.groups.some(group => group.name.toLowerCase() === trimmed.toLowerCase())) return false;
+  if (!trimmed || groupNameExists(data, trimmed)) return false;
   const groupId = id || crypto.randomUUID();
   if (data.groups.some(group => group.id === groupId)) return false;
   data.ungroupedIndex++;
@@ -120,10 +120,16 @@ export function addGroup(data: GroupData, name: string, id?: string): boolean {
 export function renameGroup(data: GroupData, id: string, name: string): boolean {
   const group = data.groups.find(group => group.id === id);
   const trimmed = name.trim();
-  if (!group || !trimmed || data.groups.some(other => other.id !== id && other.name.toLowerCase() === trimmed.toLowerCase())) return false;
+  if (!group || !trimmed || groupNameExists(data, trimmed, id)) return false;
   if (group.name === trimmed) return false;
   group.name = trimmed;
   return true;
+}
+
+function groupNameExists(data: GroupData, name: string, exceptId?: string): boolean {
+  const normalized = name.toLocaleLowerCase();
+  return normalized === "ungrouped"
+    || data.groups.some(group => group.id !== exceptId && group.name.toLocaleLowerCase() === normalized);
 }
 
 export function removeGroup(data: GroupData, id: string): boolean {
@@ -199,7 +205,8 @@ export function removePluginFromGroup(data: GroupData, pluginId: string, groupId
 
 export function movePluginToGroup(data: GroupData, pluginId: string, groupId: string | null): boolean {
   if (groupId !== null && !data.groups.some(group => group.id === groupId)) return false;
-  if (firstGroupIdForPlugin(data, pluginId) === groupId) return false;
+  const memberships = data.groups.filter(group => group.pluginIds.includes(pluginId));
+  if (groupId === null ? memberships.length === 0 : memberships.length === 1 && memberships[0].id === groupId) return false;
   for (const group of data.groups) group.pluginIds = group.pluginIds.filter(id => id !== pluginId);
   if (groupId !== null) data.groups.find(group => group.id === groupId)!.pluginIds.push(pluginId);
   return true;

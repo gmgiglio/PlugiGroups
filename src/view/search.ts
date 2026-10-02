@@ -5,6 +5,7 @@ import { isSectionCollapsed } from "../groups";
 export interface GroupsSearchState {
   query: string;
   ungroupedQuery: string;
+  readonly groupQueries: Map<string, string>;
 }
 
 interface SearchFocus {
@@ -39,7 +40,7 @@ export function applyGroupsSearch(state: GroupsSearchState, container: HTMLEleme
 }
 
 function filterPluginSection(section: HTMLElement, query: string, state: GroupsSearchState, context: ViewContext): void {
-  const localQuery = section.dataset.groupId === "" ? state.ungroupedQuery.trim().toLocaleLowerCase() : "";
+  const localQuery = sectionSearchQuery(state, section.dataset.groupId ?? "");
   const rows = Array.from(section.querySelectorAll<HTMLElement>(".plugin-groups-admin-plugin"));
   for (const row of rows) row.hidden = ![query, localQuery].every(value => (row.dataset.pluginSearch ?? "").includes(value));
   const count = rows.filter(row => !row.hidden).length;
@@ -48,6 +49,10 @@ function filterPluginSection(section: HTMLElement, query: string, state: GroupsS
   const localEmpty = section.querySelector<HTMLElement>(".plugin-groups-admin-ungrouped-empty");
   if (localEmpty) localEmpty.hidden = !localQuery || count > 0;
   updateSearchSectionCollapse(section, query, context);
+}
+
+function sectionSearchQuery(state: GroupsSearchState, groupId: string): string {
+  return (groupId === "" ? state.ungroupedQuery : state.groupQueries.get(groupId) ?? "").trim().toLocaleLowerCase();
 }
 
 function updateSearchSectionCollapse(section: HTMLElement, query: string, context: ViewContext): void {

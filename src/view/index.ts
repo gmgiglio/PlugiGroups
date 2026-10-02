@@ -10,7 +10,7 @@ import { applyGroupsSearch, restoreSearchFocus, captureSearchFocus, focusGroupsS
 export const VIEW_TYPE = "plugin-groups-admin-view";
 
 export class GroupsView extends ItemView {
-  private readonly search: GroupsSearchState = { query: "", ungroupedQuery: "" };
+  private readonly search: GroupsSearchState = { query: "", ungroupedQuery: "", groupQueries: new Map() };
   constructor(leaf: WorkspaceLeaf, private readonly context: ViewContext) {
     super(leaf);
     this.scope = new Scope(this.app.scope);
@@ -33,6 +33,18 @@ export class GroupsView extends ItemView {
     renderGroupsView(this.context, this.contentEl, this.search);
     restoreSearchFocus(this.contentEl, focus);
   }
+
+  setSearchFilter(query: string, scope: string | null): void {
+    setGroupsViewSearchFilter(this.search, query, scope);
+    this.refreshGroupsView();
+  }
+}
+
+function setGroupsViewSearchFilter(search: GroupsSearchState, query: string, scope: string | null): void {
+  if (scope === null) search.query = query;
+  else if (scope === "ungrouped") search.ungroupedQuery = query;
+  else if (query) search.groupQueries.set(scope, query);
+  else search.groupQueries.delete(scope);
 }
 
 function renderGroupsView(context: ViewContext, container: HTMLElement, search: GroupsSearchState): void {

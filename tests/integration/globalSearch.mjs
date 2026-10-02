@@ -53,7 +53,10 @@ const setup = `
   const toggle = (view, id) => section(view, id).querySelector(".plugin-groups-admin-collapse").click();
   const check = (condition, message) => { if (!condition) throw new Error(message); };
   const open = async () => {
-    const leaf = app.workspace.getLeaf("tab");
+    const workspace = app.workspace;
+    const mainLeaf = workspace.getMostRecentLeaf(workspace.rootSplit);
+    if (mainLeaf) workspace.setActiveLeaf(mainLeaf, { focus: false });
+    const leaf = mainLeaf ? workspace.getLeaf("tab") : workspace.createLeafInParent(workspace.rootSplit, 0);
     await leaf.setViewState({ type: ${JSON.stringify(viewType)}, active: true });
     return leaf.view;
   };
@@ -63,7 +66,7 @@ assert.ok(cli("vault", "info=path").trim().split("\n").pop().endsWith("/PluginGr
 const original = evaluate(`app.plugins.plugins[${JSON.stringify(pluginId)}].data`);
 try {
   await runInApp(`${setup}
-    const installed = leaves()[0].view.context.getInstalledPlugins();
+    const installed = (leaves()[0]?.view ?? await open()).context.getInstalledPlugins();
     check(installed.length >= 2, "Need two installed plugins");
     const [first, second] = installed;
     const id = crypto.randomUUID();
