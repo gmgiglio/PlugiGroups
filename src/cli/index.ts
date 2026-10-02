@@ -44,8 +44,7 @@ export const CLI_COMMANDS: readonly CliCommand[] = [
   { action: "structure", description: "Show all groups, memberships, order, and collapse state", flags: {
     format: { value: "tree|json", description: "Output format (default: tree)" } }, run: showStructure },
   { action: "structure:set", description: "Replace the full structure from JSON (no dialog)", flags: {
-    path: { value: "<path>", description: "JSON file; absolute or relative to the vault" },
-    json: { value: "<json>", description: "Inline JSON instead of path" },
+    json: { value: "<json>", description: "Complete structure as JSON", required: true },
     "dry-run": { description: "Validate and preview without saving" } }, run: replaceStructure },
 ];
 

@@ -106,8 +106,7 @@ export async function toggleGroup(context: CliContext, params: CliData, enabled:
 }
 
 export async function replaceStructure(context: CliContext, params: CliData): Promise<string> {
-  if ((params.path !== undefined) === (params.json !== undefined)) throw new Error("Specify exactly one of path or json");
-  const input = params.path !== undefined ? await context.readFile(requiredParameter(params, "path")) : requiredParameter(params, "json");
+  const input = requiredParameter(params, "json");
   const next = dataFromStructure(context.data, JSON.parse(input) as unknown);
   const dryRun = booleanParameter(params, "dry-run");
   if (!dryRun) await context.commitData(next);

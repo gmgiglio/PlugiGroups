@@ -19,7 +19,7 @@ function obsidian(command, ...args) {
   const output = process.platform === "darwin"
     ? execFileSync("/usr/bin/script", ["-q", "/dev/null", "obsidian", ...parameters], { encoding: "utf8", timeout: 30000, stdio: ["inherit", "pipe", "pipe"] })
     : execFileSync("obsidian", parameters, { encoding: "utf8", timeout: 30000 });
-  return output.replaceAll("\r", "").split("\n")
+  return output.replace(/^\^D\x08\x08/, "").replaceAll("\r", "").split("\n")
     .filter(line => !line.includes("Loading updated app package") && !line.startsWith("Your Obsidian installer is out of date.")).join("\n").trim();
 }
 
@@ -121,17 +121,17 @@ function checkStructureReplacement(groupId) {
   const structure = json("structure");
   structure.groups.find(group => group.id === groupId).name = "CLI Bulk Updated";
   structure.groups.find(group => group.id === groupId).pluginIds.push("absent-plugin-preserved");
-  const path = join(fixtureRoot, "structure.json");
-  writeFileSync(path, JSON.stringify(structure));
-  const preview = JSON.parse(cli("structure:set", { path, "dry-run": true }));
+  const input = JSON.stringify(structure);
+  const preview = JSON.parse(cli("structure:set", { json: input, "dry-run": true }));
   assert.equal(preview.applied, false);
   assert.notEqual(json("show", { group: groupId }).name, "CLI Bulk Updated");
-  const result = JSON.parse(cli("structure:set", { path: `.obsidian/plugins/${fixtureId}/structure.json` }));
+  const result = JSON.parse(cli("structure:set", { json: input }));
   assert.equal(result.applied, true);
   assert.equal(json("show", { group: groupId }).name, "CLI Bulk Updated");
   assertViewsContain(groupId, true);
   const before = json("structure");
-  assert.match(obsidian("plugiGroups:structure:set", `path=${path}`, "dryrun=true"), /Error: Unknown parameter: dryrun/);
+  assert.match(obsidian("plugiGroups:structure:set", `json=${input}`, "dryrun=true"), /Error: Unknown parameter: dryrun/);
+  assert.match(obsidian("plugiGroups:structure:set", "path=structure.json", `json=${input}`), /Error: Unknown parameter: path/);
   assert.match(obsidian("plugiGroups:structure:set", 'json={"version":1}'), /Error:/);
   assert.deepEqual(json("structure"), before);
   assert.match(obsidian("plugiGroups:reorder", `group=${groupId}`, "before=ungrouped", "after=ungrouped"), /Error:/);

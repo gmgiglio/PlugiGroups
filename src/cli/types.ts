@@ -10,7 +10,6 @@ export interface CliContext {
   readonly commitData: (data: GroupData) => Promise<void>;
   readonly refreshViews: () => void;
   readonly setPluginEnabled: (id: string, enabled: boolean) => Promise<void>;
-  readonly readFile: (path: string) => Promise<string>;
   readonly filterViews: (query: string, groupId: string | null) => number;
 }
 

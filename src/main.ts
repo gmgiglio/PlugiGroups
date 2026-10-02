@@ -9,9 +9,6 @@ import { closeObsidianSettings, installedCommunityPlugins, openPluginSettingsOrC
 import { GroupsView, VIEW_TYPE } from "./view";
 import { registerGroupsCli } from "./cli";
 import { cloneGroupData } from "./cli/parameters";
-import { readFile } from "node:fs/promises";
-import { isAbsolute, resolve } from "node:path";
-import { FileSystemAdapter } from "obsidian";
 
 export default class PlugiGroups extends Plugin {
   data: GroupData = normalizeSavedGroupData(null);
@@ -190,7 +187,6 @@ function registerPluginCli(plugin: PlugiGroups, pendingPluginIds: Set<string>): 
     commitData: data => commitCliGroupData(plugin, data),
     refreshViews: () => refreshOpenGroupsViews(plugin),
     setPluginEnabled: (id, enabled) => setPluginEnabled(plugin.app, id, enabled),
-    readFile: path => readCliStructureFile(plugin, path),
     filterViews: (query, scope) => filterOpenGroupsViews(plugin, query, scope),
   }, (command, description, flags, handler) => plugin.registerCliHandler(command, description, flags, handler));
 }
@@ -210,13 +206,6 @@ function applyCliGroupData(plugin: PlugiGroups, data: GroupData): void {
   Object.assign(plugin.data, data);
   updateRibbonButton(plugin);
   refreshOpenGroupsViews(plugin);
-}
-
-async function readCliStructureFile(plugin: PlugiGroups, path: string): Promise<string> {
-  if (isAbsolute(path)) return readFile(path, "utf8");
-  const adapter = plugin.app.vault.adapter;
-  if (!(adapter instanceof FileSystemAdapter)) throw new Error("Local filesystem access is unavailable");
-  return readFile(resolve(adapter.getBasePath(), path), "utf8");
 }
 
 function filterOpenGroupsViews(plugin: PlugiGroups, query: string, scope: string | null): number {

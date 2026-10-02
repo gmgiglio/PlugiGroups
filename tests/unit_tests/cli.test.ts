@@ -23,7 +23,6 @@ function createHarness(saved: unknown = null): Harness {
   const context: CliContext = { data, selfId: "plugin-groups-admin", pendingPluginIds: new Set(), getInstalledPlugins: () => plugins,
     commitData: async next => { saves.push(cloneGroupData(next)); Object.assign(data, next); }, refreshViews: () => undefined,
     setPluginEnabled: async (id, enabled) => { toggles.push(`${id}:${enabled}`); plugins.find(plugin => plugin.id === id)!.enabled = enabled; },
-    readFile: async () => JSON.stringify(structureFromData(data, plugins)),
     filterViews: (query, scope) => { filters.push(`${scope ?? "all"}:${query}`); return 2; } };
   const handlers = new Map<string, CliHandler>();
   registerGroupsCli(context, (name, _description, _flags, handler) => handlers.set(name, handler));
@@ -312,11 +311,11 @@ test("structure v2 treats Ungrouped as a permanent group; v1 documents still loa
   assert.deepEqual(loaded.collapsedGroupIds, [null]);
 });
 
-test("structure:set reads paths and rejects conflicting inputs and malformed JSON", async () => {
+test("structure:set rejects file paths, missing input, and malformed JSON", async () => {
   const harness = createHarness(savedGroups());
-  await run(harness, "structure:set", { path: "groups.json", "dry-run": "true" });
-  await assert.rejects(run(harness, "structure:set", { path: "x", json: "{}" }), /exactly one/);
-  await assert.rejects(run(harness, "structure:set", {}), /exactly one/);
+  await assert.rejects(run(harness, "structure:set", { path: "groups.json", "dry-run": "true" }), /Unknown parameter: path/);
+  await assert.rejects(run(harness, "structure:set", { path: "x", json: "{}" }), /Unknown parameter: path/);
+  await assert.rejects(run(harness, "structure:set", {}), /json/);
   await assert.rejects(run(harness, "structure:set", { json: "{" }), /JSON/);
   assert.equal(harness.saves.length, 0);
 });
@@ -346,8 +345,9 @@ test("registered handlers serialize commands and recover after a failed save", a
 
 test("unknown parameters cannot accidentally turn a dry-run into a write; dashed boolean aliases work", async () => {
   const harness = createHarness(savedGroups());
-  await assert.rejects(run(harness, "structure:set", { path: "groups.json", dryrun: "true" }), /Unknown parameter: dryrun/);
-  await run(harness, "structure:set", { path: "groups.json", "--dry-run": "true" });
+  const json = JSON.stringify(structureFromData(harness.context.data, harness.context.getInstalledPlugins()));
+  await assert.rejects(run(harness, "structure:set", { json, dryrun: "true" }), /Unknown parameter: dryrun/);
+  await run(harness, "structure:set", { json, "--dry-run": "true" });
   await run(harness, "structure", { format: "json", "--copy": "true" });
   await assert.rejects(run(harness, "collapse", { all: "true", "--all": "true" }), /only once/);
   assert.equal(harness.saves.length, 0);

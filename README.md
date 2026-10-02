@@ -65,7 +65,7 @@ Every group, including Ungrouped, has an ID and a name. Group selectors accept a
 | `settings` | Optional `key=<key>` | Read all preferences or one value as JSON |
 | `setting:set` | `key=<key> value=<value>` | Change a preference |
 | `structure` | `format=tree\|json` | Read the complete organization: groups, plugins, order, Ungrouped, and collapse state |
-| `structure:set` | `path=<path>` or `json=<json>`, optional `dry-run` | Validate and replace the complete structure; dry-run returns a preview without saving |
+| `structure:set` | `json=<json>`, optional `dry-run` | Validate and replace the complete structure; dry-run returns a preview without saving |
 
 Ungrouped remains the permanent catch-all for installed plugins without other memberships. `add group=Ungrouped` and `move to=Ungrouped` clear existing memberships. To move a plugin out, add it to another group, use `move`, or supply a destination with `remove`:
 
@@ -109,15 +109,13 @@ The second example restores the saved individual collapse states after collapsin
 
 ### Full structure replacement
 
-JSON returned by `structure format=json` can be supplied directly to `structure:set`. Copy the JSON with Obsidian's global `--copy` flag, save it as `/tmp/plugigroups-structure.json`, edit it, then preview and apply:
+JSON returned by `structure format=json` can be supplied directly to `structure:set`. Copy the JSON with Obsidian's global `--copy` flag, edit it, then pass it using `json=<json>`. Add `dry-run` to preview before applying:
 
 ```sh
 obsidian vault=testVault_plugiGroups plugiGroups:structure format=json --copy
-obsidian vault=testVault_plugiGroups plugiGroups:structure:set path=/tmp/plugigroups-structure.json dry-run
-obsidian vault=testVault_plugiGroups plugiGroups:structure:set path=/tmp/plugigroups-structure.json
 ```
 
-Paths may be absolute or relative to the selected vault. Inline input is also supported:
+The plugin accepts JSON directly and does not read configuration files from the filesystem:
 
 ```sh
 obsidian vault=testVault_plugiGroups plugiGroups:structure:set json='{"version":2,"groups":[{"id":"ungrouped","name":"Ungrouped","pluginIds":[]}],"collapsedGroupIds":[],"collapseMode":"individual","collapseModeExceptionIds":[]}' dry-run
@@ -158,4 +156,4 @@ Older Obsidian installers may print startup banners before command output. Remov
 
 ### Development checks
 
-Run `npm run typecheck` and `npm test`. After `npm run deploy:test`, run `npm run test:cli` with Obsidian open to `testVault_plugiGroups`. The live test exercises all twenty native commands, two-view synchronization, structure round-trips, reload persistence, and save-failure rollback. It creates a disposable plugin fixture and restores the vault's original PlugiGroups data. On macOS, run this integration test from a terminal because its CLI subprocesses use a pseudo-terminal for compatibility with older installers.
+Run `npm run typecheck` and `npm test`. After `npm run deploy:test`, run `npm run test:cli` with Obsidian open to `testVault_plugiGroups`. The live test exercises all twenty native commands, two-view synchronization, structure round-trips, reload persistence, and save-failure rollback. It creates a disposable plugin fixture and restores the vault's original PlugiGroups data. On macOS, run this integration test from a terminal because its CLI subprocesses use a pseudo-terminal for consistent output capture.
