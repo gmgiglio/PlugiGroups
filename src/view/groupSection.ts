@@ -100,7 +100,7 @@ async function changeGroupPluginsEnabled(context: ViewContext, group: Group, plu
   }
 }
 
-function showGroupRenameInput(context: ViewContext, heading: HTMLElement, group: Group): void {
+export function showGroupRenameInput(context: ViewContext, heading: HTMLElement, group: Group): void {
   const title = heading.querySelector("h2")!;
   const input = heading.createEl("input");
   input.value = group.name;

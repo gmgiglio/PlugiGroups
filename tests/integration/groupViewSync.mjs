@@ -65,14 +65,31 @@ evaluateInObsidian(`(() => {
     const first = app.workspace.getLeavesOfType(${JSON.stringify(viewType)})[0].view;
     const originalIndex = plugin.data.ungroupedIndex;
     let second = null;
+    const createdGroupIds = [];
     try {
       second = app.workspace.getLeaf("tab");
       await second.setViewState({ type: ${JSON.stringify(viewType)}, active: true });
       const other = second.view;
       first.contentEl.querySelector(".plugin-groups-admin-add-button").click();
-      const form = first.contentEl.querySelector(".plugin-groups-admin-add");
-      form.querySelector("input").value = ${JSON.stringify(groupName)};
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      const initial = plugin.data.groups[0];
+      createdGroupIds.push(initial.id);
+      const initialInput = first.contentEl.querySelector('[data-group-id="' + initial.id + '"] .plugin-groups-admin-section-header input');
+      if (!initialInput) throw new Error("The new group did not start in rename mode");
+      initialInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      if (!plugin.data.groups.includes(initial)) throw new Error("Escape removed the created group");
+      if (!first.contentEl.querySelector('[data-group-id="' + initial.id + '"] h2')) throw new Error("Escape did not close rename mode");
+      first.setSearchFilter("no-matching-plugin-for-new-group", null);
+      first.contentEl.querySelector(".plugin-groups-admin-add-button").click();
+      const created = plugin.data.groups[0];
+      createdGroupIds.push(created.id);
+      if (created.name.toLocaleLowerCase() === initial.name.toLocaleLowerCase()) throw new Error("Default group names are not unique");
+      if (first.contentEl.querySelector(".plugin-groups-admin-search input").value !== "") throw new Error("Adding a group did not clear the global search");
+      if (first.contentEl.querySelector('[data-group-id="' + created.id + '"]').hidden) throw new Error("The new group is hidden");
+      const input = first.contentEl.querySelector('[data-group-id="' + created.id + '"] .plugin-groups-admin-section-header input');
+      if (!input || input.ownerDocument.activeElement !== input) throw new Error("The new group did not start in rename mode");
+      if (input.selectionStart !== 0 || input.selectionEnd !== input.value.length) throw new Error("The default name was not selected");
+      input.value = ${JSON.stringify(groupName)};
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
       const group = plugin.data.groups.find(item => item.name === ${JSON.stringify(groupName)});
       if (!group) throw new Error("The group was not created");
       const section = view => view.contentEl.querySelector('[data-group-id="' + group.id + '"]');
@@ -99,8 +116,7 @@ evaluateInObsidian(`(() => {
       status.error = String(error);
     } finally {
       await plugin.saveQueue;
-      const index = plugin.data.groups.findIndex(item => item.name === ${JSON.stringify(groupName)});
-      if (index >= 0) plugin.data.groups.splice(index, 1);
+      plugin.data.groups = plugin.data.groups.filter(item => !createdGroupIds.includes(item.id));
       plugin.data.ungroupedIndex = originalIndex;
       await plugin.saveData(plugin.data);
       first.refreshGroupsView();

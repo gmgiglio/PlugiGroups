@@ -65,7 +65,6 @@
   color: var(--text-faint);
 }
 
-.plugin-groups-admin-add,
 .plugin-groups-admin-section-header,
 .plugin-groups-admin-actions {
   display: flex;
@@ -83,11 +82,7 @@
   border-top: 1px solid var(--background-modifier-border);
 }
 
-.plugin-groups-admin-add { flex-wrap: wrap; width: 100%; }
-.plugin-groups-admin-add[hidden], .plugin-groups-admin-add-button[hidden] { display: none; }
 .plugin-groups-admin-add-button { white-space: nowrap; }
-.plugin-groups-admin-add input { width: 220px; min-width: 0; }
-.plugin-groups-admin-add button { white-space: nowrap; }
 
 .plugin-groups-admin-section {
   position: relative;

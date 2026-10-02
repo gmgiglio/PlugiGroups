@@ -1,6 +1,7 @@
 import { Notice, setIcon } from "obsidian";
 import { renderGroupsSearch, type GroupsSearchState } from "./search";
 import { createHeaderAction } from "./headerAction";
+import { showGroupRenameInput } from "./groupSection";
 import { addGroup, setCollapseMode, type CollapseMode } from "../groups";
 import type { InstalledPlugin } from "../inventory";
 import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
@@ -15,7 +16,7 @@ export function renderGroupsHeader(context: ViewContext, container: HTMLElement,
   renderGroupsSummary(stats, context.data.groups.length, plugins);
   renderCollapseCycle(context, stats);
   const actions = controls.createDiv({ cls: "plugin-groups-admin-header-actions" });
-  renderAddGroupControls(context, actions, header);
+  renderAddGroupButton(context, actions, container, search);
   renderGroupsSearch(search, header, container, context);
 }
 
@@ -42,29 +43,20 @@ function cycleCollapseMode(context: ViewContext, button: HTMLButtonElement, next
   if (focused) view.querySelector<HTMLButtonElement>(".plugin-groups-admin-collapse-cycle")!.focus({ preventScroll: true });
 }
 
-function renderAddGroupControls(context: ViewContext, actions: HTMLElement, header: HTMLElement): void {
-  const addButton = createHeaderAction(actions, "plus", "Add group", "plugin-groups-admin-add-button", "Add group");
-  const form = header.createEl("form", { cls: "plugin-groups-admin-add" });
-  form.hidden = true;
-  const input = form.createEl("input", { attr: { type: "text", placeholder: "New group name", "aria-label": "New group name" } });
-  form.createEl("button", { cls: "mod-cta", text: "Create group", attr: { type: "submit" } });
-  const cancel = form.createEl("button", { text: "Cancel", attr: { type: "button" } });
-  addButton.addEventListener("click", () => showAddGroupForm(form, addButton, input));
-  cancel.addEventListener("click", () => hideAddGroupForm(form, addButton, input));
-  form.addEventListener("keydown", event => closeAddGroupForm(event, form, addButton, input));
-  form.addEventListener("submit", event => addGroupFromForm(event, context, input));
+function renderAddGroupButton(context: ViewContext, actions: HTMLElement, container: HTMLElement, search: GroupsSearchState): void {
+  const button = createHeaderAction(actions, "plus", "Add group", "plugin-groups-admin-add-button", "Add group");
+  button.addEventListener("click", () => createGroupAndStartRename(context, container, search));
 }
 
-function showAddGroupForm(form: HTMLFormElement, addButton: HTMLButtonElement, input: HTMLInputElement): void {
-  addButton.hidden = true;
-  form.hidden = false;
-  input.focus();
-}
-
-function closeAddGroupForm(event: KeyboardEvent, form: HTMLFormElement, addButton: HTMLButtonElement, input: HTMLInputElement): void {
-  if (event.key !== "Escape") return;
-  event.preventDefault();
-  hideAddGroupForm(form, addButton, input);
+function createGroupAndStartRename(context: ViewContext, container: HTMLElement, search: GroupsSearchState): void {
+  let number = 1;
+  while (!addGroup(context.data, number === 1 ? "New group" : `New group ${number}`)) number++;
+  const group = context.data.groups[0];
+  search.query = "";
+  saveGroupChangesAndRefreshViews(context);
+  const section = container.querySelector<HTMLElement>(`[data-group-id="${group.id}"]`)!;
+  const heading = section.querySelector<HTMLElement>(".plugin-groups-admin-section-header")!;
+  showGroupRenameInput(context, heading, group);
 }
 
 function renderPluginSettingsButton(context: ViewContext, header: HTMLElement): void {
@@ -72,13 +64,6 @@ function renderPluginSettingsButton(context: ViewContext, header: HTMLElement): 
   button.addEventListener("click", () => {
     if (context.openPluginSettings(context.selfId) === "unavailable") new Notice("Could not open Obsidian settings.");
   });
-}
-
-function hideAddGroupForm(form: HTMLFormElement, addButton: HTMLButtonElement, input: HTMLInputElement): void {
-  input.value = "";
-  form.hidden = true;
-  addButton.hidden = false;
-  addButton.focus();
 }
 
 function renderGroupsHeading(header: HTMLElement): void {
@@ -91,14 +76,4 @@ function renderGroupsSummary(container: HTMLElement, groupCount: number, plugins
   summary.createSpan({ text: `${groupCount} ${groupCount === 1 ? "group" : "groups"}` });
   summary.createSpan({ text: `${plugins.length} installed` });
   summary.createSpan({ text: `${plugins.filter(plugin => plugin.enabled).length} enabled` });
-}
-
-function addGroupFromForm(event: SubmitEvent, context: ViewContext, input: HTMLInputElement): void {
-  event.preventDefault();
-  if (!addGroup(context.data, input.value)) {
-    new Notice("Enter a unique group name.");
-    input.focus();
-    return;
-  }
-  saveGroupChangesAndRefreshViews(context);
 }

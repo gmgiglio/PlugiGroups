@@ -4,7 +4,7 @@ PlugiGroups allows you to order plugins into groups and manage them.
 
 ## Using the tab
 
-Open **PlugiGroups** from the ribbon or command palette. Select the **Add group** (+) icon to create a group. Drag plugins from **Ungrouped** into a group, use their **Move to** button to choose a group, or use **+ Add plugin** in a group to choose one from a searchable list. You can rename, reorder, collapse, and delete groups.
+Open **PlugiGroups** from the ribbon or command palette. Select the **Add group** (+) icon to create a group and immediately edit its name inline. Press **Enter** to save the name, or **Escape** to keep the default name. Drag plugins from **Ungrouped** into a group, use their **Move to** button to choose a group, or use **+ Add plugin** in a group to choose one from a searchable list. You can rename, reorder, collapse, and delete groups.
 
 To hide the ribbon button, turn off **Show ribbon button** in the plugin settings. The command palette entry remains available.
 
