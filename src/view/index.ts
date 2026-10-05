@@ -50,6 +50,7 @@ function setGroupsViewSearchFilter(search: GroupsSearchState, query: string, sco
 function renderGroupsView(context: ViewContext, container: HTMLElement, search: GroupsSearchState): void {
   container.empty();
   container.addClass("plugin-groups-admin");
+  container.classList.toggle("show-drag-handles-on-hover", context.data.showDragHandlesOnHover);
   const plugins = context.getInstalledPlugins();
   renderGroupsHeader(context, container, plugins, search);
   for (const id of orderedSectionIdsIncludingUngrouped(context.data)) {

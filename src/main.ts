@@ -76,6 +76,11 @@ class GroupsSettingTab extends PluginSettingTab {
         control: { type: "toggle", key: "showPluginDescriptions" },
       },
       {
+        name: "Show drag handles only on hover",
+        desc: "Show group and plugin drag handles when hovered. Turn off to always show them.",
+        control: { type: "toggle", key: "showDragHandlesOnHover" },
+      },
+      {
         name: "Allow plugins in multiple groups",
         desc: "When turned off, each plugin stays in its first group.",
         control: { type: "toggle", key: "allowMultipleGroups" },
@@ -92,6 +97,7 @@ class GroupsSettingTab extends PluginSettingTab {
     if (key === "openLocation") return this.plugin.data.openLocation;
     if (key === "includeCorePlugins") return this.plugin.data.includeCorePlugins;
     if (key === "showPluginDescriptions") return this.plugin.data.showPluginDescriptions;
+    if (key === "showDragHandlesOnHover") return this.plugin.data.showDragHandlesOnHover;
     if (key === "showRibbonButton") return this.plugin.data.showRibbonButton;
     if (key === "allowMultipleGroups") return this.plugin.data.allowMultipleGroups;
     if (key === "confirmGroupDeletion") return this.plugin.data.confirmGroupDeletion;
@@ -103,6 +109,7 @@ class GroupsSettingTab extends PluginSettingTab {
     if (typeof value !== "boolean") return;
     if (key === "includeCorePlugins") setIncludeCorePluginsSetting(this.plugin, value);
     if (key === "showPluginDescriptions") setPluginDescriptionsSetting(this.plugin, value);
+    if (key === "showDragHandlesOnHover") setDragHandlesOnHoverSetting(this.plugin, value);
     if (key === "showRibbonButton") setRibbonButtonSetting(this.plugin, value);
     if (key === "allowMultipleGroups") setMultipleGroupsSetting(this.plugin, value);
     if (key === "confirmGroupDeletion") setGroupDeletionConfirmationSetting(this.plugin, value);
@@ -129,6 +136,12 @@ function setOpenLocationSetting(plugin: PlugiGroups, location: OpenLocation): vo
 function setGroupDeletionConfirmationSetting(plugin: PlugiGroups, enabled: boolean): void {
   plugin.data.confirmGroupDeletion = enabled;
   queueGroupDataSave(plugin);
+}
+
+function setDragHandlesOnHoverSetting(plugin: PlugiGroups, enabled: boolean): void {
+  plugin.data.showDragHandlesOnHover = enabled;
+  queueGroupDataSave(plugin);
+  refreshOpenGroupsViews(plugin);
 }
 
 function setRibbonButtonSetting(plugin: PlugiGroups, visible: boolean): void {
