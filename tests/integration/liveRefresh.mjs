@@ -83,7 +83,7 @@ function startFixtureManifestLoad() {
 function trackOpenGroupsViewRefreshes() {
   const result = evaluateInObsidian(`(() => {
     const views = app.workspace.getLeavesOfType(${JSON.stringify(viewType)});
-    const view = views[0]?.view;
+    const view = views.find(leaf => leaf.view.contentEl)?.view;
     if (!view) return { open: false };
     const original = view.refreshGroupsView;
     const test = { count: 0, view, original };

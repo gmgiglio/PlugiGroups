@@ -31,3 +31,14 @@ test("plugins without a settings tab are revealed in Community plugins", () => {
   assert.equal(openPluginSettingsOrCommunityTab(app, "beta"), "community");
   assert.deepEqual(calls, ["open", "tab:community-plugins", "reveal:beta"]);
 });
+
+
+test("core settings strip the group namespace and fall back to Core plugins", () => {
+  const calls: string[] = [];
+  const app = { setting: { pluginTabs: [{ id: "canvas" }], open: () => calls.push("open"),
+    openTabById: (id: string) => calls.push(id) } } as unknown as App;
+  assert.equal(pluginHasSettingsTab(app, "core:canvas"), true);
+  assert.equal(openPluginSettingsOrCommunityTab(app, "core:canvas"), "plugin");
+  assert.equal(openPluginSettingsOrCommunityTab(app, "core:graph"), "core");
+  assert.deepEqual(calls, ["open", "canvas", "open", "plugins"]);
+});

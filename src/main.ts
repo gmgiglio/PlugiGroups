@@ -5,7 +5,7 @@ import type { GroupData, OpenLocation } from "./groups";
 import { pluginInventorySignature } from "./inventory";
 import { registerPluginInventoryRefreshListeners } from "./inventoryRefresh";
 import { registerDedicatedGroupsWindows } from "./dedicatedWindow";
-import { closeObsidianSettings, installedCommunityPlugins, openPluginSettingsOrCommunityTab, setPluginEnabled } from "./pluginApi";
+import { closeObsidianSettings, installedPlugins, openPluginSettingsOrCommunityTab, setPluginEnabled } from "./pluginApi";
 import { GroupsView, VIEW_TYPE } from "./view";
 import { registerGroupsCli } from "./cli";
 import { cloneGroupData } from "./cli/parameters";
@@ -21,7 +21,7 @@ export default class PlugiGroups extends Plugin {
     this.registerView(VIEW_TYPE, leaf => new GroupsView(leaf, {
       app: this.app,
       data: this.data,
-      getInstalledPlugins: () => installedCommunityPlugins(this.app),
+      getInstalledPlugins: () => installedPlugins(this.app, this.data.includeCorePlugins),
       setPluginEnabled: (id, enabled) => setPluginEnabled(this.app, id, enabled),
       openPluginSettings: id => openPluginSettingsOrCommunityTab(this.app, id),
       selfId: this.manifest.id,
@@ -66,6 +66,11 @@ class GroupsSettingTab extends PluginSettingTab {
         control: { type: "toggle", key: "showRibbonButton" },
       },
       {
+        name: "Include core plugins",
+        desc: "Show and manage core plugins alongside community plugins. Excluding them preserves their group memberships.",
+        control: { type: "toggle", key: "includeCorePlugins" },
+      },
+      {
         name: "Allow plugins in multiple groups",
         desc: "When turned off, each plugin stays in its first group.",
         control: { type: "toggle", key: "allowMultipleGroups" },
@@ -80,6 +85,7 @@ class GroupsSettingTab extends PluginSettingTab {
 
   getControlValue(key: string): unknown {
     if (key === "openLocation") return this.plugin.data.openLocation;
+    if (key === "includeCorePlugins") return this.plugin.data.includeCorePlugins;
     if (key === "showRibbonButton") return this.plugin.data.showRibbonButton;
     if (key === "allowMultipleGroups") return this.plugin.data.allowMultipleGroups;
     if (key === "confirmGroupDeletion") return this.plugin.data.confirmGroupDeletion;
@@ -89,10 +95,17 @@ class GroupsSettingTab extends PluginSettingTab {
   setControlValue(key: string, value: unknown): void {
     if (key === "openLocation" && (value === "tab" || value === "window")) setOpenLocationSetting(this.plugin, value);
     if (typeof value !== "boolean") return;
+    if (key === "includeCorePlugins") setIncludeCorePluginsSetting(this.plugin, value);
     if (key === "showRibbonButton") setRibbonButtonSetting(this.plugin, value);
     if (key === "allowMultipleGroups") setMultipleGroupsSetting(this.plugin, value);
     if (key === "confirmGroupDeletion") setGroupDeletionConfirmationSetting(this.plugin, value);
   }
+}
+
+function setIncludeCorePluginsSetting(plugin: PlugiGroups, included: boolean): void {
+  plugin.data.includeCorePlugins = included;
+  queueGroupDataSave(plugin);
+  refreshOpenGroupsViews(plugin);
 }
 
 function setOpenLocationSetting(plugin: PlugiGroups, location: OpenLocation): void {
@@ -129,7 +142,7 @@ function updateRibbonButton(plugin: PlugiGroups): void {
 function registerGroupsViewInventoryRefresh(plugin: PlugiGroups): void {
   registerPluginInventoryRefreshListeners({
     app: plugin.app,
-    lastInventory: pluginInventorySignature(installedCommunityPlugins(plugin.app)),
+    lastInventory: pluginInventorySignature(installedPlugins(plugin.app)),
     openViews: () => plugin.app.workspace.getLeavesOfType(VIEW_TYPE)
       .map(leaf => leaf.view)
       .filter((view): view is GroupsView => view instanceof GroupsView),
@@ -183,7 +196,7 @@ function saveGroupData(plugin: PlugiGroups, data: GroupData): Promise<void> {
 function registerPluginCli(plugin: PlugiGroups, pendingPluginIds: Set<string>): void {
   registerGroupsCli({
     data: plugin.data, selfId: plugin.manifest.id, pendingPluginIds,
-    getInstalledPlugins: () => installedCommunityPlugins(plugin.app),
+    getInstalledPlugins: () => installedPlugins(plugin.app, plugin.data.includeCorePlugins),
     commitData: data => commitCliGroupData(plugin, data),
     refreshViews: () => refreshOpenGroupsViews(plugin),
     setPluginEnabled: (id, enabled) => setPluginEnabled(plugin.app, id, enabled),

@@ -4,9 +4,9 @@ import { groupEnabledState, setGroupPluginsEnabled, pluginsEligibleForGroupToggl
 import type { InstalledPlugin } from "../../src/inventory";
 
 const plugins: InstalledPlugin[] = [
-  { id: "self", name: "Admin", description: "", version: "1", author: "", enabled: true },
-  { id: "alpha", name: "Alpha", description: "", version: "1", author: "", enabled: true },
-  { id: "beta", name: "Beta", description: "", version: "1", author: "", enabled: false },
+  { id: "self", name: "Admin", kind: "community", description: "", version: "1", author: "", enabled: true },
+  { id: "alpha", name: "Alpha", kind: "community", description: "", version: "1", author: "", enabled: true },
+  { id: "beta", name: "Beta", kind: "community", description: "", version: "1", author: "", enabled: false },
 ];
 
 test("group stays enabled while any manageable plugin is enabled", () => {

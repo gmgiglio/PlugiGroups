@@ -26,6 +26,7 @@ export function showPluginMenu(app: App, plugin: InstalledPlugin, event: MouseEv
   const menu = new Menu();
   addPluginSettingsMenuItem(menu, app, plugin);
   if (pluginHasCommands(app, plugin.id)) menu.addItem(item => item.setTitle("Hotkeys").setIcon("keyboard").onClick(() => openPluginHotkeys(app, plugin.id)));
+  if (plugin.kind === "core") { menu.showAtMouseEvent(event); return; }
   menu.addItem(item => item.setTitle("View details").setIcon("info").onClick(() => openPluginDetailsPage(plugin.id)));
   menu.addItem(item => item.setTitle("Open community page").setIcon("external-link").onClick(() => openPluginCommunityPage(plugin.id)));
   addFundingAndFolderMenuActions(menu, app, plugin, extras);

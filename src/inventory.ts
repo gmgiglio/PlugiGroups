@@ -1,5 +1,6 @@
 export interface InstalledPlugin {
   id: string;
+  kind: "community" | "core";
   name: string;
   description: string;
   version: string;
@@ -8,5 +9,5 @@ export interface InstalledPlugin {
 }
 
 export function pluginInventorySignature(plugins: InstalledPlugin[]): string {
-  return JSON.stringify(plugins.map(({ id, name, description, version, author, enabled }) => [id, name, description, version, author, enabled]));
+  return JSON.stringify(plugins.map(({ id, kind, name, description, version, author, enabled }) => [id, kind, name, description, version, author, enabled]));
 }

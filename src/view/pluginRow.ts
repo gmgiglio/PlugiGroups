@@ -9,13 +9,16 @@ import { startPluginDrag } from "./pluginDrop";
 export function renderPluginRow(context: ViewContext, list: HTMLElement, plugin: InstalledPlugin, groupId: string | null): void {
   const row = list.createDiv({ cls: `plugin-groups-admin-plugin${plugin.enabled ? "" : " is-disabled"}${groupId === null ? "" : " is-grouped"}` });
   setIcon(row.createSpan({ cls: "plugin-groups-admin-grip", attr: { "aria-hidden": "true" } }), "grip-vertical");
+  row.dataset.pluginId = plugin.id;
   row.dataset.pluginSearch = `${plugin.name}\n${plugin.id}`.toLocaleLowerCase();
   row.draggable = true;
   row.addEventListener("dragstart", event => startPluginDrag(event, plugin.id, groupId));
-  row.addEventListener("click", event => openPluginSettingsFromRow(event, context, plugin));
+  row.addEventListener("click", event => openPluginSettingsFromRow(event, row, context, plugin));
   const details = row.createDiv({ cls: "plugin-groups-admin-plugin-details" });
-  const name = details.createEl("button", { cls: "plugin-groups-admin-plugin-name", text: plugin.name, attr: { type: "button" } });
+  const title = details.createDiv({ cls: "plugin-groups-admin-plugin-title" });
+  const name = title.createEl("button", { cls: "plugin-groups-admin-plugin-name", text: plugin.name, attr: { type: "button" } });
   name.addEventListener("click", () => openPluginSettingsWithFeedback(context, plugin));
+  if (plugin.kind === "core") title.createSpan({ cls: "plugin-groups-admin-core-badge", text: "Core" });
   renderPluginDescription(details, plugin);
   renderPluginMenuButton(context, row, plugin);
   renderPluginEnabledToggle(context, row, plugin);
@@ -61,14 +64,16 @@ function renderRemovePluginButton(context: ViewContext, row: HTMLElement, plugin
   });
 }
 
-function openPluginSettingsFromRow(event: MouseEvent, context: ViewContext, plugin: InstalledPlugin): void {
-  if (event.target instanceof Element && event.target.closest("button, input, label")) return;
+function openPluginSettingsFromRow(event: MouseEvent, row: HTMLElement, context: ViewContext, plugin: InstalledPlugin): void {
+  const elementType = row.ownerDocument.defaultView?.Element;
+  if (elementType && event.target instanceof elementType && event.target.closest("button, input, label")) return;
   openPluginSettingsWithFeedback(context, plugin);
 }
 
 function openPluginSettingsWithFeedback(context: ViewContext, plugin: InstalledPlugin): void {
   const destination = context.openPluginSettings(plugin.id);
   if (destination === "community") new Notice(`${plugin.name} has no settings page. Showing Community plugins.`);
+  if (destination === "core") new Notice(`${plugin.name} has no settings page. Showing Core plugins.`);
   if (destination === "unavailable") new Notice("Could not open Obsidian settings.");
 }
 

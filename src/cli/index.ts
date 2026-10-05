@@ -6,7 +6,7 @@ import { listGroups, showGroup, showUngrouped, searchPlugins, showStructure, fil
 import { readSettings, writeSetting } from "./settings";
 
 const GROUP: CliFlags = { group: { value: "<id-or-name>", description: "Group ID or unambiguous name, including Ungrouped", required: true } };
-const PLUGIN: CliFlags = { plugin: { value: "<plugin-id>", description: "Community plugin ID", required: true } };
+const PLUGIN: CliFlags = { plugin: { value: "<plugin-id>", description: "Community plugin ID or core:<id>", required: true } };
 const NAME: CliFlags = { name: { value: "<name>", description: "Unique group name", required: true } };
 const FORMAT: CliFlags = { format: { value: "text|json", description: "Output format (default: text)" } };
 const QUERY: CliFlags = { query: { value: "<text>", description: "Plugin name or ID search", required: true } };

@@ -62,6 +62,7 @@ obsidian vault="Your vault" command id=plugin-groups-admin:open-plugin-groups
 | --- | --- |
 | `allowMultipleGroups` | `true` or `false`; switching off keeps each plugin's first membership in group order |
 | `showRibbonButton` | `true` or `false`; updates the ribbon immediately |
+| `includeCorePlugins` | `true` or `false`; includes or excludes core plugins from lists and group toggles without removing memberships |
 | `confirmGroupDeletion` | `true` or `false` |
 | `openLocation` | `tab` or `window` |
 | `collapseMode` | `individual`, `collapsed`, or `expanded`; changing mode clears manual exceptions |
@@ -123,3 +124,5 @@ Older Obsidian installers may print startup banners before command output. Remov
 ## Development checks
 
 Run `npm run typecheck` and `npm test`. After `npm run deploy:test`, run `npm run test:cli` with Obsidian open to `testVault_plugiGroups`. The live test exercises all twenty native commands, two-view synchronization, structure round-trips, reload persistence, and save-failure rollback. It creates a disposable plugin fixture and restores the vault's original PlugiGroups data. On macOS, run this integration test from a terminal because its CLI subprocesses use a pseudo-terminal for consistent output capture.
+
+Core plugins use IDs prefixed with `core:` (for example, `core:graph`). Community plugin IDs stay unchanged. Both types support group membership, search, group toggles, and structure export/import.

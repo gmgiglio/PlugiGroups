@@ -5,7 +5,7 @@ import { pluginInventorySignature } from "../../src/inventory";
 import type { InstalledPlugin } from "../../src/inventory";
 import { registerPluginInventoryRefreshListeners } from "../../src/inventoryRefresh";
 import type { InventoryRefreshEvents } from "../../src/inventoryRefresh";
-import { installedCommunityPlugins } from "../../src/pluginApi";
+import { installedPlugins } from "../../src/pluginApi";
 
 interface FakeManager {
   manifests: Record<string, { name: string; version?: string }>;
@@ -51,8 +51,8 @@ function createInventoryRefreshHarness(withManagerEvent = true): RefreshHarness 
   const registeredEvents: EventRef[] = [];
   const rendered: InstalledPlugin[][] = [];
   const app = { plugins: manager } as unknown as App;
-  const views = [{ refreshGroupsView: () => { rendered.push(installedCommunityPlugins(app)); } }];
-  registerPluginInventoryRefreshListeners({ app, lastInventory: pluginInventorySignature(installedCommunityPlugins(app)), openViews: () => views }, createInventoryRefreshEventHooks(listeners, registeredEvents));
+  const views = [{ refreshGroupsView: () => { rendered.push(installedPlugins(app)); } }];
+  registerPluginInventoryRefreshListeners({ app, lastInventory: pluginInventorySignature(installedPlugins(app)), openViews: () => views }, createInventoryRefreshEventHooks(listeners, registeredEvents));
   return {
     manager, rendered, views, registeredEvents,
     fire: event => {
@@ -123,4 +123,25 @@ test("closed tabs are skipped and each open tab refreshes once on the next chang
   assert.equal(harness.rendered.length, 2);
   harness.fire("focus");
   assert.equal(harness.rendered.length, 2);
+});
+
+
+test("core manager change events refresh all open views without redundant renders", () => {
+  const listeners = new Map<string, () => void>();
+  const registeredEvents: EventRef[] = [];
+  const core = { instance: { name: "Graph view", description: "" }, enabled: false };
+  const app = { internalPlugins: { plugins: { graph: core },
+    on: (name: string, callback: () => void): EventRef => { listeners.set(name, callback); return {} as EventRef; } } } as unknown as App;
+  let renders = 0;
+  registerPluginInventoryRefreshListeners({ app, lastInventory: pluginInventorySignature(installedPlugins(app)),
+    openViews: () => [{ refreshGroupsView: () => { renders++; } }, { refreshGroupsView: () => { renders++; } }] },
+    createInventoryRefreshEventHooks(listeners, registeredEvents));
+  core.enabled = true;
+  listeners.get("change")!();
+  assert.equal(renders, 2);
+  listeners.get("focus")!();
+  assert.equal(renders, 2);
+  core.enabled = false;
+  listeners.get("change")!();
+  assert.equal(renders, 4);
 });

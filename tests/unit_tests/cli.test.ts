@@ -30,7 +30,7 @@ function createHarness(saved: unknown = null): Harness {
 }
 
 function installedPlugin(id: string, enabled: boolean): InstalledPlugin {
-  return { id, enabled, name: id.toUpperCase(), description: "", version: "1", author: "" };
+  return { id, enabled, name: id.toUpperCase(), kind: "community", description: "", version: "1", author: "" };
 }
 
 async function run(harness: Harness, action: string, params: CliData = {}): Promise<string> {
@@ -363,4 +363,16 @@ test("bulk replacement cannot rename Ungrouped, including in dry-run", async () 
   }
   assert.deepEqual(harness.context.data, before);
   assert.equal(harness.saves.length, 0);
+});
+
+
+test("core plugins share groups with community plugins and round-trip namespaced IDs", async () => {
+  const harness = createHarness(savedGroups());
+  harness.context.getInstalledPlugins().push({ ...installedPlugin("core:alpha", false), kind: "core" });
+  await run(harness, "add", { group: "one", plugin: "core:alpha" });
+  await run(harness, "enable", { group: "one" });
+  assert.ok(harness.toggles.includes("core:alpha:true"));
+  const structure = await run(harness, "structure", { format: "json" });
+  assert.ok(structure.includes("core:alpha"));
+  assert.ok((await run(harness, "search", { query: "core:alpha", format: "json" })).includes("core:alpha"));
 });

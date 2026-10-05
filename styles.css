@@ -504,3 +504,21 @@ body.plugin-groups-admin-dedicated-window .workspace .view-header {
   font-weight: var(--font-semibold);
   pointer-events: none;
 }
+
+.plugin-groups-admin-core-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  background: var(--background-modifier-hover);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  vertical-align: middle;
+}
+
+.plugin-groups-admin-plugin-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.plugin-groups-admin .plugin-groups-admin-plugin-title .plugin-groups-admin-plugin-name { width: auto; }
+.plugin-groups-admin-core-badge { flex-shrink: 0; }

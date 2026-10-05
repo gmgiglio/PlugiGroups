@@ -3,7 +3,7 @@ import { setCollapseMode, setMultipleGroupsAllowed, type GroupData } from "../gr
 import type { CliContext } from "./types";
 import { cloneGroupData, jsonOutput, requiredParameter } from "./parameters";
 
-const BOOLEAN_KEYS = ["allowMultipleGroups", "showRibbonButton", "confirmGroupDeletion"] as const;
+const BOOLEAN_KEYS = ["allowMultipleGroups", "showRibbonButton", "includeCorePlugins", "confirmGroupDeletion"] as const;
 const SETTING_KEYS = [...BOOLEAN_KEYS, "openLocation", "collapseMode"] as const;
 type SettingKey = typeof SETTING_KEYS[number];
 

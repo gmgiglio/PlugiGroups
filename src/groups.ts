@@ -11,6 +11,7 @@ export interface GroupData {
   groups: Group[];
   allowMultipleGroups: boolean;
   showRibbonButton: boolean;
+  includeCorePlugins: boolean;
   confirmGroupDeletion: boolean;
   openLocation: OpenLocation;
   ungroupedIndex: number;
@@ -26,13 +27,14 @@ export function normalizeSavedGroupData(value: unknown): GroupData {
   const groupIds = new Set<string>();
   const allowMultipleGroups = isNonArrayRecord(value) && value.allowMultipleGroups === true;
   const showRibbonButton = !isNonArrayRecord(value) || value.showRibbonButton !== false;
+  const includeCorePlugins = !isNonArrayRecord(value) || value.includeCorePlugins !== false;
   const confirmGroupDeletion = !isNonArrayRecord(value) || value.confirmGroupDeletion !== false;
   const pluginIds = new Set<string>();
   for (const entry of source) {
     const group = normalizeSavedGroup(entry, groupIds, pluginIds, allowMultipleGroups);
     if (group !== null) groups.push(group);
   }
-  return { groups, allowMultipleGroups, showRibbonButton, confirmGroupDeletion,
+  return { groups, allowMultipleGroups, showRibbonButton, includeCorePlugins, confirmGroupDeletion,
     openLocation: isNonArrayRecord(value) && value.openLocation === "window" ? "window" : "tab",
     ungroupedIndex: normalizeSavedUngroupedIndex(value, groups.length),
     collapsedGroupIds: normalizeIndividualCollapsedGroupIds(value, groupIds),

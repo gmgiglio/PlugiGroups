@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { App, EventRef } from "obsidian";
 import { pluginInventorySignature } from "../../src/inventory";
-import { installedCommunityPlugins, subscribeToPluginInventoryChanges, setPluginEnabled } from "../../src/pluginApi";
+import { installedPlugins, uninstallPlugin, installedCommunityPlugins, subscribeToPluginInventoryChanges, setPluginEnabled } from "../../src/pluginApi";
 
 test("inventory detects installed and enabled plugin changes", () => {
   const manager = {
@@ -66,4 +66,32 @@ test("failed enable is reported to the caller", async () => {
     },
   } as unknown as App;
   await assert.rejects(setPluginEnabled(app, "alpha", true), /Could not enable/);
+});
+
+test("combined inventory keeps colliding IDs distinct and hides internal features", () => {
+  const app = { plugins: { manifests: { graph: { name: "Community graph" } }, enabledPlugins: new Set(["graph"]) },
+    internalPlugins: { plugins: {
+      graph: { instance: { name: "Graph view", description: "Explore connections" }, enabled: false },
+      hidden: { instance: { name: "Internal", hiddenFromList: true }, enabled: true },
+    } } } as unknown as App;
+  const plugins = installedPlugins(app);
+  assert.deepEqual(plugins.map(plugin => [plugin.id, plugin.kind, plugin.enabled]),
+    [["graph", "community", true], ["core:graph", "core", false]]);
+  assert.equal(plugins[1].description, "Explore connections");
+});
+
+test("core toggles persist through their own controls and verify the resulting state", async () => {
+  const calls: string[] = [];
+  const core = { instance: { name: "Graph view" }, enabled: false,
+    async enable(save: boolean): Promise<void> { calls.push(`enable:${save}`); core.enabled = true; },
+    disable(save: boolean): void { calls.push(`disable:${save}`); core.enabled = false; } };
+  const app = { internalPlugins: { plugins: { graph: core } } } as unknown as App;
+  await setPluginEnabled(app, "core:graph", true);
+  await setPluginEnabled(app, "core:graph", true);
+  await setPluginEnabled(app, "core:graph", false);
+  assert.deepEqual(calls, ["enable:true", "disable:true"]);
+  core.enable = async (): Promise<void> => undefined;
+  await assert.rejects(setPluginEnabled(app, "core:graph", true), /Could not change/);
+  await assert.rejects(setPluginEnabled(app, "core:missing", true), /not available/);
+  await assert.rejects(uninstallPlugin(app, "core:graph"), /cannot be uninstalled/);
 });

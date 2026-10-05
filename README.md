@@ -4,6 +4,8 @@ PlugiGroups allows you to order plugins into groups and manage them.
 
 ## Using PlugiGroups
 
+Core and community plugins appear together by default. Turn off **Include core plugins** in settings to exclude core plugins from lists and group toggles while preserving their group memberships. Core plugins have a **Core** badge and can share groups with community plugins.
+
 Open PlugiGroups from the ribbon or command palette, in a tab or a separate window.
 
 - **Organize:** Create, rename, and reorder groups. Add plugins by dragging them, using **Move to** on the Ungrouped section, or selecting **+ Add plugin** on the target group.
@@ -16,8 +18,8 @@ Open PlugiGroups from the ribbon or command palette, in a tab or a separate wind
 ## Plugin controls
 
 - Use a plugin's switch to enable or disable it. A group's switch controls all installed plugins in that group.
-- Click a plugin to open its settings. Plugins without a settings page open in **Community plugins**.
-- Each plugin's **⋯** menu links to its details and community page, plus settings, hotkeys, and donation links when available. You can also reveal its local folder or uninstall it.
+- Click a plugin to open its settings. Plugins without a settings page open in **Core plugins** or **Community plugins**, according to their type.
+- Each community plugin's **⋯** menu links to its details and community page, plus settings, hotkeys, and donation links when available. You can also reveal its local folder or uninstall it.
 
 PlugiGroups stays enabled if you switch off a group that contains it.
 

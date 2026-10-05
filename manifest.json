@@ -3,7 +3,7 @@
   "name": "PlugiGroups",
   "version": "0.5.1",
   "minAppVersion": "1.13.7",
-  "description": "Organize installed community plugins into custom groups.",
+  "description": "Organize core and community plugins into custom groups.",
   "author": "Gianfranco Giglio",
   "isDesktopOnly": true
 }
