@@ -295,6 +295,9 @@
   display: inline-block;
   white-space: nowrap;
 }
+.plugin-groups-admin-plugin:not(:hover):not(:focus-within) .plugin-groups-admin-plugin-description.is-hover-only {
+  display: none;
+}
 
 .plugin-groups-admin .plugin-groups-admin-remove-plugin,
 .plugin-groups-admin .plugin-groups-admin-move-plugin,

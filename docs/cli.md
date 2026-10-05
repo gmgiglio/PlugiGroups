@@ -63,6 +63,7 @@ obsidian vault="Your vault" command id=plugin-groups-admin:open-plugin-groups
 | `allowMultipleGroups` | `true` or `false`; switching off keeps each plugin's first membership in group order |
 | `showRibbonButton` | `true` or `false`; updates the ribbon immediately |
 | `includeCorePlugins` | `true` or `false`; includes or excludes core plugins from lists and group toggles without removing memberships |
+| `showPluginDescriptions` | `true` to keep descriptions visible below plugin names; `false` to show them on row hover or keyboard focus (default) |
 | `confirmGroupDeletion` | `true` or `false` |
 | `openLocation` | `tab` or `window` |
 | `collapseMode` | `individual`, `collapsed`, or `expanded`; changing mode clears manual exceptions |

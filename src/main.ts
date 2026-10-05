@@ -71,6 +71,11 @@ class GroupsSettingTab extends PluginSettingTab {
         control: { type: "toggle", key: "includeCorePlugins" },
       },
       {
+        name: "Always show plugin descriptions",
+        desc: "Keep descriptions, versions, and authors visible below plugin names. When turned off, they appear while hovering over or focusing a plugin row.",
+        control: { type: "toggle", key: "showPluginDescriptions" },
+      },
+      {
         name: "Allow plugins in multiple groups",
         desc: "When turned off, each plugin stays in its first group.",
         control: { type: "toggle", key: "allowMultipleGroups" },
@@ -86,6 +91,7 @@ class GroupsSettingTab extends PluginSettingTab {
   getControlValue(key: string): unknown {
     if (key === "openLocation") return this.plugin.data.openLocation;
     if (key === "includeCorePlugins") return this.plugin.data.includeCorePlugins;
+    if (key === "showPluginDescriptions") return this.plugin.data.showPluginDescriptions;
     if (key === "showRibbonButton") return this.plugin.data.showRibbonButton;
     if (key === "allowMultipleGroups") return this.plugin.data.allowMultipleGroups;
     if (key === "confirmGroupDeletion") return this.plugin.data.confirmGroupDeletion;
@@ -96,10 +102,17 @@ class GroupsSettingTab extends PluginSettingTab {
     if (key === "openLocation" && (value === "tab" || value === "window")) setOpenLocationSetting(this.plugin, value);
     if (typeof value !== "boolean") return;
     if (key === "includeCorePlugins") setIncludeCorePluginsSetting(this.plugin, value);
+    if (key === "showPluginDescriptions") setPluginDescriptionsSetting(this.plugin, value);
     if (key === "showRibbonButton") setRibbonButtonSetting(this.plugin, value);
     if (key === "allowMultipleGroups") setMultipleGroupsSetting(this.plugin, value);
     if (key === "confirmGroupDeletion") setGroupDeletionConfirmationSetting(this.plugin, value);
   }
+}
+
+function setPluginDescriptionsSetting(plugin: PlugiGroups, visible: boolean): void {
+  plugin.data.showPluginDescriptions = visible;
+  queueGroupDataSave(plugin);
+  refreshOpenGroupsViews(plugin);
 }
 
 function setIncludeCorePluginsSetting(plugin: PlugiGroups, included: boolean): void {

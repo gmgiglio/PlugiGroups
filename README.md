@@ -8,6 +8,8 @@ Core and community plugins appear together by default. Turn off **Include core p
 
 Open PlugiGroups from the ribbon or command palette, in a tab or a separate window.
 
+Hover over a plugin row or focus its controls to see its description, version, and author below its name. Enable **Always show plugin descriptions** in settings to keep that information visible.
+
 - **Organize:** Create, rename, and reorder groups. Add plugins by dragging them, using **Move to** on the Ungrouped section, or selecting **+ Add plugin** on the target group.
 - **Multiple groups:** Plugins belong to one group by default. Enable **Allow plugins in multiple groups** in settings to assign them to several.
 - **Find:** Search all plugins by name or ID, or search only **Ungrouped**—plugins not assigned to any group.

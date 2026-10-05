@@ -19,7 +19,7 @@ export function renderPluginRow(context: ViewContext, list: HTMLElement, plugin:
   const name = title.createEl("button", { cls: "plugin-groups-admin-plugin-name", text: plugin.name, attr: { type: "button" } });
   name.addEventListener("click", () => openPluginSettingsWithFeedback(context, plugin));
   if (plugin.kind === "core") title.createSpan({ cls: "plugin-groups-admin-core-badge", text: "Core" });
-  renderPluginDescription(details, plugin);
+  renderPluginDescription(context, details, plugin);
   renderPluginMenuButton(context, row, plugin);
   renderPluginEnabledToggle(context, row, plugin);
   if (groupId === null) renderMovePluginButton(context, row, plugin);
@@ -46,11 +46,12 @@ function renderPluginMenuButton(context: ViewContext, row: HTMLElement, plugin: 
   button.addEventListener("click", event => showPluginMenu(context.app, plugin, event));
 }
 
-function renderPluginDescription(details: HTMLElement, plugin: InstalledPlugin): void {
+function renderPluginDescription(context: ViewContext, details: HTMLElement, plugin: InstalledPlugin): void {
   const metadata = [plugin.version && `v${plugin.version}`, plugin.author && `by ${plugin.author}`]
     .filter(Boolean).join(" · ");
   if (!plugin.description && !metadata) return;
   const description = details.createDiv({ cls: "plugin-groups-admin-plugin-description" });
+  description.toggleClass("is-hover-only", !context.data.showPluginDescriptions);
   if (plugin.description) description.appendText(plugin.description);
   if (!metadata) return;
   description.createEl("em", { text: `${plugin.description ? " · " : ""}${metadata}` });
