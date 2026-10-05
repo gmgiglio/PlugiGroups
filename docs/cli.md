@@ -62,6 +62,7 @@ obsidian vault="Your vault" command id=plugin-groups-admin:open-plugin-groups
 | --- | --- |
 | `allowMultipleGroups` | `true` or `false`; switching off keeps each plugin's first membership in group order |
 | `showRibbonButton` | `true` or `false`; updates the ribbon immediately |
+| `showDragHandlesOnHover` | `true` (default) shows handles on hover; `false` always shows them |
 | `confirmGroupDeletion` | `true` or `false` |
 | `openLocation` | `tab` or `window` |
 | `collapseMode` | `individual`, `collapsed`, or `expanded`; changing mode clears manual exceptions |

@@ -159,6 +159,15 @@
   color: var(--text-faint);
   cursor: grab;
 }
+/* Preserve handle space so hovering does not shift headers or plugin rows. */
+.plugin-groups-admin.show-drag-handles-on-hover :is(.plugin-groups-admin-group-grip, .plugin-groups-admin-grip) {
+  opacity: 0;
+}
+.plugin-groups-admin.show-drag-handles-on-hover .plugin-groups-admin-section-header:hover .plugin-groups-admin-group-grip,
+.plugin-groups-admin.show-drag-handles-on-hover .plugin-groups-admin-plugin:hover .plugin-groups-admin-grip {
+  opacity: 1;
+}
+
 .plugin-groups-admin-group-grip:hover { color: var(--text-normal); }
 .plugin-groups-admin-group-grip:active { cursor: grabbing; }
 .plugin-groups-admin-group-grip svg { width: 16px; height: 16px; }

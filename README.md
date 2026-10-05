@@ -7,6 +7,7 @@ PlugiGroups allows you to order plugins into groups and manage them.
 Open PlugiGroups from the ribbon or command palette, in a tab or a separate window.
 
 - **Organize:** Create, rename, and reorder groups. Add plugins by dragging them, using **Move to** on the Ungrouped section, or selecting **+ Add plugin** on the target group.
+- **Drag handles:** Handles appear when you hover over a group header or plugin row. Turn off **Show drag handles only on hover** in settings to always show them.
 - **Multiple groups:** Plugins belong to one group by default. Enable **Allow plugins in multiple groups** in settings to assign them to several.
 - **Find:** Search all plugins by name or ID, or search only **Ungrouped**—plugins not assigned to any group.
 - **Manage:** Enable or disable individual plugins or whole groups. Each plugin offers quick access to its settings, plus other typical resources, just like the native Obsidian menu.

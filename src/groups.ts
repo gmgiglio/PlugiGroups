@@ -11,6 +11,7 @@ export interface GroupData {
   groups: Group[];
   allowMultipleGroups: boolean;
   showRibbonButton: boolean;
+  showDragHandlesOnHover: boolean;
   confirmGroupDeletion: boolean;
   openLocation: OpenLocation;
   ungroupedIndex: number;
@@ -33,6 +34,7 @@ export function normalizeSavedGroupData(value: unknown): GroupData {
     if (group !== null) groups.push(group);
   }
   return { groups, allowMultipleGroups, showRibbonButton, confirmGroupDeletion,
+    showDragHandlesOnHover: !isNonArrayRecord(value) || value.showDragHandlesOnHover !== false,
     openLocation: isNonArrayRecord(value) && value.openLocation === "window" ? "window" : "tab",
     ungroupedIndex: normalizeSavedUngroupedIndex(value, groups.length),
     collapsedGroupIds: normalizeIndividualCollapsedGroupIds(value, groupIds),
