@@ -65,6 +65,7 @@ obsidian vault="Your vault" command id=plugin-groups-admin:open-plugin-groups
 | `includeCorePlugins` | `true` or `false`; includes or excludes core plugins from lists and group toggles without removing memberships |
 | `showPluginDescriptions` | `true` to keep descriptions visible below plugin names; `false` to show them on row hover or keyboard focus (default) |
 | `showDragHandlesOnHover` | `true` (default) shows handles on hover; `false` always shows them |
+| `alphabeticalPluginOrder` | `true` sorts plugins within groups by name; `false` (default) displays their saved custom order |
 | `confirmGroupDeletion` | `true` or `false` |
 | `openLocation` | `tab` or `window` |
 | `collapseMode` | `individual`, `collapsed`, or `expanded`; changing mode clears manual exceptions |

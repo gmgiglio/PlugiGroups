@@ -4,7 +4,7 @@ import type { InstalledPlugin } from "../inventory";
 import { runPluginOperationWithPendingState } from "../pendingPluginOperations";
 import { showPluginMenu } from "../pluginMenu";
 import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
-import { startPluginDrag } from "./pluginDrop";
+import { clearPluginDropHighlights, startPluginDrag } from "./pluginDrop";
 
 export function renderPluginRow(context: ViewContext, list: HTMLElement, plugin: InstalledPlugin, groupId: string | null): void {
   const row = list.createDiv({ cls: `plugin-groups-admin-plugin${plugin.enabled ? "" : " is-disabled"}${groupId === null ? "" : " is-grouped"}` });
@@ -13,6 +13,7 @@ export function renderPluginRow(context: ViewContext, list: HTMLElement, plugin:
   row.dataset.pluginSearch = `${plugin.name}\n${plugin.id}`.toLocaleLowerCase();
   row.draggable = true;
   row.addEventListener("dragstart", event => startPluginDrag(event, plugin.id, groupId));
+  row.addEventListener("dragend", () => clearPluginDropHighlights(list.closest(".plugin-groups-admin") ?? list));
   row.addEventListener("click", event => openPluginSettingsFromRow(event, row, context, plugin));
   const details = row.createDiv({ cls: "plugin-groups-admin-plugin-details" });
   const title = details.createDiv({ cls: "plugin-groups-admin-plugin-title" });

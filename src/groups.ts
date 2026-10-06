@@ -14,6 +14,7 @@ export interface GroupData {
   includeCorePlugins: boolean;
   showPluginDescriptions: boolean;
   showDragHandlesOnHover: boolean;
+  alphabeticalPluginOrder: boolean;
   confirmGroupDeletion: boolean;
   openLocation: OpenLocation;
   ungroupedIndex: number;
@@ -39,6 +40,7 @@ export function normalizeSavedGroupData(value: unknown): GroupData {
   return { groups, allowMultipleGroups, showRibbonButton, includeCorePlugins, confirmGroupDeletion,
     showPluginDescriptions: isNonArrayRecord(value) && value.showPluginDescriptions === true,
     showDragHandlesOnHover: !isNonArrayRecord(value) || value.showDragHandlesOnHover !== false,
+    alphabeticalPluginOrder: isNonArrayRecord(value) && value.alphabeticalPluginOrder === true,
     openLocation: isNonArrayRecord(value) && value.openLocation === "window" ? "window" : "tab",
     ungroupedIndex: normalizeSavedUngroupedIndex(value, groups.length),
     collapsedGroupIds: normalizeIndividualCollapsedGroupIds(value, groupIds),
@@ -178,6 +180,19 @@ function applySectionOrder(data: GroupData, order: (string | null)[]): void {
 
 export function firstGroupIdForPlugin(data: GroupData, pluginId: string): string | null {
   return data.groups.find(group => group.pluginIds.includes(pluginId))?.id ?? null;
+}
+
+export function reorderPluginInGroup(data: GroupData, groupId: string, pluginId: string, targetId: string, position: "before" | "after"): boolean {
+  const ids = data.groups.find(group => group.id === groupId)?.pluginIds;
+  if (!ids) return false;
+  const from = ids.indexOf(pluginId);
+  const target = ids.indexOf(targetId);
+  if (from < 0 || target < 0 || from === target) return false;
+  const destination = target + (position === "after" ? 1 : 0) - (from < target ? 1 : 0);
+  if (from === destination) return false;
+  ids.splice(from, 1);
+  ids.splice(destination, 0, pluginId);
+  return true;
 }
 
 export function setMultipleGroupsAllowed(data: GroupData, allowed: boolean): void {

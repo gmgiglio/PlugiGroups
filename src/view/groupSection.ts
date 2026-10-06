@@ -36,7 +36,9 @@ class AddPluginModal extends SuggestModal<InstalledPlugin> {
 }
 
 export function renderGroup(context: ViewContext, container: HTMLElement, group: Group, plugins: InstalledPlugin[]): void {
-  const groupPlugins = plugins.filter(plugin => group.pluginIds.includes(plugin.id));
+  const pluginsById = new Map(plugins.map(plugin => [plugin.id, plugin]));
+  const groupPlugins = group.pluginIds.map(id => pluginsById.get(id)).filter((plugin): plugin is InstalledPlugin => plugin !== undefined);
+  if (context.data.alphabeticalPluginOrder) groupPlugins.sort((first, second) => first.name.localeCompare(second.name));
   const { section, body } = createPluginSection(context, container, group.name, groupPlugins.length, group.id);
   section.dataset.groupId = group.id;
   section.classList.toggle("is-disabled", groupEnabledState(pluginsEligibleForGroupToggle(groupPlugins, context.selfId)) === "disabled");

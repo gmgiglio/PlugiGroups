@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isSectionCollapsed, setSectionCollapsed, setCollapseMode } from "../../src/groups";
+import { isSectionCollapsed, setSectionCollapsed, setCollapseMode, reorderPluginInGroup } from "../../src/groups";
 import { addGroup, addPluginToGroup, normalizeSavedGroupData, firstGroupIdForPlugin, movePluginToGroup, removeGroup, removePluginFromGroup, renameGroup, reorderSection, orderedSectionIdsIncludingUngrouped, setMultipleGroupsAllowed } from "../../src/groups";
 
 test("reordering groups preserves memberships and persists the new order", () => {
@@ -16,6 +16,41 @@ test("reordering groups preserves memberships and persists the new order", () =>
   assert.equal(reorderSection(data, "one", "two", "before"), false);
   assert.equal(reorderSection(data, "missing", "two", "after"), false);
   assert.equal(reorderSection(data, "one", "one", "after"), false);
+});
+
+test("plugin reordering moves up and down, persists, and preserves other memberships", () => {
+  const data = normalizeSavedGroupData({ allowMultipleGroups: true, groups: [
+    { id: "one", name: "First", pluginIds: ["a", "missing", "b", "core:graph", "c"] },
+    { id: "two", name: "Second", pluginIds: ["c", "b", "a"] },
+  ] });
+  assert.equal(reorderPluginInGroup(data, "one", "a", "c", "after"), true);
+  assert.deepEqual(data.groups[0].pluginIds, ["missing", "b", "core:graph", "c", "a"]);
+  assert.equal(reorderPluginInGroup(data, "one", "c", "b", "before"), true);
+  assert.deepEqual(data.groups[0].pluginIds, ["missing", "c", "b", "core:graph", "a"]);
+  assert.deepEqual(data.groups[1].pluginIds, ["c", "b", "a"]);
+  assert.deepEqual(normalizeSavedGroupData(JSON.parse(JSON.stringify(data))), data);
+});
+
+test("plugin reordering ignores invalid and unchanged destinations", () => {
+  const data = normalizeSavedGroupData({ groups: [{ id: "one", name: "First", pluginIds: ["a", "b", "c"] }] });
+  const original = JSON.stringify(data);
+  assert.equal(reorderPluginInGroup(data, "one", "a", "b", "before"), false);
+  assert.equal(reorderPluginInGroup(data, "one", "b", "a", "after"), false);
+  assert.equal(reorderPluginInGroup(data, "one", "a", "a", "after"), false);
+  assert.equal(reorderPluginInGroup(data, "one", "missing", "a", "before"), false);
+  assert.equal(reorderPluginInGroup(data, "one", "a", "missing", "before"), false);
+  assert.equal(reorderPluginInGroup(data, "missing", "a", "b", "after"), false);
+  assert.equal(JSON.stringify(data), original);
+});
+
+test("alphabetical plugin ordering defaults off and persists without changing custom order", () => {
+  assert.equal(normalizeSavedGroupData(null).alphabeticalPluginOrder, false);
+  assert.equal(normalizeSavedGroupData({ alphabeticalPluginOrder: "true" }).alphabeticalPluginOrder, false);
+  const data = normalizeSavedGroupData({ alphabeticalPluginOrder: true,
+    groups: [{ id: "one", name: "First", pluginIds: ["c", "a", "b"] }] });
+  const reloaded = normalizeSavedGroupData(JSON.parse(JSON.stringify(data)));
+  assert.equal(reloaded.alphabeticalPluginOrder, true);
+  assert.deepEqual(reloaded.groups[0].pluginIds, ["c", "a", "b"]);
 });
 
 test("Ungrouped moves between named groups and keeps its position across changes", () => {

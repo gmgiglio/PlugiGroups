@@ -15,6 +15,7 @@
     "test:collapse-layout": "node tests/integration/collapseLayout.mjs",
     "test:search": "node tests/integration/globalSearch.mjs",
     "test:group-sync": "node tests/integration/groupViewSync.mjs",
+    "test:plugin-reorder": "node tests/integration/pluginReorder.mjs",
     "test:dedicated-window": "node tests/integration/dedicatedWindow.mjs",
     "test:cli": "node tests/integration/cli.mjs"
   },

@@ -12,6 +12,8 @@ Hover over a plugin row or focus its controls to see its description, version, a
 
 - **Organize:** Create, rename, and reorder groups. Add plugins by dragging them, using **Move to** on the Ungrouped section, or selecting **+ Add plugin** on the target group.
 - **Drag handles:** Handles appear when you hover over a group header or plugin row. Turn off **Show drag handles only on hover** in settings to always show them.
+- **Plugin order:** Drag a plugin above or below another plugin within a group. The insertion line shows its new position, and each group remembers its own order.
+- **Alphabetical order:** Toggle **A–Z** at the top to sort plugins within groups by name. Turn it off to restore your custom order and reorder plugins by dragging. This preference is saved; Ungrouped remains alphabetical.
 - **Multiple groups:** Plugins belong to one group by default. Enable **Allow plugins in multiple groups** in settings to assign them to several.
 - **Find:** Search all plugins by name or ID, or search only **Ungrouped**—plugins not assigned to any group.
 - **Manage:** Enable or disable individual plugins or whole groups. Each plugin offers quick access to its settings, plus other typical resources, just like the native Obsidian menu.

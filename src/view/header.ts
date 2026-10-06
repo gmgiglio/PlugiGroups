@@ -14,10 +14,33 @@ export function renderGroupsHeader(context: ViewContext, container: HTMLElement,
   const controls = header.createDiv({ cls: "plugin-groups-admin-group-controls" });
   const stats = controls.createDiv({ cls: "plugin-groups-admin-stats-controls" });
   renderGroupsSummary(stats, context.data.groups.length, plugins);
-  renderCollapseCycle(context, stats);
+  renderViewOptions(context, stats);
   const actions = controls.createDiv({ cls: "plugin-groups-admin-header-actions" });
   renderAddGroupButton(context, actions, container, search);
   renderGroupsSearch(search, header, container, context);
+}
+
+function renderViewOptions(context: ViewContext, container: HTMLElement): void {
+  const options = container.createDiv({ cls: "plugin-groups-admin-view-options", attr: { role: "group", "aria-label": "View options" } });
+  renderCollapseCycle(context, options);
+  renderAlphabeticalOrderToggle(context, options);
+}
+
+function renderAlphabeticalOrderToggle(context: ViewContext, container: HTMLElement): void {
+  const alphabetical = context.data.alphabeticalPluginOrder;
+  const text = alphabetical ? "A–Z order" : "custom order";
+  const button = createHeaderAction(container, alphabetical ? "arrow-down-az" : "list-ordered", text, "plugin-groups-admin-alphabetical-order", "Alphabetical plugin order");
+  button.setAttribute("aria-pressed", String(alphabetical));
+  button.setAttribute("title", `${text}. Click to ${alphabetical ? "restore custom plugin order" : "sort plugins alphabetically"}.`);
+  button.addEventListener("click", () => toggleAlphabeticalOrder(context, button));
+}
+
+function toggleAlphabeticalOrder(context: ViewContext, button: HTMLButtonElement): void {
+  const focused = button.ownerDocument.activeElement === button;
+  const view = button.closest<HTMLElement>(".plugin-groups-admin")!;
+  context.data.alphabeticalPluginOrder = !context.data.alphabeticalPluginOrder;
+  saveGroupChangesAndRefreshViews(context);
+  if (focused) view.querySelector<HTMLButtonElement>(".plugin-groups-admin-alphabetical-order")!.focus({ preventScroll: true });
 }
 
 const COLLAPSE_CYCLE: Record<CollapseMode, { readonly next: CollapseMode; readonly icon: string; readonly label: string; readonly nextLabel: string }> = {
