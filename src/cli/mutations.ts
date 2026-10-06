@@ -98,7 +98,7 @@ export async function collapseSection(context: CliContext, params: CliData, coll
 export async function toggleGroup(context: CliContext, params: CliData, enabled: boolean): Promise<string> {
   const group = resolveGroup(context.data, requiredParameter(params, "group"), context.getInstalledPlugins());
   const installed = context.getInstalledPlugins().filter(plugin => group.pluginIds.includes(plugin.id));
-  const plugins = pluginsEligibleForGroupToggle(installed, context.selfId);
+  const plugins = pluginsEligibleForGroupToggle(installed, context.selfId, context.data.unenableablePlugins);
   const changed = await runPluginOperationWithPendingState(context.pendingPluginIds, plugins.map(plugin => plugin.id),
     context.refreshViews, () => setGroupPluginsEnabled(plugins, enabled, context.setPluginEnabled));
   if (!changed) throw new Error("A plugin in this group has a pending operation; retry when it finishes");

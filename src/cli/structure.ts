@@ -12,7 +12,7 @@ export interface GroupStructure {
 }
 
 export function structureFromData(data: GroupData, plugins: InstalledPlugin[]): GroupStructure {
-  return { version: 2, groups: cliGroups(cloneGroupData(data), plugins),
+  return { version: 2, groups: cliGroups(cloneGroupData(data), plugins).map(({ id, name, pluginIds }) => ({ id, name, pluginIds })),
     collapsedGroupIds: data.collapsedGroupIds.map(id => id ?? UNGROUPED_ID), collapseMode: data.collapseMode,
     collapseModeExceptionIds: data.collapseModeExceptionIds.map(id => id ?? UNGROUPED_ID) };
 }
@@ -37,8 +37,13 @@ function applyStructureGroups(data: GroupData, groups: Group[]): void {
   if (ungrouped.name !== UNGROUPED_NAME) throw new Error("Ungrouped cannot be renamed");
   const assigned = new Set(groups.filter(group => group.id !== UNGROUPED_ID).flatMap(group => group.pluginIds));
   if (ungrouped.pluginIds.some(id => assigned.has(id))) throw new Error("A plugin cannot belong to the permanent group and another group");
-  data.groups = groups.filter(group => group.id !== UNGROUPED_ID);
+  data.groups = groups.filter(group => group.id !== UNGROUPED_ID).map(group => withPreviousSavedMix(data, group));
   data.ungroupedIndex = groups.indexOf(ungrouped);
+}
+
+function withPreviousSavedMix(data: GroupData, group: Group): Group {
+  const savedMix = data.groups.find(previous => previous.id === group.id)?.savedMixPluginIds?.filter(id => group.pluginIds.includes(id)) ?? [];
+  return savedMix.length > 0 ? { ...group, savedMixPluginIds: savedMix } : group;
 }
 
 function structureRecord(input: unknown): Record<string, unknown> {

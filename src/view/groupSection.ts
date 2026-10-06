@@ -2,7 +2,7 @@ import { App, Notice, setIcon, SuggestModal } from "obsidian";
 import { showDestructiveConfirmation } from "../confirmation";
 import { addPluginToGroup, removeGroup, renameGroup } from "../groups";
 import type { Group } from "../groups";
-import { groupEnabledState, setGroupPluginsEnabled, pluginsEligibleForGroupToggle } from "../groupToggle";
+import { enableOnlyGroupPlugins, groupEnabledState, groupStateAfterChange, nextGroupEnabledIds, pluginsEligibleForGroupToggle, rememberGroupMix, type GroupEnabledState } from "../groupToggle";
 import type { InstalledPlugin } from "../inventory";
 import { runPluginOperationWithPendingState } from "../pendingPluginOperations";
 import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
@@ -41,7 +41,7 @@ export function renderGroup(context: ViewContext, container: HTMLElement, group:
   if (context.data.alphabeticalPluginOrder) groupPlugins.sort((first, second) => first.name.localeCompare(second.name));
   const { section, body } = createPluginSection(context, container, group.name, groupPlugins.length, group.id);
   section.dataset.groupId = group.id;
-  section.classList.toggle("is-disabled", groupEnabledState(pluginsEligibleForGroupToggle(groupPlugins, context.selfId)) === "disabled");
+  section.classList.toggle("is-disabled", displayedGroupState(context, group, pluginsEligibleForGroupToggle(groupPlugins, context.selfId, context.data.unenableablePlugins)) === "disabled");
   renderSectionDragHandle(container, section, group.name, group.id);
   renderGroupActions(context, section, group, groupPlugins);
   registerPluginDropTarget(context, section, group.id, plugins);
@@ -73,32 +73,53 @@ function createGroupAction(actions: HTMLElement, icon: string, text: string, acc
 }
 
 function renderGroupEnabledToggle(context: ViewContext, actions: HTMLElement, group: Group, plugins: InstalledPlugin[]): void {
-  const manageable = pluginsEligibleForGroupToggle(plugins, context.selfId);
-  const state = groupEnabledState(manageable);
+  const manageable = pluginsEligibleForGroupToggle(plugins, context.selfId, context.data.unenableablePlugins);
+  const state = displayedGroupState(context, group, manageable);
   const busy = manageable.some(plugin => context.pendingPluginIds.has(plugin.id));
   const label = actions.createEl("label", { cls: "plugin-groups-admin-toggle plugin-groups-admin-group-toggle" });
   const toggle = label.createEl("input", { attr: { type: "checkbox", "aria-label": `Plugins in ${group.name}` } });
-  toggle.checked = state === "enabled";
+  showGroupEnabledState(toggle, state);
   toggle.disabled = manageable.length === 0 || busy;
   label.classList.toggle("is-disabled", toggle.disabled);
   if (busy) label.setAttribute("title", "Updating plugins…");
   else if (plugins.some(plugin => plugin.id === context.selfId)) label.setAttribute("title", "PlugiGroups stays enabled.");
   label.createSpan({ cls: "plugin-groups-admin-switch", attr: { "aria-hidden": "true" } });
-  toggle.addEventListener("change", () => { void changeGroupPluginsEnabled(context, group, manageable, toggle.checked); });
+  toggle.addEventListener("change", () => { void advanceGroupEnabledState(context, group, manageable); });
 }
 
-async function changeGroupPluginsEnabled(context: ViewContext, group: Group, plugins: InstalledPlugin[], enabled: boolean): Promise<void> {
+function displayedGroupState(context: ViewContext, group: Group, manageable: InstalledPlugin[]): GroupEnabledState {
+  return context.pendingGroupStates.get(group.id) ?? groupEnabledState(manageable);
+}
+
+function showGroupEnabledState(toggle: HTMLInputElement, state: GroupEnabledState): void {
+  toggle.checked = state === "enabled";
+  toggle.indeterminate = state === "partial";
+}
+
+async function advanceGroupEnabledState(context: ViewContext, group: Group, plugins: InstalledPlugin[]): Promise<void> {
+  const enabledIds = nextGroupEnabledIds(group, plugins);
+  if (groupEnabledState(plugins) === "partial") {
+    rememberGroupMix(group, plugins);
+    context.queueGroupDataSave();
+  }
   try {
-    const started = await runPluginOperationWithPendingState(
-      context.pendingPluginIds,
-      plugins.map(plugin => plugin.id),
-      context.refreshOpenGroupsViews,
-      () => setGroupPluginsEnabled(plugins, enabled, context.setPluginEnabled),
-    );
+    const started = await changeGroupShowingTargetState(context, group, plugins, enabledIds);
     if (!started) context.refreshOpenGroupsViews();
   } catch (error) {
     console.error(`Failed to change group ${group.name}`, error);
     new Notice(`Could not update all plugins in ${group.name}.`);
+  }
+}
+
+async function changeGroupShowingTargetState(context: ViewContext, group: Group, plugins: InstalledPlugin[], enabledIds: string[]): Promise<boolean> {
+  if (plugins.some(plugin => context.pendingPluginIds.has(plugin.id))) return false;
+  context.pendingGroupStates.set(group.id, groupStateAfterChange(plugins, enabledIds));
+  try {
+    return await runPluginOperationWithPendingState(context.pendingPluginIds, plugins.map(plugin => plugin.id), context.refreshOpenGroupsViews,
+      () => enableOnlyGroupPlugins(plugins, enabledIds, context.setPluginEnabled));
+  } finally {
+    context.pendingGroupStates.delete(group.id);
+    context.refreshOpenGroupsViews();
   }
 }
 

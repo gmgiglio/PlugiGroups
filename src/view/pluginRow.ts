@@ -2,7 +2,9 @@ import { Menu, Notice, setIcon } from "obsidian";
 import { addPluginToGroup, removePluginFromGroup } from "../groups";
 import type { InstalledPlugin } from "../inventory";
 import { runPluginOperationWithPendingState } from "../pendingPluginOperations";
+import { rememberMixesOfGroupsContaining } from "../groupToggle";
 import { showPluginMenu } from "../pluginMenu";
+import { isPluginUnenableable } from "../unenableablePlugins";
 import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
 import { clearPluginDropHighlights, startPluginDrag } from "./pluginDrop";
 
@@ -20,11 +22,17 @@ export function renderPluginRow(context: ViewContext, list: HTMLElement, plugin:
   const name = title.createEl("button", { cls: "plugin-groups-admin-plugin-name", text: plugin.name, attr: { type: "button" } });
   name.addEventListener("click", () => openPluginSettingsWithFeedback(context, plugin));
   if (plugin.kind === "core") title.createSpan({ cls: "plugin-groups-admin-core-badge", text: "Core" });
+  if (isPluginUnenableable(context.data.unenableablePlugins, plugin)) renderUnenableableBadge(row, title);
   renderPluginDescription(context, details, plugin);
   renderPluginMenuButton(context, row, plugin);
   renderPluginEnabledToggle(context, row, plugin);
   if (groupId === null) renderMovePluginButton(context, row, plugin);
   else renderRemovePluginButton(context, row, plugin, groupId);
+}
+
+function renderUnenableableBadge(row: HTMLElement, title: HTMLElement): void {
+  row.addClass("is-unenableable");
+  title.createSpan({ cls: "plugin-groups-admin-unenableable-badge", text: "Can't be enabled" });
 }
 
 function renderMovePluginButton(context: ViewContext, row: HTMLElement, plugin: InstalledPlugin): void {
@@ -90,6 +98,12 @@ function renderPluginEnabledToggle(context: ViewContext, row: HTMLElement, plugi
   toggle.addEventListener("change", () => { void changePluginEnabled(context, plugin, toggle); });
 }
 
+async function changePluginAndRememberGroupMixes(context: ViewContext, id: string, enabled: boolean): Promise<void> {
+  await context.setPluginEnabled(id, enabled);
+  rememberMixesOfGroupsContaining(context.data.groups, id, context.getInstalledPlugins(), context.selfId, context.data.unenableablePlugins);
+  context.queueGroupDataSave();
+}
+
 async function changePluginEnabled(context: ViewContext, plugin: InstalledPlugin, toggle: HTMLInputElement): Promise<void> {
   try {
     const enabled = toggle.checked;
@@ -97,7 +111,7 @@ async function changePluginEnabled(context: ViewContext, plugin: InstalledPlugin
       context.pendingPluginIds,
       [plugin.id],
       context.refreshOpenGroupsViews,
-      () => context.setPluginEnabled(plugin.id, enabled),
+      () => changePluginAndRememberGroupMixes(context, plugin.id, enabled),
     );
     if (!started) context.refreshOpenGroupsViews();
   } catch (error) {

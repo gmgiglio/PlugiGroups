@@ -17,7 +17,8 @@
     "test:group-sync": "node tests/integration/groupViewSync.mjs",
     "test:plugin-reorder": "node tests/integration/pluginReorder.mjs",
     "test:dedicated-window": "node tests/integration/dedicatedWindow.mjs",
-    "test:cli": "node tests/integration/cli.mjs"
+    "test:cli": "node tests/integration/cli.mjs",
+    "test:group-toggle": "node tests/integration/groupToggle.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

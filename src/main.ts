@@ -9,6 +9,7 @@ import { closeObsidianSettings, installedPlugins, openPluginSettingsOrCommunityT
 import { GroupsView, VIEW_TYPE } from "./view";
 import { registerGroupsCli } from "./cli";
 import { cloneGroupData } from "./cli/parameters";
+import { forgetUnenableablePlugin, markPluginUnenableable } from "./unenableablePlugins";
 
 export default class PlugiGroups extends Plugin {
   data: GroupData = normalizeSavedGroupData(null);
@@ -22,10 +23,11 @@ export default class PlugiGroups extends Plugin {
       app: this.app,
       data: this.data,
       getInstalledPlugins: () => installedPlugins(this.app, this.data.includeCorePlugins),
-      setPluginEnabled: (id, enabled) => setPluginEnabled(this.app, id, enabled),
+      setPluginEnabled: (id, enabled) => setPluginEnabledRecordingRefusals(this, id, enabled),
       openPluginSettings: id => openPluginSettingsOrCommunityTab(this.app, id),
       selfId: this.manifest.id,
       pendingPluginIds,
+      pendingGroupStates: new Map(),
       refreshOpenGroupsViews: () => refreshOpenGroupsViews(this),
       queueGroupDataSave: () => queueGroupDataSave(this),
     }));
@@ -205,6 +207,23 @@ function refreshOpenGroupsViews(plugin: PlugiGroups): void {
   for (const leaf of plugin.app.workspace.getLeavesOfType(VIEW_TYPE)) refreshGroupsViewInLeaf(leaf);
 }
 
+async function setPluginEnabledRecordingRefusals(plugin: PlugiGroups, id: string, enabled: boolean): Promise<void> {
+  try {
+    await setPluginEnabled(plugin.app, id, enabled);
+  } catch (error) {
+    if (enabled) recordUnenableablePlugin(plugin, id);
+    throw error;
+  }
+  if (enabled && forgetUnenableablePlugin(plugin.data, id)) queueGroupDataSave(plugin);
+}
+
+function recordUnenableablePlugin(plugin: PlugiGroups, id: string): void {
+  const installed = installedPlugins(plugin.app).find(candidate => candidate.id === id);
+  if (!installed || installed.enabled) return;
+  markPluginUnenableable(plugin.data, installed);
+  queueGroupDataSave(plugin);
+}
+
 function queueGroupDataSave(plugin: PlugiGroups): void {
   void saveGroupData(plugin, plugin.data).catch(error => {
     console.error("Failed to save plugin groups", error);
@@ -225,7 +244,7 @@ function registerPluginCli(plugin: PlugiGroups, pendingPluginIds: Set<string>): 
     getInstalledPlugins: () => installedPlugins(plugin.app, plugin.data.includeCorePlugins),
     commitData: data => commitCliGroupData(plugin, data),
     refreshViews: () => refreshOpenGroupsViews(plugin),
-    setPluginEnabled: (id, enabled) => setPluginEnabled(plugin.app, id, enabled),
+    setPluginEnabled: (id, enabled) => setPluginEnabledRecordingRefusals(plugin, id, enabled),
     filterViews: (query, scope) => filterOpenGroupsViews(plugin, query, scope),
   }, (command, description, flags, handler) => plugin.registerCliHandler(command, description, flags, handler));
 }

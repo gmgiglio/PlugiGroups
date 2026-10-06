@@ -196,6 +196,17 @@ test("structure round-trips order, IDs, absent memberships, Ungrouped and collap
   assert.deepEqual(dataFromStructure(data, structure), data);
 });
 
+test("structure leaves saved group mixes out and keeps them for members that remain", () => {
+  const harness = createHarness(savedGroups(true));
+  const data = harness.context.data;
+  data.groups[0].savedMixPluginIds = ["alpha"];
+  const structure = structureFromData(data, harness.context.getInstalledPlugins());
+  assert.equal("savedMixPluginIds" in structure.groups.find(group => group.id === "one")!, false);
+  assert.deepEqual(dataFromStructure(data, structure), data);
+  structure.groups.find(group => group.id === "one")!.pluginIds = ["plugin-groups-admin"];
+  assert.equal("savedMixPluginIds" in dataFromStructure(data, structure).groups.find(group => group.id === "one")!, false);
+});
+
 test("structure replacement validates the entire payload before saving, and dry-run never mutates", async () => {
   const harness = createHarness(savedGroups());
   const structure = structureFromData(harness.context.data, harness.context.getInstalledPlugins());

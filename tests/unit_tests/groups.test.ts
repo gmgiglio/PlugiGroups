@@ -249,3 +249,18 @@ test("manual exceptions validate saved IDs and are removed with deleted groups",
   assert.deepEqual(data.collapseModeExceptionIds, [null]);
   assert.equal(normalizeSavedGroupData({ collapseAll: true }).collapseMode, "collapsed");
 });
+
+test("saved group mixes keep only plugins still in the group", () => {
+  const data = normalizeSavedGroupData({ groups: [
+    { id: "a", name: "A", pluginIds: ["one", "two"], savedMixPluginIds: ["two", "gone", 3] },
+    { id: "b", name: "B", pluginIds: ["three"], savedMixPluginIds: ["gone"] },
+  ] });
+  assert.deepEqual(data.groups[0].savedMixPluginIds, ["two"]);
+  assert.equal("savedMixPluginIds" in data.groups[1], false);
+});
+
+test("saved unenableable plugins keep only plugin versions", () => {
+  assert.deepEqual(normalizeSavedGroupData({ groups: [], unenableablePlugins: { one: "1.0", two: 2 } }).unenableablePlugins, { one: "1.0" });
+  assert.deepEqual(normalizeSavedGroupData({ groups: [], unenableablePlugins: ["one"] }).unenableablePlugins, {});
+  assert.deepEqual(normalizeSavedGroupData(null).unenableablePlugins, {});
+});

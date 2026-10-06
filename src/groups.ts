@@ -1,7 +1,10 @@
+import { normalizeSavedUnenableablePlugins, type UnenableablePlugins } from "./unenableablePlugins";
+
 export interface Group {
   id: string;
   name: string;
   pluginIds: string[];
+  savedMixPluginIds?: string[];
 }
 
 export type CollapseMode = "individual" | "collapsed" | "expanded";
@@ -21,6 +24,7 @@ export interface GroupData {
   collapsedGroupIds: (string | null)[];
   collapseMode: CollapseMode;
   collapseModeExceptionIds: (string | null)[];
+  unenableablePlugins: UnenableablePlugins;
 }
 
 // Validate saved group data and fill in defaults before using it
@@ -45,7 +49,8 @@ export function normalizeSavedGroupData(value: unknown): GroupData {
     ungroupedIndex: normalizeSavedUngroupedIndex(value, groups.length),
     collapsedGroupIds: normalizeIndividualCollapsedGroupIds(value, groupIds),
     collapseMode: normalizeCollapseMode(value),
-    collapseModeExceptionIds: normalizeSavedCollapseExceptions(value, groupIds) };
+    collapseModeExceptionIds: normalizeSavedCollapseExceptions(value, groupIds),
+    unenableablePlugins: normalizeSavedUnenableablePlugins(isNonArrayRecord(value) ? value.unenableablePlugins : null) };
 }
 
 function normalizeSavedCollapseExceptions(value: unknown, groupIds: Set<string>): (string | null)[] {
@@ -108,7 +113,15 @@ function normalizeSavedGroup(value: unknown, groupIds: Set<string>, pluginIds: S
     assigned.push(id);
     pluginIds.add(id);
   }
-  return { id: value.id, name: value.name.trim(), pluginIds: assigned };
+  const savedMix = normalizeSavedMix(value.savedMixPluginIds, assigned);
+  return savedMix.length > 0
+    ? { id: value.id, name: value.name.trim(), pluginIds: assigned, savedMixPluginIds: savedMix }
+    : { id: value.id, name: value.name.trim(), pluginIds: assigned };
+}
+
+function normalizeSavedMix(value: unknown, assigned: string[]): string[] {
+  if (!Array.isArray(value)) return [];
+  return assigned.filter(id => value.includes(id));
 }
 
 function isNonArrayRecord(value: unknown): value is Record<string, unknown> {
