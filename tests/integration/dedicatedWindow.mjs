@@ -52,6 +52,21 @@ evaluateInObsidian(`(() => {
       const header = container.doc.querySelector(".workspace-tab-header-container");
       check(container.win.getComputedStyle(header, "::after").content === '"PlugiGroups"', "Window title missing");
       check(header.getBoundingClientRect().height > 0, "Window drag region missing");
+      const { context } = groupsLeaf.view;
+      const { openPluginSettings, setPluginEnabled } = context;
+      const opened = [];
+      context.openPluginSettings = id => { opened.push(id); return "plugin"; };
+      context.setPluginEnabled = async () => {};
+      try {
+        const row = [...groupsLeaf.view.contentEl.querySelectorAll(".plugin-groups-admin-plugin")].find(item => !item.querySelector("input").disabled);
+        row.querySelector(".plugin-groups-admin-switch").click();
+        check(opened.length === 0, "Plugin switch opened settings in the dedicated window");
+        row.querySelector(".plugin-groups-admin-plugin-details").click();
+        check(opened.length === 1, "Plugin row did not open settings in the dedicated window");
+      } finally {
+        Object.assign(context, { openPluginSettings, setPluginEnabled });
+        groupsLeaf.view.refreshGroupsView();
+      }
       app.workspace.setActiveLeaf(groupsLeaf, { focus: true });
       const extra = app.workspace.getLeaf("tab");
       await pause();

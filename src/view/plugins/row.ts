@@ -16,7 +16,7 @@ export function renderPluginRow(context: ViewContext, list: HTMLElement, plugin:
   row.draggable = true;
   row.addEventListener("dragstart", event => startPluginDrag(event, plugin.id, groupId));
   row.addEventListener("dragend", () => clearPluginDropHighlights(list.closest(".plugin-groups-admin") ?? list));
-  row.addEventListener("click", event => openPluginSettingsFromRow(event, row, context, plugin));
+  row.addEventListener("click", event => openPluginSettingsFromRow(event, context, plugin));
   const details = row.createDiv({ cls: "plugin-groups-admin-plugin-details" });
   const title = details.createDiv({ cls: "plugin-groups-admin-plugin-title" });
   const name = title.createEl("button", { cls: "plugin-groups-admin-plugin-name", text: plugin.name, attr: { type: "button" } });
@@ -74,9 +74,9 @@ function renderRemovePluginButton(context: ViewContext, row: HTMLElement, plugin
   });
 }
 
-function openPluginSettingsFromRow(event: MouseEvent, row: HTMLElement, context: ViewContext, plugin: InstalledPlugin): void {
-  const elementType = row.ownerDocument.defaultView?.Element;
-  if (elementType && event.target instanceof elementType && event.target.closest("button, input, label")) return;
+function openPluginSettingsFromRow(event: MouseEvent, context: ViewContext, plugin: InstalledPlugin): void {
+  const target = event.targetNode;
+  if (target?.instanceOf(Element) && target.closest("button, input, label")) return;
   openPluginSettingsWithFeedback(context, plugin);
 }
 
