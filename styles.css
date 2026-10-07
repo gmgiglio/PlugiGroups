@@ -507,8 +507,7 @@
 body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-container-inner,
 body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-new-tab,
 body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-tab-list,
-body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-spacer,
-body.plugin-groups-admin-dedicated-window .workspace .view-header {
+body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-spacer {
   display: none;
 }
 
@@ -516,23 +515,9 @@ body.plugin-groups-admin-dedicated-window .workspace .view-header {
   -webkit-app-region: drag;
 }
 
-/* The hidden view header normally spaces the content from the top. */
-body.plugin-groups-admin-dedicated-window .workspace-leaf-content .plugin-groups-admin {
-  padding-top: var(--size-4-6);
-}
-
-.plugin-groups-admin-window-title {
-  display: flex;
-  align-items: center;
-  gap: var(--size-4-1);
-  margin: auto;
-  color: var(--text-normal);
-  font-size: var(--font-ui-small);
-  font-weight: var(--font-semibold);
-}
-
-.plugin-groups-admin-window-settings {
-  -webkit-app-region: no-drag;
+/* The view always opens in a fresh tab and cannot be navigated away from, so it has no history. */
+.workspace-leaf-content[data-type="plugin-groups-admin-view"] .view-header-nav-buttons {
+  display: none;
 }
 
 .plugin-groups-admin-core-badge {

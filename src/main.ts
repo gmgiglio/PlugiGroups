@@ -35,7 +35,7 @@ export default class PlugiGroups extends Plugin {
     this.addCommand({ id: "open-plugin-groups", name: "Open groups", callback: () => { void openGroupsView(this); } });
     this.addSettingTab(new GroupsSettingTab(this));
     registerGroupsViewInventoryRefresh(this);
-    registerDedicatedGroupsWindows(this, VIEW_TYPE, () => openOwnSettings(this));
+    registerDedicatedGroupsWindows(this, VIEW_TYPE);
     registerPluginCli(this, pendingPluginIds);
   }
 }
@@ -174,10 +174,6 @@ function setMultipleGroupsSetting(plugin: PlugiGroups, allowed: boolean): void {
   setMultipleGroupsAllowed(plugin.data, allowed);
   queueGroupDataSave(plugin);
   for (const leaf of plugin.app.workspace.getLeavesOfType(VIEW_TYPE)) refreshGroupsViewInLeaf(leaf);
-}
-
-function openOwnSettings(plugin: PlugiGroups): void {
-  if (openPluginSettingsOrCommunityTab(plugin.app, plugin.manifest.id) === "unavailable") new Notice("Could not open Obsidian settings.");
 }
 
 function updateRibbonButton(plugin: PlugiGroups): void {
