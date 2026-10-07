@@ -1,6 +1,6 @@
 PlugiGroups allows you to order plugins into groups and manage them.
 
-![PlugiGroups window showing six groups, global search, collapse control, and plugin switches](./images/plugin-groups-2026-10.png)
+![PlugiGroups view showing seven groups, global search, collapse and order controls, and on, middle, and off group switches](./images/plugin-groups-2026-10.png)
 
 ## Using PlugiGroups
 

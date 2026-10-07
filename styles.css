@@ -27,27 +27,11 @@
   margin-bottom: 24px;
 }
 
-.plugin-groups-admin-introduction {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  width: 100%;
-}
-
 .plugin-groups-admin-header-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-left: auto;
-}
-
-.plugin-groups-admin-heading { flex: 1; min-width: 0; }
-
-.plugin-groups-admin-description {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: var(--font-ui-medium);
-  line-height: 1.5;
 }
 
 .plugin-groups-admin-summary {
@@ -78,8 +62,6 @@
   flex-wrap: wrap;
   gap: 12px 16px;
   width: 100%;
-  padding-top: 16px;
-  border-top: 1px solid var(--background-modifier-border);
 }
 
 .plugin-groups-admin-add-button { white-space: nowrap; }
@@ -406,8 +388,7 @@
 .plugin-groups-admin-section[hidden],
 .plugin-groups-admin-search[hidden],
 .plugin-groups-admin-search-empty[hidden] { display: none; }
-.plugin-groups-admin .plugin-groups-admin-header-action,
-.plugin-groups-admin .plugin-groups-admin-settings-button {
+.plugin-groups-admin .plugin-groups-admin-header-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -420,8 +401,7 @@
   background: transparent;
   color: var(--text-muted);
 }
-.plugin-groups-admin .plugin-groups-admin-header-action:hover,
-.plugin-groups-admin .plugin-groups-admin-settings-button:hover {
+.plugin-groups-admin .plugin-groups-admin-header-action:hover {
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
@@ -436,15 +416,10 @@
   margin-left: 6px;
   opacity: 1;
 }
-.plugin-groups-admin-header-action svg,
-.plugin-groups-admin-settings-button svg { width: 22px; height: 22px; }
+.plugin-groups-admin-header-action svg { width: 22px; height: 22px; }
 .plugin-groups-admin-search { width: 100%; min-width: 0; }
 .plugin-groups-admin-search .search-input-container,
 .plugin-groups-admin-search input { width: 100%; }
-
-.plugin-groups-admin-settings-button:is(:hover, :focus-visible) .plugin-groups-admin-action-label {
-  max-width: 14em;
-}
 
 .plugin-groups-admin .plugin-groups-admin-add-button {
   height: 48px;
@@ -532,8 +507,7 @@
 body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-container-inner,
 body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-new-tab,
 body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-tab-list,
-body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-spacer,
-body.plugin-groups-admin-dedicated-window .workspace .view-header {
+body.plugin-groups-admin-dedicated-window .workspace .workspace-tab-header-spacer {
   display: none;
 }
 
@@ -541,13 +515,9 @@ body.plugin-groups-admin-dedicated-window .workspace .view-header {
   -webkit-app-region: drag;
 }
 
-.plugin-groups-admin-dedicated-window .workspace-tab-header-container::after {
-  content: "PlugiGroups";
-  margin: auto;
-  color: var(--text-normal);
-  font-size: var(--font-ui-small);
-  font-weight: var(--font-semibold);
-  pointer-events: none;
+/* The view always opens in a fresh tab and cannot be navigated away from, so it has no history. */
+.workspace-leaf-content[data-type="plugin-groups-admin-view"] .view-header-nav-buttons {
+  display: none;
 }
 
 .plugin-groups-admin-core-badge {

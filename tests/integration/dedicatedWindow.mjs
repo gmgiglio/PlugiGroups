@@ -46,11 +46,12 @@ evaluateInObsidian(`(() => {
       const style = element => container.win.getComputedStyle(element);
       check(container.doc.body.classList.contains("plugin-groups-admin-dedicated-window"), "Window styling missing");
       check(groupsLeaf.getViewState().pinned, "PlugiGroups is not pinned");
-      for (const selector of [".workspace-tab-header-container-inner", ".workspace-tab-header-new-tab", ".workspace-tab-header-tab-list", ".view-header"]) {
+      for (const selector of [".workspace-tab-header-container-inner", ".workspace-tab-header-new-tab", ".workspace-tab-header-tab-list"]) {
         check(style(container.doc.querySelector(selector)).display === "none", selector + " is visible");
       }
       const header = container.doc.querySelector(".workspace-tab-header-container");
-      check(container.win.getComputedStyle(header, "::after").content === '"PlugiGroups"', "Window title missing");
+      check(style(groupsLeaf.view.containerEl.querySelector(".view-header")).display !== "none", "View header is hidden");
+      check(!!groupsLeaf.view.containerEl.querySelector('.view-action[aria-label="Open PlugiGroups settings"]'), "Settings action missing");
       check(header.getBoundingClientRect().height > 0, "Window drag region missing");
       const { context } = groupsLeaf.view;
       const { openPluginSettings, setPluginEnabled } = context;

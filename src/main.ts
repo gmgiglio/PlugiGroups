@@ -58,39 +58,57 @@ class GroupsSettingTab extends PluginSettingTab {
         },
       },
       {
-        name: "Open PlugiGroups in",
-        desc: "Choose where the ribbon, command palette, and settings button open PlugiGroups.",
-        control: { type: "dropdown", key: "openLocation", options: { tab: "Tab", window: "New window" } },
+        type: "group",
+        heading: "Access",
+        items: [
+          {
+            name: "Open PlugiGroups in",
+            desc: "Choose where the ribbon, command palette, and settings button open PlugiGroups.",
+            control: { type: "dropdown", key: "openLocation", options: { tab: "Tab", window: "Separate window" } },
+          },
+          {
+            name: "Show ribbon button",
+            desc: "Show the PlugiGroups button in the ribbon.",
+            control: { type: "toggle", key: "showRibbonButton" },
+          },
+        ],
       },
       {
-        name: "Show ribbon button",
-        desc: "Show the PlugiGroups button in the ribbon.",
-        control: { type: "toggle", key: "showRibbonButton" },
+        type: "group",
+        heading: "Groups",
+        items: [
+          {
+            name: "Include core plugins",
+            desc: "Show and manage core plugins alongside community plugins. Excluding them preserves their group memberships.",
+            control: { type: "toggle", key: "includeCorePlugins" },
+          },
+          {
+            name: "Allow plugins in multiple groups",
+            desc: "When turned off, each plugin stays in its first group.",
+            control: { type: "toggle", key: "allowMultipleGroups" },
+          },
+          {
+            name: "Confirm before deleting groups",
+            desc: "Show a confirmation dialog before deleting a group.",
+            control: { type: "toggle", key: "confirmGroupDeletion" },
+          },
+        ],
       },
       {
-        name: "Include core plugins",
-        desc: "Show and manage core plugins alongside community plugins. Excluding them preserves their group memberships.",
-        control: { type: "toggle", key: "includeCorePlugins" },
-      },
-      {
-        name: "Always show plugin descriptions",
-        desc: "Keep descriptions, versions, and authors visible below plugin names. When turned off, they appear while hovering over or focusing a plugin row.",
-        control: { type: "toggle", key: "showPluginDescriptions" },
-      },
-      {
-        name: "Show drag handles only on hover",
-        desc: "Show group and plugin drag handles when hovered. Turn off to always show them.",
-        control: { type: "toggle", key: "showDragHandlesOnHover" },
-      },
-      {
-        name: "Allow plugins in multiple groups",
-        desc: "When turned off, each plugin stays in its first group.",
-        control: { type: "toggle", key: "allowMultipleGroups" },
-      },
-      {
-        name: "Confirm before deleting groups",
-        desc: "Show a confirmation dialog before deleting a group.",
-        control: { type: "toggle", key: "confirmGroupDeletion" },
+        type: "group",
+        heading: "Display",
+        items: [
+          {
+            name: "Always show plugin descriptions",
+            desc: "Keep descriptions, versions, and authors visible below plugin names. When turned off, they appear while hovering over or focusing a plugin row.",
+            control: { type: "toggle", key: "showPluginDescriptions" },
+          },
+          {
+            name: "Show drag handles only on hover",
+            desc: "Show group and plugin drag handles when hovered. Turn off to always show them.",
+            control: { type: "toggle", key: "showDragHandlesOnHover" },
+          },
+        ],
       },
     ];
   }

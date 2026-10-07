@@ -1,4 +1,4 @@
-import { ItemView, Scope, type WorkspaceLeaf } from "obsidian";
+import { ItemView, Notice, Scope, type WorkspaceLeaf } from "obsidian";
 import { orderedSectionIdsIncludingUngrouped } from "../groups/data";
 import type { ViewContext } from "./context";
 import { renderGroupsHeader } from "./header/header";
@@ -23,6 +23,7 @@ export class GroupsView extends ItemView {
   getIcon(): string { return "layout-grid"; }
 
   async onOpen(): Promise<void> {
+    this.addAction("settings", "Open PlugiGroups settings", () => openOwnSettings(this.context));
     this.registerDomEvent(this.contentEl, "dragover", event => allowSectionReorderDrop(event, this.contentEl));
     this.registerDomEvent(this.contentEl, "drop", event => dropReorderedSection(event, this.context, this.contentEl));
     this.refreshGroupsView();
@@ -38,6 +39,10 @@ export class GroupsView extends ItemView {
     setGroupsViewSearchFilter(this.search, query, scope);
     this.refreshGroupsView();
   }
+}
+
+function openOwnSettings(context: ViewContext): void {
+  if (context.openPluginSettings(context.selfId) === "unavailable") new Notice("Could not open Obsidian settings.");
 }
 
 function setGroupsViewSearchFilter(search: GroupsSearchState, query: string, scope: string | null): void {
