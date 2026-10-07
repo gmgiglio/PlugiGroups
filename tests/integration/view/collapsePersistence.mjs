@@ -104,7 +104,7 @@ try {
     toggle(view, null);
     const second = await open();
     const cycleButton = view.contentEl.querySelector(".plugin-groups-admin-collapse-cycle");
-    check(view.contentEl.querySelector(".plugin-groups-admin-summary").nextElementSibling === cycleButton, "Cycle button must appear after the stats");
+    check(view.contentEl.querySelector(".plugin-groups-admin-summary").nextElementSibling?.firstElementChild === cycleButton, "Cycle button must appear after the stats");
     for (const mode of ["collapsed", "expanded", "individual"]) {
       const cycle = second.contentEl.querySelector(".plugin-groups-admin-collapse-cycle");
       cycle.focus();
@@ -169,7 +169,8 @@ try {
     Object.assign(plugin.data, ${JSON.stringify(original)});
     await plugin.saveData(plugin.data);
     for (const leaf of leaves()) leaf.detach();
-    await open();
+    app.commands.executeCommandById("plugin-groups-admin:open-plugin-groups");
+    for (let attempt = 0; attempt < 40 && leaves().length === 0; attempt++) await new Promise(resolve => setTimeout(resolve, 50));
   `);
   evaluate("(delete globalThis.__collapsePersistenceTest, true)");
 }

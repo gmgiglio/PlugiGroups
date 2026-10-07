@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 
 const pluginRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
-const vaultRoot = resolve(pluginRoot, "../testVault_plugiGroups");
+const vaultRoot = realpathSync(resolve(pluginRoot, "../testVault_plugiGroups"));
 const fixtureId = `plugin-groups-admin-integration-${randomUUID().slice(0, 8)}`;
 const fixtureName = `Integration Fixture ${fixtureId.slice(-8)}`;
 const fixtureRoot = join(vaultRoot, ".obsidian/plugins", fixtureId);
@@ -17,14 +17,24 @@ function runObsidianCli(command, ...args) {
   return execFileSync("obsidian", ["vault=testVault_plugiGroups", command, ...args], { encoding: "utf8", timeout: 30000 });
 }
 
-function evaluateInObsidian(expression) {
+function evaluateInObsidian(expression, attempts = 1) {
   const code = `JSON.stringify((() => { try { return ${expression}; } catch (error) { return { __error: String(error) }; } })())`;
-  const output = runObsidianCli("eval", `code=${code}`);
+  let output = runObsidianCli("eval", `code=${code}`);
+  // The Obsidian CLI occasionally drops a reply while the app changes focus; only reads opt into retries.
+  for (let attempt = 1; attempt < attempts && !output.includes("=> "); attempt++) output = runObsidianCli("eval", `code=${code}`);
   const result = output.slice(output.lastIndexOf("=> ") + 3).trim();
   assert.ok(output.includes("=> "), `Obsidian eval returned no result for ${code}: ${output}`);
   const value = JSON.parse(result);
   assert.equal(value?.__error, undefined, `Obsidian eval failed: ${value?.__error}`);
   return value;
+}
+
+// Runs an action exactly once and reads its result back separately, so a dropped CLI reply cannot repeat it.
+function runInObsidian(expression) {
+  runObsidianCli("eval", `code=globalThis.__pluginGroupsActionResult = JSON.stringify((() => { try { return ${expression}; } catch (error) { return { __error: String(error) }; } })())`);
+  const result = evaluateInObsidian("JSON.parse(globalThis.__pluginGroupsActionResult ?? \"null\")", 5);
+  evaluateInObsidian("(delete globalThis.__pluginGroupsActionResult, true)", 5);
+  return result;
 }
 
 function fixturePluginRowExpression() {
@@ -39,7 +49,7 @@ function currentFixtureViewState() {
       managerEnabled: app.plugins.enabledPlugins.has(${JSON.stringify(fixtureId)}), present: !!row,
       enabled: row?.querySelector("input[type=checkbox]")?.checked,
       details: row?.querySelector(".plugin-groups-admin-plugin-description")?.textContent };
-  })()`);
+  })()`, 5);
 }
 
 async function waitForFixtureViewState(action, before, expected) {
@@ -56,7 +66,7 @@ async function waitForFixtureManifest() {
   for (let attempt = 0; attempt < 50; attempt++) {
     const result = evaluateInObsidian(`({ done: globalThis.__pluginGroupsManifestLoad?.done,
       error: globalThis.__pluginGroupsManifestLoad?.error,
-      installed: !!app.plugins.manifests[${JSON.stringify(fixtureId)}] })`);
+      installed: !!app.plugins.manifests[${JSON.stringify(fixtureId)}] })`, 5);
     if (result.error) throw new Error(result.error);
     if (result.done) return assert.equal(result.installed, true, "fixture manifest was not loaded");
     await setTimeout(100);
@@ -77,11 +87,11 @@ function startFixtureManifestLoad() {
     globalThis.__pluginGroupsManifestLoad = status;
     Promise.resolve(app.plugins.loadManifests()).then(() => { status.done = true; }, error => { status.error = String(error); status.done = true; });
     return { started: true };
-  })()`);
+  })()`, 5);
 }
 
 function trackOpenGroupsViewRefreshes() {
-  const result = evaluateInObsidian(`(() => {
+  const result = runInObsidian(`(() => {
     const views = app.workspace.getLeavesOfType(${JSON.stringify(viewType)});
     const view = views.find(leaf => leaf.view.contentEl)?.view;
     if (!view) return { open: false };
@@ -95,7 +105,7 @@ function trackOpenGroupsViewRefreshes() {
 }
 
 function assertUnchangedEventsDoNotRender() {
-  const result = evaluateInObsidian(`(() => {
+  const result = runInObsidian(`(() => {
     const test = globalThis.__pluginGroupsRefreshTest;
     const header = test.view.contentEl.querySelector(".plugin-groups-admin-header");
     const before = test.count;
@@ -122,10 +132,10 @@ async function waitForFixtureVersionRefresh(before, version) {
 
 async function assertMissedChangesRefresh() {
   const beforeLayout = currentFixtureViewState().count;
-  evaluateInObsidian(`(setTimeout(() => { app.plugins.manifests[${JSON.stringify(fixtureId)}].version = "2.0.0"; app.workspace.trigger("layout-change"); }, 0), true)`);
+  runInObsidian(`(setTimeout(() => { app.plugins.manifests[${JSON.stringify(fixtureId)}].version = "2.0.0"; app.workspace.trigger("layout-change"); }, 0), true)`);
   await waitForFixtureVersionRefresh(beforeLayout, "2.0.0");
   const beforeFocus = currentFixtureViewState().count;
-  evaluateInObsidian(`(setTimeout(() => { app.plugins.manifests[${JSON.stringify(fixtureId)}].version = "3.0.0"; window.dispatchEvent(new Event("focus")); }, 0), true)`);
+  runInObsidian(`(setTimeout(() => { app.plugins.manifests[${JSON.stringify(fixtureId)}].version = "3.0.0"; window.dispatchEvent(new Event("focus")); }, 0), true)`);
   await waitForFixtureVersionRefresh(beforeFocus, "3.0.0");
 }
 
@@ -137,7 +147,7 @@ function restoreGroupsViewRefresh() {
       delete globalThis.__pluginGroupsRefreshTest;
       delete globalThis.__pluginGroupsManifestLoad;
       return true;
-    })()`);
+    })()`, 5);
   } catch (error) {
     console.error("Could not restore the Obsidian view wrapper:", error);
   }

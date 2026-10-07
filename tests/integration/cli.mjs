@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
 const pluginRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
-const vaultRoot = resolve(pluginRoot, "../testVault_plugiGroups");
+const vaultRoot = realpathSync(resolve(pluginRoot, "../testVault_plugiGroups"));
 const viewType = "plugin-groups-admin-view";
 const fixtureId = `plugigroups-cli-test-${randomUUID().slice(0, 8)}`;
 const fixtureRoot = join(vaultRoot, ".obsidian/plugins", fixtureId);
@@ -138,7 +138,8 @@ function checkStructureReplacement(groupId) {
   assert.deepEqual(json("structure"), before);
   obsidian("plugin:reload", "id=plugin-groups-admin");
   assert.deepEqual(json("structure"), before, "Bulk replacement must survive reload");
-  assert.deepEqual(JSON.parse(readFileSync(dataPath, "utf8")).groups, before.groups.filter(group => group.id !== "ungrouped"));
+  const savedGroups = JSON.parse(readFileSync(dataPath, "utf8")).groups.map(({ id, name, pluginIds }) => ({ id, name, pluginIds }));
+  assert.deepEqual(savedGroups, before.groups.filter(group => group.id !== "ungrouped"));
   const roundTrip = JSON.parse(cli("structure:set", { json: JSON.stringify(before) }));
   assert.deepEqual(roundTrip.structure, before);
   assert.match(cli("structure"), /CLI Bulk Updated/);

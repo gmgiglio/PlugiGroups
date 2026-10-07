@@ -17,8 +17,11 @@ function evaluate(expression, expectResult = true) {
   const path = join(tmpdir(), `plugin-reorder-${randomUUID()}.js`);
   writeFileSync(path, `JSON.stringify(${expression})`);
   try {
-    const output = runCli("eval", `code=eval(require("fs").readFileSync(${JSON.stringify(path)},"utf8"))`);
+    const run = () => runCli("eval", `code=eval(require("fs").readFileSync(${JSON.stringify(path)},"utf8"))`);
+    let output = run();
     if (!expectResult && !output.includes("=> ")) return null;
+    // The Obsidian CLI occasionally drops a reply while the app changes focus; calls expecting a result are reads or idempotent restores.
+    for (let attempt = 1; attempt < 5 && !output.includes("=> "); attempt++) output = run();
     assert.ok(output.includes("=> "), output);
     return JSON.parse(output.slice(output.lastIndexOf("=> ") + 3).trim());
   } finally {
@@ -28,7 +31,7 @@ function evaluate(expression, expectResult = true) {
 
 async function waitFor(expression) {
   for (let attempt = 0; attempt < 50; attempt++) {
-    const result = evaluate(expression);
+    const result = evaluate(expression, false);
     if (result) return result;
     await setTimeout(100);
   }

@@ -153,7 +153,8 @@ try {
     Object.assign(plugin.data, ${JSON.stringify(original)});
     await plugin.saveData(plugin.data);
     for (const leaf of leaves()) leaf.detach();
-    await open();
+    app.commands.executeCommandById("plugin-groups-admin:open-plugin-groups");
+    for (let attempt = 0; attempt < 40 && leaves().length === 0; attempt++) await new Promise(resolve => setTimeout(resolve, 50));
   `);
   evaluate("(delete globalThis.__globalSearchTest, true)");
 }

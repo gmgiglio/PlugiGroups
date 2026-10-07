@@ -53,7 +53,9 @@ const setup = `
   const toggle = (view, id) => section(view, id).querySelector(".plugin-groups-admin-collapse").click();
   const check = (condition, message) => { if (!condition) throw new Error(message); };
   const open = async () => {
-    const leaf = app.workspace.getLeaf("tab");
+    const mainLeaf = app.workspace.getMostRecentLeaf(app.workspace.rootSplit);
+    if (mainLeaf) app.workspace.setActiveLeaf(mainLeaf, { focus: false });
+    const leaf = mainLeaf ? app.workspace.getLeaf("tab") : app.workspace.createLeafInParent(app.workspace.rootSplit, 0);
     await leaf.setViewState({ type: ${JSON.stringify(viewType)}, active: true });
     return leaf.view;
   };
@@ -126,7 +128,8 @@ try {
     Object.assign(plugin.data, ${JSON.stringify(original)});
     await plugin.saveData(plugin.data);
     for (const leaf of leaves()) leaf.detach();
-    await open();
+    app.commands.executeCommandById("plugin-groups-admin:open-plugin-groups");
+    for (let attempt = 0; attempt < 40 && leaves().length === 0; attempt++) await new Promise(resolve => setTimeout(resolve, 50));
   `);
   evaluate("(delete globalThis.__collapseLayoutTest, true)");
 }

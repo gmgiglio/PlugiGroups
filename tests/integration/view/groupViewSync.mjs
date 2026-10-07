@@ -70,6 +70,7 @@ evaluateInObsidian(`(() => {
       second = app.workspace.getLeaf("tab");
       await second.setViewState({ type: ${JSON.stringify(viewType)}, active: true });
       const other = second.view;
+      app.workspace.setActiveLeaf(first.leaf, { focus: true });
       first.contentEl.querySelector(".plugin-groups-admin-add-button").click();
       const initial = plugin.data.groups[0];
       createdGroupIds.push(initial.id);
