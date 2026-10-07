@@ -50,7 +50,8 @@ evaluateInObsidian(`(() => {
         check(style(container.doc.querySelector(selector)).display === "none", selector + " is visible");
       }
       const header = container.doc.querySelector(".workspace-tab-header-container");
-      check(container.win.getComputedStyle(header, "::after").content === '"PlugiGroups"', "Window title missing");
+      check(header.querySelector(".plugin-groups-admin-window-title")?.textContent === "PlugiGroups", "Window title missing");
+      check(header.querySelectorAll(".plugin-groups-admin-window-settings").length === 1, "Window settings button missing");
       check(header.getBoundingClientRect().height > 0, "Window drag region missing");
       app.workspace.setActiveLeaf(groupsLeaf, { focus: true });
       const extra = app.workspace.getLeaf("tab");

@@ -1,4 +1,4 @@
-import { Notice, setIcon } from "obsidian";
+import { setIcon } from "obsidian";
 import { renderGroupsSearch, type GroupsSearchState } from "./search";
 import { createHeaderAction } from "./headerAction";
 import { showGroupRenameInput } from "./groupSection";
@@ -8,9 +8,6 @@ import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
 
 export function renderGroupsHeader(context: ViewContext, container: HTMLElement, plugins: InstalledPlugin[], search: GroupsSearchState): void {
   const header = container.createDiv({ cls: "plugin-groups-admin-header" });
-  const introduction = header.createDiv({ cls: "plugin-groups-admin-introduction" });
-  renderGroupsHeading(introduction);
-  renderPluginSettingsButton(context, introduction);
   const controls = header.createDiv({ cls: "plugin-groups-admin-group-controls" });
   const stats = controls.createDiv({ cls: "plugin-groups-admin-stats-controls" });
   renderGroupsSummary(stats, context.data.groups.length, plugins);
@@ -80,18 +77,6 @@ function createGroupAndStartRename(context: ViewContext, container: HTMLElement,
   const section = container.querySelector<HTMLElement>(`[data-group-id="${group.id}"]`)!;
   const heading = section.querySelector<HTMLElement>(".plugin-groups-admin-section-header")!;
   showGroupRenameInput(context, heading, group);
-}
-
-function renderPluginSettingsButton(context: ViewContext, header: HTMLElement): void {
-  const button = createHeaderAction(header, "settings", "PlugiGroups settings", "plugin-groups-admin-settings-button", "Open PlugiGroups settings");
-  button.addEventListener("click", () => {
-    if (context.openPluginSettings(context.selfId) === "unavailable") new Notice("Could not open Obsidian settings.");
-  });
-}
-
-function renderGroupsHeading(header: HTMLElement): void {
-  const heading = header.createDiv({ cls: "plugin-groups-admin-heading" });
-  heading.createEl("p", { cls: "plugin-groups-admin-description", text: "A place for every plugin. Drag to organize, click to configure." });
 }
 
 function renderGroupsSummary(container: HTMLElement, groupCount: number, plugins: InstalledPlugin[]): void {
