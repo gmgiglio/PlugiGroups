@@ -208,7 +208,7 @@ function restoreGroupData(original) {
 }
 
 assert.ok(runCli("vault", "info=path").trim().endsWith("/PluginGroupsAdmin_ObsidianPlugin/testVault_plugiGroups"), "Obsidian CLI must target the local test vault");
-execFileSync("npm", ["run", "deploy:test"], { cwd: pluginRoot, stdio: "inherit" });
+if (!process.env.PLUGIGROUPS_SKIP_DEPLOY) execFileSync("npm", ["run", "deploy:test"], { cwd: pluginRoot, stdio: "inherit" });
 runCli("plugin:reload", "id=plugin-groups-admin");
 await waitFor('!!app.plugins.plugins["plugin-groups-admin"]');
 runCli("command", "id=plugin-groups-admin:open-plugin-groups");

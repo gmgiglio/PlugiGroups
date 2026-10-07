@@ -156,7 +156,7 @@ function restoreGroupsViewRefresh() {
 async function runLiveRefreshIntegrationTest() {
   const actualVault = runObsidianCli("vault", "info=path").trim().split("\n").pop();
   assert.equal(actualVault, vaultRoot, "Obsidian CLI must target the local test vault");
-  execFileSync("npm", ["run", "deploy:test"], { cwd: pluginRoot, stdio: "inherit" });
+  if (!process.env.PLUGIGROUPS_SKIP_DEPLOY) execFileSync("npm", ["run", "deploy:test"], { cwd: pluginRoot, stdio: "inherit" });
   runObsidianCli("plugin:reload", "id=plugin-groups-admin");
   runObsidianCli("command", "id=plugin-groups-admin:open-plugin-groups");
   trackOpenGroupsViewRefreshes();

@@ -9,6 +9,7 @@
     "deploy:test": "npm run build && node scripts/deploy-test.mjs",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test \"tests/unit_tests/**/*.test.ts\"",
+    "test:integration:all": "node tests/integration/runAll.mjs",
     "test:core-plugins": "node tests/integration/plugins/corePlugins.mjs",
     "test:integration": "node tests/integration/plugins/liveRefresh.mjs",
     "test:collapse-persistence": "node tests/integration/view/collapsePersistence.mjs",
