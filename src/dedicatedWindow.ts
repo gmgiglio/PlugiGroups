@@ -59,11 +59,13 @@ function moveLeafToMainWindow(workspace: Workspace, leaf: WorkspaceLeaf): void {
   workspace.iterateAllLeaves(candidate => {
     if (candidate.getRoot() === workspace.rootSplit) mainLeaf = candidate;
   });
-  const destination = (mainLeaf ?? workspace.createLeafInParent(workspace.rootSplit, 0)).parent;
+  const anchor = mainLeaf ?? workspace.createLeafInParent(workspace.rootSplit, 0);
   const source = leaf.parent as unknown as MovableTabGroup;
-  const target = destination as unknown as MovableTabGroup;
+  const target = anchor.parent as unknown as MovableTabGroup;
   source.removeChild(leaf);
   target.insertChild(-1, leaf);
+  // The moved leaf is usually still active, which makes setActiveLeaf skip selecting its new tab.
+  workspace.setActiveLeaf(anchor, { focus: false });
   workspace.setActiveLeaf(leaf, { focus: true });
 }
 

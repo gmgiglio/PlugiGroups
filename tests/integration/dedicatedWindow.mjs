@@ -72,6 +72,7 @@ evaluateInObsidian(`(() => {
       await pause();
       check(extra.getContainer() === app.workspace.rootSplit, "New tab remained in the dedicated window");
       check(extra.getRoot() === app.workspace.rootSplit, "New tab moved to a sidebar instead of the main workspace");
+      check(extra.view.containerEl.isShown() && app.workspace.activeLeaf === extra, "New tab moved to the main workspace was left hidden");
       const windowLeaves = [];
       app.workspace.iterateAllLeaves(leaf => { if (leaf.getContainer() === container) windowLeaves.push(leaf); });
       check(windowLeaves.length === 1 && windowLeaves[0] === groupsLeaf, "Window is not exclusive to PlugiGroups");
