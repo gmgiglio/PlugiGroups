@@ -6,7 +6,7 @@ import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 
-const pluginRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
+const pluginRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
 const vaultRoot = resolve(pluginRoot, "../testVault_plugiGroups");
 const fixtureId = `plugin-groups-admin-integration-${randomUUID().slice(0, 8)}`;
 const fixtureName = `Integration Fixture ${fixtureId.slice(-8)}`;

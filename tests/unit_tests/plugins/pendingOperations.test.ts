@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { runPluginOperationWithPendingState } from "../../src/pendingPluginOperations";
+import { runPluginOperationWithPendingState } from "../../../src/plugins/pendingOperations";
 
 test("overlapping group and plugin operations are rejected while IDs are pending", async () => {
   const pending = new Set<string>();

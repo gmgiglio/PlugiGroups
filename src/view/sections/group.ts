@@ -1,15 +1,15 @@
 import { App, Notice, setIcon, SuggestModal } from "obsidian";
 import { showDestructiveConfirmation } from "../confirmation";
-import { addPluginToGroup, removeGroup, renameGroup } from "../groups";
-import type { Group } from "../groups";
-import { enableOnlyGroupPlugins, groupEnabledState, groupStateAfterChange, nextGroupEnabledIds, pluginsEligibleForGroupToggle, rememberGroupMix, type GroupEnabledState } from "../groupToggle";
-import type { InstalledPlugin } from "../inventory";
-import { runPluginOperationWithPendingState } from "../pendingPluginOperations";
-import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
-import { registerPluginDropTarget } from "./pluginDrop";
-import { renderPluginRow } from "./pluginRow";
-import { renderSectionDragHandle } from "./sectionDrag";
-import { createPluginSection } from "./sectionShared";
+import { addPluginToGroup, removeGroup, renameGroup } from "../../groups/data";
+import type { Group } from "../../groups/data";
+import { enableOnlyGroupPlugins, groupEnabledState, groupStateAfterChange, nextGroupEnabledIds, pluginsEligibleForGroupToggle, rememberGroupMix, type GroupEnabledState } from "../../groups/toggle";
+import type { InstalledPlugin } from "../../plugins/inventory";
+import { runPluginOperationWithPendingState } from "../../plugins/pendingOperations";
+import { saveGroupChangesAndRefreshViews, type ViewContext } from "../context";
+import { registerPluginDropTarget } from "../plugins/drop";
+import { renderPluginRow } from "../plugins/row";
+import { renderSectionDragHandle } from "./drag";
+import { createPluginSection } from "./shared";
 
 class AddPluginModal extends SuggestModal<InstalledPlugin> {
   constructor(app: App, private readonly context: ViewContext, private readonly group: Group) {

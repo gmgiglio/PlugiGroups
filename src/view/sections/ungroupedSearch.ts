@@ -1,6 +1,6 @@
 import { SearchComponent, setIcon } from "obsidian";
-import type { ViewContext } from "./context";
-import { applyGroupsSearch, type GroupsSearchState } from "./search";
+import type { ViewContext } from "../context";
+import { applyGroupsSearch, type GroupsSearchState } from "../header/search";
 
 export function renderUngroupedSearch(state: GroupsSearchState, section: HTMLElement, container: HTMLElement, context: ViewContext): void {
   const heading = section.querySelector<HTMLElement>(".plugin-groups-admin-section-header")!;

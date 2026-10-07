@@ -1,6 +1,6 @@
 import type { CliData } from "obsidian";
-import type { Group, GroupData } from "../groups";
-import type { InstalledPlugin } from "../inventory";
+import type { Group, GroupData } from "../groups/data";
+import type { InstalledPlugin } from "../plugins/inventory";
 import { cliGroups, groupSectionId } from "./groups";
 
 export function requiredParameter(params: CliData, key: string): string {

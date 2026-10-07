@@ -1,5 +1,5 @@
-import type { Group } from "./groups";
-import type { InstalledPlugin } from "./inventory";
+import type { Group } from "./data";
+import type { InstalledPlugin } from "../plugins/inventory";
 import { isPluginUnenableable, type UnenableablePlugins } from "./unenableablePlugins";
 
 export type GroupEnabledState = "enabled" | "partial" | "disabled";

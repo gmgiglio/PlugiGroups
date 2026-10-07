@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { App, EventRef } from "obsidian";
-import { pluginInventorySignature } from "../../src/inventory";
-import { installedPlugins, uninstallPlugin, installedCommunityPlugins, subscribeToPluginInventoryChanges, setPluginEnabled } from "../../src/pluginApi";
+import { pluginInventorySignature } from "../../../src/plugins/inventory";
+import { installedPlugins, uninstallPlugin, installedCommunityPlugins, subscribeToPluginInventoryChanges, setPluginEnabled } from "../../../src/plugins/api";
 
 test("inventory detects installed and enabled plugin changes", () => {
   const manager = {

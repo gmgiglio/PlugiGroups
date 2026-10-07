@@ -1,12 +1,12 @@
 import { Menu, Notice, setIcon } from "obsidian";
-import { addPluginToGroup, removePluginFromGroup } from "../groups";
-import type { InstalledPlugin } from "../inventory";
-import { runPluginOperationWithPendingState } from "../pendingPluginOperations";
-import { rememberMixesOfGroupsContaining } from "../groupToggle";
-import { showPluginMenu } from "../pluginMenu";
-import { isPluginUnenableable } from "../unenableablePlugins";
-import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
-import { clearPluginDropHighlights, startPluginDrag } from "./pluginDrop";
+import { addPluginToGroup, removePluginFromGroup } from "../../groups/data";
+import type { InstalledPlugin } from "../../plugins/inventory";
+import { runPluginOperationWithPendingState } from "../../plugins/pendingOperations";
+import { rememberMixesOfGroupsContaining } from "../../groups/toggle";
+import { showPluginMenu } from "./menu";
+import { isPluginUnenableable } from "../../groups/unenableablePlugins";
+import { saveGroupChangesAndRefreshViews, type ViewContext } from "../context";
+import { clearPluginDropHighlights, startPluginDrag } from "./drop";
 
 export function renderPluginRow(context: ViewContext, list: HTMLElement, plugin: InstalledPlugin, groupId: string | null): void {
   const row = list.createDiv({ cls: `plugin-groups-admin-plugin${plugin.enabled ? "" : " is-disabled"}${groupId === null ? "" : " is-grouped"}` });
@@ -95,23 +95,24 @@ function renderPluginEnabledToggle(context: ViewContext, row: HTMLElement, plugi
   label.classList.toggle("is-disabled", toggle.disabled);
   if (plugin.id === context.selfId) label.setAttribute("title", "This plugin cannot disable itself from its own tab.");
   label.createSpan({ cls: "plugin-groups-admin-switch", attr: { "aria-hidden": "true" } });
-  toggle.addEventListener("change", () => { void changePluginEnabled(context, plugin, toggle); });
+  toggle.addEventListener("change", () => { void setPluginEnabled(context, plugin, toggle); });
 }
 
-async function changePluginAndRememberGroupMixes(context: ViewContext, id: string, enabled: boolean): Promise<void> {
+// Convention: "_remMix" = then remember the mixes of the groups containing the plugin
+async function setPluginEnabled_remMix(context: ViewContext, id: string, enabled: boolean): Promise<void> {
   await context.setPluginEnabled(id, enabled);
   rememberMixesOfGroupsContaining(context.data.groups, id, context.getInstalledPlugins(), context.selfId, context.data.unenableablePlugins);
   context.queueGroupDataSave();
 }
 
-async function changePluginEnabled(context: ViewContext, plugin: InstalledPlugin, toggle: HTMLInputElement): Promise<void> {
+async function setPluginEnabled(context: ViewContext, plugin: InstalledPlugin, toggle: HTMLInputElement): Promise<void> {
   try {
     const enabled = toggle.checked;
     const started = await runPluginOperationWithPendingState(
       context.pendingPluginIds,
       [plugin.id],
       context.refreshOpenGroupsViews,
-      () => changePluginAndRememberGroupMixes(context, plugin.id, enabled),
+      () => setPluginEnabled_remMix(context, plugin.id, enabled),
     );
     if (!started) context.refreshOpenGroupsViews();
   } catch (error) {

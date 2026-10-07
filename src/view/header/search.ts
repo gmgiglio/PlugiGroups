@@ -1,6 +1,6 @@
 import { SearchComponent } from "obsidian";
-import type { ViewContext } from "./context";
-import { isSectionCollapsed } from "../groups";
+import type { ViewContext } from "../context";
+import { isSectionCollapsed } from "../../groups/data";
 
 export interface GroupsSearchState {
   query: string;

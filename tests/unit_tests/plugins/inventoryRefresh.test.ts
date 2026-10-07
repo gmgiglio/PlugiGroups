@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { App, EventRef } from "obsidian";
-import { pluginInventorySignature } from "../../src/inventory";
-import type { InstalledPlugin } from "../../src/inventory";
-import { registerPluginInventoryRefreshListeners } from "../../src/inventoryRefresh";
-import type { InventoryRefreshEvents } from "../../src/inventoryRefresh";
-import { installedPlugins } from "../../src/pluginApi";
+import { pluginInventorySignature } from "../../../src/plugins/inventory";
+import type { InstalledPlugin } from "../../../src/plugins/inventory";
+import { registerPluginInventoryRefreshListeners } from "../../../src/plugins/inventoryRefresh";
+import type { InventoryRefreshEvents } from "../../../src/plugins/inventoryRefresh";
+import { installedPlugins } from "../../../src/plugins/api";
 
 interface FakeManager {
   manifests: Record<string, { name: string; version?: string }>;

@@ -1,11 +1,11 @@
 import { ItemView, Scope, type WorkspaceLeaf } from "obsidian";
-import { orderedSectionIdsIncludingUngrouped } from "../groups";
+import { orderedSectionIdsIncludingUngrouped } from "../groups/data";
 import type { ViewContext } from "./context";
-import { renderGroupsHeader } from "./header";
-import { renderGroup } from "./groupSection";
-import { renderUngrouped } from "./ungroupedSection";
-import { allowSectionReorderDrop, dropReorderedSection } from "./sectionDrag";
-import { applyGroupsSearch, restoreSearchFocus, captureSearchFocus, focusGroupsSearch, type GroupsSearchState } from "./search";
+import { renderGroupsHeader } from "./header/header";
+import { renderGroup } from "./sections/group";
+import { renderUngrouped } from "./sections/ungrouped";
+import { allowSectionReorderDrop, dropReorderedSection } from "./sections/drag";
+import { applyGroupsSearch, restoreSearchFocus, captureSearchFocus, focusGroupsSearch, type GroupsSearchState } from "./header/search";
 
 export const VIEW_TYPE = "plugin-groups-admin-view";
 

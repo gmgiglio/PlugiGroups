@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isSectionCollapsed, setSectionCollapsed, setCollapseMode, reorderPluginInGroup } from "../../src/groups";
-import { addGroup, addPluginToGroup, normalizeSavedGroupData, firstGroupIdForPlugin, movePluginToGroup, removeGroup, removePluginFromGroup, renameGroup, reorderSection, orderedSectionIdsIncludingUngrouped, setMultipleGroupsAllowed } from "../../src/groups";
+import { isSectionCollapsed, setSectionCollapsed, setCollapseMode, reorderPluginInGroup } from "../../../src/groups/data";
+import { addGroup, addPluginToGroup, normalizeSavedGroupData, firstGroupIdForPlugin, movePluginToGroup, removeGroup, removePluginFromGroup, renameGroup, reorderSection, orderedSectionIdsIncludingUngrouped, setMultipleGroupsAllowed } from "../../../src/groups/data";
 
 test("reordering groups preserves memberships and persists the new order", () => {
   const data = normalizeSavedGroupData({ groups: [

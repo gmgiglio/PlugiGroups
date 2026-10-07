@@ -1,5 +1,5 @@
-import { orderedSectionIdsIncludingUngrouped, type Group, type GroupData } from "../groups";
-import type { InstalledPlugin } from "../inventory";
+import { orderedSectionIdsIncludingUngrouped, type Group, type GroupData } from "../groups/data";
+import type { InstalledPlugin } from "../plugins/inventory";
 
 export const UNGROUPED_ID = "ungrouped";
 export const UNGROUPED_NAME = "Ungrouped";

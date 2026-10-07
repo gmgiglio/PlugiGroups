@@ -7,7 +7,7 @@ import { join, resolve } from "node:path";
 import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
-const pluginRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
+const pluginRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
 const vaultRoot = resolve(pluginRoot, "../testVault_plugiGroups");
 const viewType = "plugin-groups-admin-view";
 const suffix = randomUUID().slice(0, 8);

@@ -1,5 +1,5 @@
-import type { Group, GroupData } from "../groups";
-import type { InstalledPlugin } from "../inventory";
+import type { Group, GroupData } from "../groups/data";
+import type { InstalledPlugin } from "../plugins/inventory";
 import { cloneGroupData } from "./parameters";
 import { cliGroups, UNGROUPED_ID, UNGROUPED_NAME } from "./groups";
 
@@ -23,12 +23,12 @@ export function dataFromStructure(data: GroupData, input: unknown): GroupData {
   requireKeys(source, ["version", "groups", "collapsedGroupIds", "collapseMode", "collapseModeExceptionIds"]);
   if (source.version !== 2) throw new Error("Unsupported structure version; expected 1 or 2");
   const groups = validateStructureGroups(source.groups, data.allowMultipleGroups);
-  const next = cloneGroupData(data);
-  applyStructureGroups(next, groups);
-  next.collapsedGroupIds = validateSectionIds(source.collapsedGroupIds, groups);
-  next.collapseMode = validateCollapseMode(source.collapseMode);
-  next.collapseModeExceptionIds = validateSectionIds(source.collapseModeExceptionIds, groups);
-  return next;
+  const draftData = cloneGroupData(data);
+  applyStructureGroups(draftData, groups);
+  draftData.collapsedGroupIds = validateSectionIds(source.collapsedGroupIds, groups);
+  draftData.collapseMode = validateCollapseMode(source.collapseMode);
+  draftData.collapseModeExceptionIds = validateSectionIds(source.collapseModeExceptionIds, groups);
+  return draftData;
 }
 
 function applyStructureGroups(data: GroupData, groups: Group[]): void {
@@ -110,14 +110,14 @@ function dataFromLegacyStructure(data: GroupData, source: Record<string, unknown
   requireKeys(source, ["version", "groups", "ungrouped", "collapsedGroupIds", "collapseMode", "collapseModeExceptionIds"]);
   const groups = validateStructureGroups(source.groups, data.allowMultipleGroups);
   if (groups.some(group => group.id === UNGROUPED_ID)) throw new Error("The group ID ungrouped is reserved in version 1");
-  const next = cloneGroupData(data);
-  next.groups = groups;
-  next.ungroupedIndex = validateLegacyUngrouped(source.ungrouped, groups.length);
+  const draftData = cloneGroupData(data);
+  draftData.groups = groups;
+  draftData.ungroupedIndex = validateLegacyUngrouped(source.ungrouped, groups.length);
   const allGroups = [...groups, { id: UNGROUPED_ID, name: UNGROUPED_NAME, pluginIds: [] }];
-  next.collapsedGroupIds = legacySectionIds(source.collapsedGroupIds, allGroups);
-  next.collapseMode = validateCollapseMode(source.collapseMode);
-  next.collapseModeExceptionIds = legacySectionIds(source.collapseModeExceptionIds, allGroups);
-  return next;
+  draftData.collapsedGroupIds = legacySectionIds(source.collapsedGroupIds, allGroups);
+  draftData.collapseMode = validateCollapseMode(source.collapseMode);
+  draftData.collapseModeExceptionIds = legacySectionIds(source.collapseModeExceptionIds, allGroups);
+  return draftData;
 }
 
 function validateLegacyUngrouped(input: unknown, count: number): number {

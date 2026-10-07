@@ -1,7 +1,7 @@
 import type { CliData } from "obsidian";
-import { setCollapseMode, setMultipleGroupsAllowed, type GroupData } from "../groups";
-import type { CliContext } from "./types";
-import { cloneGroupData, jsonOutput, requiredParameter } from "./parameters";
+import { setCollapseMode, setMultipleGroupsAllowed, type GroupData } from "../../groups/data";
+import type { CliContext } from "../types";
+import { cloneGroupData, jsonOutput, requiredParameter } from "../parameters";
 
 const BOOLEAN_KEYS = ["allowMultipleGroups", "showRibbonButton", "includeCorePlugins", "showPluginDescriptions", "confirmGroupDeletion", "showDragHandlesOnHover", "alphabeticalPluginOrder"] as const;
 const SETTING_KEYS = [...BOOLEAN_KEYS, "openLocation", "collapseMode"] as const;
@@ -19,9 +19,9 @@ export function readSettings(context: CliContext, params: CliData): string {
 }
 
 export async function writeSetting(context: CliContext, params: CliData): Promise<string> {
-  const next = cloneGroupData(context.data);
-  applySetting(next, settingKey(params), requiredParameter(params, "value"));
-  await context.commitData(next);
+  const draftData = cloneGroupData(context.data);
+  applySetting(draftData, settingKey(params), requiredParameter(params, "value"));
+  await context.commitData(draftData);
   return readSettings(context, params);
 }
 

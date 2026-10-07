@@ -1,8 +1,8 @@
 import type { App } from "obsidian";
-import type { GroupData } from "../groups";
-import type { GroupEnabledState } from "../groupToggle";
-import type { InstalledPlugin } from "../inventory";
-import type { SettingsDestination } from "../pluginApi";
+import type { GroupData } from "../groups/data";
+import type { GroupEnabledState } from "../groups/toggle";
+import type { InstalledPlugin } from "../plugins/inventory";
+import type { SettingsDestination } from "../plugins/api";
 
 export interface ViewContext {
   app: App;

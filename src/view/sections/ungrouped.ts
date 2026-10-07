@@ -1,12 +1,12 @@
 import { renderUngroupedSearch } from "./ungroupedSearch";
-import type { GroupsSearchState } from "./search";
-import { firstGroupIdForPlugin } from "../groups";
-import type { InstalledPlugin } from "../inventory";
-import type { ViewContext } from "./context";
-import { registerPluginDropTarget } from "./pluginDrop";
-import { renderPluginRow } from "./pluginRow";
-import { renderSectionDragHandle } from "./sectionDrag";
-import { createPluginSection } from "./sectionShared";
+import type { GroupsSearchState } from "../header/search";
+import { firstGroupIdForPlugin } from "../../groups/data";
+import type { InstalledPlugin } from "../../plugins/inventory";
+import type { ViewContext } from "../context";
+import { registerPluginDropTarget } from "../plugins/drop";
+import { renderPluginRow } from "../plugins/row";
+import { renderSectionDragHandle } from "./drag";
+import { createPluginSection } from "./shared";
 
 export function renderUngrouped(context: ViewContext, container: HTMLElement, plugins: InstalledPlugin[], search: GroupsSearchState): void {
   const ungrouped = plugins.filter(plugin => firstGroupIdForPlugin(context.data, plugin.id) === null);

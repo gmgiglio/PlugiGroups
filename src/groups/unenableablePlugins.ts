@@ -1,5 +1,5 @@
-import type { GroupData } from "./groups";
-import type { InstalledPlugin } from "./inventory";
+import type { GroupData } from "./data";
+import type { InstalledPlugin } from "../plugins/inventory";
 
 export type UnenableablePlugins = Record<string, string>;
 

@@ -1,10 +1,10 @@
 import type { CliData } from "obsidian";
-import { isSectionCollapsed, type Group } from "../groups";
-import type { InstalledPlugin } from "../inventory";
-import type { CliContext } from "./types";
-import { jsonOutput, outputFormat, requiredParameter, resolveGroup, booleanParameter } from "./parameters";
-import { structureFromData } from "./structure";
-import { cliGroups, groupSectionId, UNGROUPED_ID, ungroupedPluginIds } from "./groups";
+import { isSectionCollapsed, type Group } from "../../groups/data";
+import type { InstalledPlugin } from "../../plugins/inventory";
+import type { CliContext } from "../types";
+import { jsonOutput, outputFormat, requiredParameter, resolveGroup, booleanParameter } from "../parameters";
+import { structureFromData } from "../structure";
+import { cliGroups, groupSectionId, UNGROUPED_ID, ungroupedPluginIds } from "../groups";
 
 export function listGroups(context: CliContext, params: CliData): string {
   const groups = cliGroups(context.data, context.getInstalledPlugins()).map(group => groupSummary(context, group));

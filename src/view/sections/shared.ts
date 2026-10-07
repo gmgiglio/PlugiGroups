@@ -1,6 +1,6 @@
 import { setIcon } from "obsidian";
-import { isSectionCollapsed, setSectionCollapsed } from "../groups";
-import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
+import { isSectionCollapsed, setSectionCollapsed } from "../../groups/data";
+import { saveGroupChangesAndRefreshViews, type ViewContext } from "../context";
 
 interface GroupSection {
   section: HTMLElement;

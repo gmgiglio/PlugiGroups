@@ -1,15 +1,15 @@
 import { Notice, Plugin, PluginSettingTab, WorkspaceLeaf } from "obsidian";
 import type { SettingDefinitionItem, Workspace } from "obsidian";
-import { normalizeSavedGroupData, setMultipleGroupsAllowed } from "./groups";
-import type { GroupData, OpenLocation } from "./groups";
-import { pluginInventorySignature } from "./inventory";
-import { registerPluginInventoryRefreshListeners } from "./inventoryRefresh";
+import { normalizeSavedGroupData, setMultipleGroupsAllowed } from "./groups/data";
+import type { GroupData, OpenLocation } from "./groups/data";
+import { pluginInventorySignature } from "./plugins/inventory";
+import { registerPluginInventoryRefreshListeners } from "./plugins/inventoryRefresh";
 import { registerDedicatedGroupsWindows } from "./dedicatedWindow";
-import { closeObsidianSettings, installedPlugins, openPluginSettingsOrCommunityTab, setPluginEnabled } from "./pluginApi";
+import { closeObsidianSettings, installedPlugins, openPluginSettingsOrCommunityTab, setPluginEnabled } from "./plugins/api";
 import { GroupsView, VIEW_TYPE } from "./view";
 import { registerGroupsCli } from "./cli";
 import { cloneGroupData } from "./cli/parameters";
-import { forgetUnenableablePlugin, markPluginUnenableable } from "./unenableablePlugins";
+import { forgetUnenableablePlugin, markPluginUnenableable } from "./groups/unenableablePlugins";
 
 export default class PlugiGroups extends Plugin {
   data: GroupData = normalizeSavedGroupData(null);

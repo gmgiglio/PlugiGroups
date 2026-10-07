@@ -2,10 +2,10 @@
 
 
 import { App, Menu, Modal, Notice, Platform } from "obsidian";
-import { showDestructiveConfirmation } from "./confirmation";
-import type { InstalledPlugin } from "./inventory";
-import { openPluginHotkeys, openPluginSettingsOrCommunityTab, pluginFundingAndFolderDetails, pluginHasCommands, pluginHasSettingsTab, revealPluginFolder, uninstallPlugin } from "./pluginApi";
-import type { FundingUrl, PluginExtras } from "./pluginApi";
+import { showDestructiveConfirmation } from "../confirmation";
+import type { InstalledPlugin } from "../../plugins/inventory";
+import { openPluginHotkeys, openPluginSettingsOrCommunityTab, pluginFundingAndFolderDetails, pluginHasCommands, pluginHasSettingsTab, revealPluginFolder, uninstallPlugin } from "../../plugins/api";
+import type { FundingUrl, PluginExtras } from "../../plugins/api";
 
 class FundingModal extends Modal {
   constructor(app: App, private readonly plugin: InstalledPlugin, private readonly links: [string, string][]) {

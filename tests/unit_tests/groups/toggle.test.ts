@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { enableOnlyGroupPlugins, groupEnabledState, groupStateAfterChange, nextGroupEnabledIds, pluginsEligibleForGroupToggle, rememberGroupMix, rememberMixesOfGroupsContaining, setGroupPluginsEnabled } from "../../src/groupToggle";
-import type { Group } from "../../src/groups";
-import type { InstalledPlugin } from "../../src/inventory";
+import { enableOnlyGroupPlugins, groupEnabledState, groupStateAfterChange, nextGroupEnabledIds, pluginsEligibleForGroupToggle, rememberGroupMix, rememberMixesOfGroupsContaining, setGroupPluginsEnabled } from "../../../src/groups/toggle";
+import type { Group } from "../../../src/groups/data";
+import type { InstalledPlugin } from "../../../src/plugins/inventory";
 
 const plugins: InstalledPlugin[] = [
   { id: "self", name: "Admin", kind: "community", description: "", version: "1", author: "", enabled: true },

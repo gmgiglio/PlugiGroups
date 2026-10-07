@@ -1,6 +1,6 @@
 import type { App, EventRef } from "obsidian";
 import { pluginInventorySignature } from "./inventory";
-import { installedPlugins, subscribeToPluginInventoryChanges, subscribeToCorePluginChanges } from "./pluginApi";
+import { installedPlugins, subscribeToPluginInventoryChanges, subscribeToCorePluginChanges } from "./api";
 
 export interface InventoryRefreshState {
   app: App;

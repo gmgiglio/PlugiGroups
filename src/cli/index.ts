@@ -1,9 +1,9 @@
 import type { CliData, CliFlags } from "obsidian";
 import type { CliCommand, CliContext, RegisterCliHandler } from "./types";
 import { createGroup, renameCliGroup, deleteGroup, addMembership, removeMembership, moveMembership,
-  reorderCliSection, collapseSection, toggleGroup, replaceStructure } from "./mutations";
-import { listGroups, showGroup, showUngrouped, searchPlugins, showStructure, filterGroupsViews } from "./queries";
-import { readSettings, writeSetting } from "./settings";
+  reorderCliSection, collapseSection, toggleGroup, replaceStructure } from "./commands/mutations";
+import { listGroups, showGroup, showUngrouped, searchPlugins, showStructure, filterGroupsViews } from "./commands/queries";
+import { readSettings, writeSetting } from "./commands/settings";
 
 const GROUP: CliFlags = { group: { value: "<id-or-name>", description: "Group ID or unambiguous name, including Ungrouped", required: true } };
 const PLUGIN: CliFlags = { plugin: { value: "<plugin-id>", description: "Community plugin ID or core:<id>", required: true } };

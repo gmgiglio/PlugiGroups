@@ -1,6 +1,6 @@
 import { setIcon } from "obsidian";
-import { reorderSection } from "../groups";
-import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
+import { reorderSection } from "../../groups/data";
+import { saveGroupChangesAndRefreshViews, type ViewContext } from "../context";
 
 const GROUP_DRAG_TYPE = "application/x-plugin-groups-admin-group";
 const UNGROUPED_DRAG_TYPE = "application/x-plugin-groups-admin-ungrouped";

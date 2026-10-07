@@ -1,10 +1,10 @@
 import { Notice, setIcon } from "obsidian";
 import { renderGroupsSearch, type GroupsSearchState } from "./search";
-import { createHeaderAction } from "./headerAction";
-import { showGroupRenameInput } from "./groupSection";
-import { addGroup, setCollapseMode, type CollapseMode } from "../groups";
-import type { InstalledPlugin } from "../inventory";
-import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
+import { createHeaderAction } from "./action";
+import { showGroupRenameInput } from "../sections/group";
+import { addGroup, setCollapseMode, type CollapseMode } from "../../groups/data";
+import type { InstalledPlugin } from "../../plugins/inventory";
+import { saveGroupChangesAndRefreshViews, type ViewContext } from "../context";
 
 export function renderGroupsHeader(context: ViewContext, container: HTMLElement, plugins: InstalledPlugin[], search: GroupsSearchState): void {
   const header = container.createDiv({ cls: "plugin-groups-admin-header" });

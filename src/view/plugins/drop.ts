@@ -1,6 +1,6 @@
-import { addPluginToGroup, movePluginToGroup, removePluginFromGroup, reorderPluginInGroup } from "../groups";
-import type { InstalledPlugin } from "../inventory";
-import { saveGroupChangesAndRefreshViews, type ViewContext } from "./context";
+import { addPluginToGroup, movePluginToGroup, removePluginFromGroup, reorderPluginInGroup } from "../../groups/data";
+import type { InstalledPlugin } from "../../plugins/inventory";
+import { saveGroupChangesAndRefreshViews, type ViewContext } from "../context";
 
 const DRAG_TYPE = "application/x-plugin-groups-admin-id";
 const DRAG_SOURCE_TYPE = "application/x-plugin-groups-admin-source";

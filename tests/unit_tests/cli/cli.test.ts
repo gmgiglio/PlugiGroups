@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { CliData, CliHandler } from "obsidian";
-import { normalizeSavedGroupData, type GroupData } from "../../src/groups";
-import { CLI_COMMANDS, registerGroupsCli } from "../../src/cli";
-import type { CliContext } from "../../src/cli/types";
-import { cloneGroupData, resolveGroup } from "../../src/cli/parameters";
-import { dataFromStructure, structureFromData } from "../../src/cli/structure";
-import type { InstalledPlugin } from "../../src/inventory";
+import { normalizeSavedGroupData, type GroupData } from "../../../src/groups/data";
+import { CLI_COMMANDS, registerGroupsCli } from "../../../src/cli";
+import type { CliContext } from "../../../src/cli/types";
+import { cloneGroupData, resolveGroup } from "../../../src/cli/parameters";
+import { dataFromStructure, structureFromData } from "../../../src/cli/structure";
+import type { InstalledPlugin } from "../../../src/plugins/inventory";
 
 interface Harness {
   readonly context: CliContext;
@@ -21,7 +21,7 @@ function createHarness(saved: unknown = null): Harness {
   const data = normalizeSavedGroupData(saved);
   const plugins = [installedPlugin("alpha", true), installedPlugin("beta", false), installedPlugin("plugin-groups-admin", true)];
   const context: CliContext = { data, selfId: "plugin-groups-admin", pendingPluginIds: new Set(), getInstalledPlugins: () => plugins,
-    commitData: async next => { saves.push(cloneGroupData(next)); Object.assign(data, next); }, refreshViews: () => undefined,
+    commitData: async draftData => { saves.push(cloneGroupData(draftData)); Object.assign(data, draftData); }, refreshViews: () => undefined,
     setPluginEnabled: async (id, enabled) => { toggles.push(`${id}:${enabled}`); plugins.find(plugin => plugin.id === id)!.enabled = enabled; },
     filterViews: (query, scope) => { filters.push(`${scope ?? "all"}:${query}`); return 2; } };
   const handlers = new Map<string, CliHandler>();
@@ -343,10 +343,10 @@ test("the permanent group cannot share memberships even when multiple groups are
 test("registered handlers serialize commands and recover after a failed save", async () => {
   const harness = createHarness();
   let fail = true;
-  const context = { ...harness.context, commitData: async (next: GroupData): Promise<void> => {
+  const context = { ...harness.context, commitData: async (draftData: GroupData): Promise<void> => {
     await Promise.resolve();
     if (fail) { fail = false; throw new Error("Disk write failed"); }
-    await harness.context.commitData(next);
+    await harness.context.commitData(draftData);
   } };
   registerGroupsCli(context, (name, _description, _flags, handler) => harness.handlers.set(name, handler));
   await assert.rejects(run(harness, "create", { name: "Failed" }), /Disk write failed/);

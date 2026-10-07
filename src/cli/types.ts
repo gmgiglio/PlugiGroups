@@ -1,6 +1,6 @@
 import type { CliData, CliFlags, CliHandler } from "obsidian";
-import type { GroupData } from "../groups";
-import type { InstalledPlugin } from "../inventory";
+import type { GroupData } from "../groups/data";
+import type { InstalledPlugin } from "../plugins/inventory";
 
 export interface CliContext {
   readonly data: GroupData;
